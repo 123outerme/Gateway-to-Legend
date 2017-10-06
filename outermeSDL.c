@@ -200,6 +200,20 @@ void closeSDL()
     SDL_Quit();
 }
 
+int checkArrayForIVal(int value, int array[], size_t arraySize)
+{
+    int found = -1;
+    for(int i = 0; i < arraySize; i++)
+    {
+        if (value == array[i])
+        {
+            found = i;
+            break;
+        }
+    }
+    return found;
+}
+
 char* removeChar(char input[], char removing, size_t length, bool foreToBack)
 {
     static char sansChar[255];

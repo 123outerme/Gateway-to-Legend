@@ -72,6 +72,7 @@ void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void closeSDL();  //closes SDL and related stuff
+int checkArrayForIVal(int value, int array[], size_t arraySize);  //finds an int in an int array
 char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
 bool checkFile(char* filePath, int desiredLines);  //checks if a file exists with a certain number of lines. 0 for any.
