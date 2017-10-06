@@ -52,6 +52,34 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
 	}
 }
 
+void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x)
+{
+    int numsC = 0, numsR = 0,  i, num;
+    int sameArray[y][x];
+    char thisLine[601], substring[3];
+    strcpy(thisLine, readLine(filePath, lineNum, thisLine));
+    //printf("%s\n", thisLine);
+    for(i = 0; i < 600; i += 2)
+    {
+        sprintf(substring, "%.*s", 2, thisLine + i);
+        //*(array + numsR++ + numsC * x)
+        num = (int)strtol(substring, NULL, 16);
+        sameArray[numsC][numsR++] = num;
+        //printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+        if (numsR > x - 1)
+        {
+            numsC++;
+            numsR = 0;
+        }
+        //printf("%d\n", num);
+    }
+    for(int dy = 0; dy < y; dy++)
+    {
+        for(int dx = 0; dx < x; dx++)
+            *(tilemapData + dx + dy * x) = sameArray[dy][dx];
+    }
+}
+
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
 {
     if (curSelect < 1)

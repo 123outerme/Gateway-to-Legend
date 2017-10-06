@@ -4,7 +4,7 @@
 int initSDL(const char* tilesetFilePath)
 {
     int done = 0;
-    SDL_Init(SDL_INIT_VIDEO || SDL_INIT_EVENTS);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     if( !( IMG_Init(IMG_INIT_PNG) & IMG_INIT_FLAGS))
     {
         printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
@@ -295,10 +295,10 @@ char* readLine(char* filePath, int lineNum, char** output)
 		return NULL;
 	else
 	{
-        static char thisLine[255];
+        static char thisLine[1024];
         fseek(filePtr, 0, SEEK_SET);
         for(int p = 0; p <= lineNum; p++)
-            fgets(thisLine, 255, filePtr);
+            fgets(thisLine, 1024, filePtr);
         //printf("%s @ %d\n", thisLine, thisLine);
         *output = thisLine;
         //printf("%s @ %d\n", output, output);

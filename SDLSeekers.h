@@ -28,6 +28,7 @@ typedef struct {
 
 void initPlayer(player* player, int x, int y, int size, int tileIndex);  //inits new player struct
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
+void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 
 #define SIZE_OF_SCANCODE_ARRAY 6
@@ -38,5 +39,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_RIGHT CUSTOM_SCANCODES[3]
 #define SC_INTERACT CUSTOM_SCANCODES[4]
 #define SC_MENU CUSTOM_SCANCODES[5]
+
+int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
 #endif // SDLSEEKERS_H_INCLUDED
