@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     int frame = 0;
     player* playerSprite = &person;
     time_t startTime = time(NULL);
+    time_t lastTime = time(NULL) - 1;
     time_t now = time(NULL) + 1;
     while(!quit)
     {
@@ -66,8 +67,11 @@ int main(int argc, char* argv[])
         drawSprite(person.spr, person.flip);
         SDL_RenderPresent(mainRenderer);
         frame++;
-        if ((int) time(NULL) > startTime)
+        if (time(NULL) > startTime)
             now = time(NULL);
+        if (time(NULL) - 1 > lastTime)
+            lastTime = time(NULL);
+        if (lastTime == now)
         printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
 
     }
