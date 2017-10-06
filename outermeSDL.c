@@ -141,7 +141,7 @@ void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            /*drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE)*/;
+            drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }

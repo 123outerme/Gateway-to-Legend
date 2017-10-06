@@ -38,17 +38,18 @@ int main(int argc, char* argv[])
     time_t now = time(NULL) + 1;
     while(!quit)
     {
+        SDL_RenderClear(mainRenderer);
+        drawTilemap(0, 0, 20, 15, false);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
-            SDL_RenderClear(mainRenderer);
             if (e.type == SDL_QUIT)
                 quit = true;
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 30 == 0)
         {
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
-                //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, SDL_FLIP_NONE);
+                //SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
+                drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], (playerSprite->spr.x / TILE_SIZE) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                 if (playerSprite->spr.y > 0 && checkSKUp)
                     playerSprite->spr.y -= 6;
                 if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
@@ -73,7 +74,6 @@ int main(int argc, char* argv[])
             lastTime = time(NULL);
         if (lastTime == now)
         printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
-
     }
     printf("Quit successfully\n");
     closeSDL();

@@ -62,7 +62,7 @@ typedef struct
     entityType type;
 } sprite;
 
-int initSDL();  //inits SDL and related stuff
+int initSDL(const char* tilesetFilePath);  //inits SDL and related stuff
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
@@ -88,5 +88,6 @@ SDL_Surface* mainScreen;
 SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
+int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
 #endif // OUTERMESDL_H_INCLUDED
