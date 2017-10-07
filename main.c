@@ -18,6 +18,7 @@
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
+void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
 
 int main(int argc, char* argv[])
 {
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case 1:  //main game loop
-            loadMapFile(mapFilePath, tilemap, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
@@ -103,6 +104,7 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
+        //drawEventmap(0, 0, 20, 15, false);
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -181,14 +183,13 @@ bool checkCollision(player* player, int moveX, int moveY)
         int collideID = 0;
         int thisX = player->spr.x;
         int thisY = player->spr.y;
-        int collisionArray[SIZE_OF_COLLISION_ARRAY] = ARRAY_OF_COLLIDED_TILES;
-        if (-1 != checkArrayForIVal(tilemap[thisY / TILE_SIZE][thisX / TILE_SIZE], collisionArray, SIZE_OF_COLLISION_ARRAY))
+        if (1 == eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE])
             collideID += 1;
-        if (-1 != checkArrayForIVal(tilemap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], collisionArray, SIZE_OF_COLLISION_ARRAY))
+        if (1 == eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)])
             collideID += 2;
-        if (-1 != checkArrayForIVal(tilemap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], collisionArray, SIZE_OF_COLLISION_ARRAY))
+        if (1 == eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE])
             collideID += 4;
-        if (-1 != checkArrayForIVal(tilemap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], collisionArray, SIZE_OF_COLLISION_ARRAY))
+        if (1 == eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)])
             collideID += 8;
         if ((collideID == 1 && moveX < 0 && moveY > 0) || ((collideID == 2 || collideID == 10) && moveX > 0 && moveY > 0) || (collideID == 4 && moveX < 0 && moveY < 0) || ((collideID == 8) && moveX > 0 && moveY < 0))
         {  //manually adding y sliding
@@ -209,4 +210,13 @@ bool checkCollision(player* player, int moveX, int moveY)
         return collideID;
     }
     return false;
+}
+
+void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
+{
+    for(int dy = startY; dy < endY; dy++)
+        for(int dx = startX; dx < endX; dx++)
+            drawTile(127 - eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
 }

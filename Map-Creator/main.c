@@ -35,8 +35,9 @@ typedef struct {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
-void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x);
+void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x);
 void mainLoop(player* playerSprite);
+void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
 
@@ -44,6 +45,9 @@ int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
 int main(int argc, char* argv[])
 {
+    for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
+        for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+            eventmap[dy][dx] = 0;
     char* mainFilePath = calloc(200 + 1, sizeof(char));
     char mapFilePath[200];
     char tileFilePath[200];
@@ -64,7 +68,7 @@ int main(int argc, char* argv[])
         printf("Invalid line number.");
         return 2;
     }
-    loadMapFile(mapFilePath, tilemap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    loadMapFile(mapFilePath, tilemap, eventmap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     initSDL(tileFilePath);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
@@ -74,10 +78,9 @@ int main(int argc, char* argv[])
 	scanf("%s", saveCheck);
 	if (saveCheck[0] == 'y')
         writeTileData();
-    printf("Ended at %d, %d", creator.spr.x, creator.spr.y);
     //waitForKey();
     closeSDL();
-    SDL_Delay(1000);
+    //SDL_Delay(1000);
     return 0;
 }
 //C:/Stephen/C/CodeBlocks/SDLSeekers/Map-Creator/map-packs/main.txt
@@ -92,20 +95,25 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
     return *output;
 }
 
-void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x)
 {
     int numsC = 0, numsR = 0,  i, num;
-    int sameArray[y][x];
-    char thisLine[601], substring[3];
+    int sameArray[y][x], eventArray[y][x];
+    bool writeToTilemap = false;
+    char thisLine[1201], substring[2];
     strcpy(thisLine, readLine(filePath, lineNum, thisLine));
-    //printf("%s\n", thisLine);
-    for(i = 0; i < 600; i += 2)
+    printf("%s\n", thisLine);
+    for(i = 0; i < 1200; i += 2)
     {
         sprintf(substring, "%.*s", 2, thisLine + i);
         //*(array + numsR++ + numsC * x)
         num = (int)strtol(substring, NULL, 16);
-        sameArray[numsC][numsR++] = num;
-        //printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+        if (writeToTilemap)
+            sameArray[numsC][numsR++] = num;
+        else
+            eventArray[numsC][numsR] = num;
+        printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
+        writeToTilemap = !writeToTilemap;
         if (numsR > x - 1)
         {
             numsC++;
@@ -116,7 +124,10 @@ void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const in
     for(int dy = 0; dy < y; dy++)
     {
         for(int dx = 0; dx < x; dx++)
+        {
             *(tilemapData + dx + dy * x) = sameArray[dy][dx];
+            *(eventmapData + dx + dy * x) = eventArray[dy][dx];
+        }
     }
 }
 
@@ -134,6 +145,8 @@ void mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
+        if (!editingTiles)
+            drawEventmap(0, 0, 20, 15, false);
         keycode = waitForKey();
         if (!playerSprite->movementLocked && (keycode == SDLK_w || keycode == SDLK_s || keycode == SDLK_a || keycode == SDLK_d))
         {
@@ -155,7 +168,15 @@ void mainLoop(player* playerSprite)
         if (keycode == SDLK_SPACE && editingTiles)
             tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
         if (keycode == SDLK_SPACE && !editingTiles)
-            ;
+            eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = 127 - playerSprite->spr.tileIndex;
+        if (keycode == SDLK_LSHIFT)
+        {
+            editingTiles = !editingTiles;
+            if (!editingTiles)
+                playerSprite->spr.tileIndex = 126;
+            else
+                playerSprite->spr.tileIndex = 0;
+        }
         drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
@@ -182,24 +203,36 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
+void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
+{
+    for(int dy = startY; dy < endY; dy++)
+        for(int dx = startX; dx < endX; dx++)
+            drawTile(127 - eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
+}
+
 void writeTileData()
 {
     char* outputFile = "output/output.txt";
     createFile(outputFile);
     char input[2];
-    char output[601];
+    char output[1201];
     input[0] = 0;
     output[0] = 0;
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
     {
         for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
         {
-            sprintf(input, "%.2X", tilemap[dy][dx]);
+            sprintf(input, "%.2X", eventmap[dy][dx]);
             //printf("<>%s\n", input);
+            strcat(output, input);
+            sprintf(input, "%.2X", tilemap[dy][dx]);
             strcat(output, input);
         }
     }
     //printf(">%s\n", output);
     appendLine("output/output.txt", output);
+    printf("%s", output);
     printf("outputted to output/output.txt\n");
 }

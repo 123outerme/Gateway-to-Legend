@@ -75,20 +75,25 @@ void loadConfig(char* filePath)
     }
 }
 
-void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x)
 {
     int numsC = 0, numsR = 0,  i, num;
-    int sameArray[y][x];
-    char thisLine[601], substring[3];
+    int sameArray[y][x], eventArray[y][x];
+    bool writeToTilemap = false;
+    char thisLine[1200], substring[2];
     strcpy(thisLine, readLine(filePath, lineNum, thisLine));
-    //printf("%s\n", thisLine);
-    for(i = 0; i < 600; i += 2)
+    printf("%s\n", thisLine);
+    for(i = 0; i < 1200; i += 2)
     {
-        sprintf(substring, "%.*s", 2, thisLine + i);
+        sprintf(substring, "%.2s", thisLine + i);
         //*(array + numsR++ + numsC * x)
         num = (int)strtol(substring, NULL, 16);
-        sameArray[numsC][numsR++] = num;
-        //printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+        if (writeToTilemap)
+            sameArray[numsC][numsR++] = num;
+        else
+            eventArray[numsC][numsR] = num;
+        printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
+        writeToTilemap = !writeToTilemap;
         if (numsR > x - 1)
         {
             numsC++;
@@ -99,7 +104,10 @@ void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const in
     for(int dy = 0; dy < y; dy++)
     {
         for(int dx = 0; dx < x; dx++)
+        {
             *(tilemapData + dx + dy * x) = sameArray[dy][dx];
+            *(eventmapData + dx + dy * x) = eventArray[dy][dx];
+        }
     }
 }
 

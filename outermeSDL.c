@@ -309,10 +309,10 @@ char* readLine(char* filePath, int lineNum, char** output)
 		return NULL;
 	else
 	{
-        char* thisLine = calloc(1024, sizeof(char));
+        char* thisLine = calloc(2048, sizeof(char));
         fseek(filePtr, 0, SEEK_SET);
         for(int p = 0; p <= lineNum; p++)
-            fgets(thisLine, 1024, filePtr);
+            fgets(thisLine, 2048, filePtr);
         //printf("%s @ %d\n", thisLine, thisLine);
         *output = thisLine;
         //printf("%s @ %d\n", output, output);
