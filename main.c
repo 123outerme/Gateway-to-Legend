@@ -13,35 +13,39 @@
 #define ARRAY_OF_COLLIDED_TILES {8,9,10,11,12,13,14,15}
 #define SIZE_OF_COLLISION_ARRAY 8
 
-#define INIT_FILEPATH "SDLSeekers.ini"
+#define CONFIG_FILEPATH "SDLSeekers.cfg"
+#define GLOBALSAVE_FILEPATH "SDLSeekers.txt"
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
 
 int main(int argc, char* argv[])
 {
-    char* mainFilePath = "maps/map.bin";
-    char* tileFilePath = "";
-    char* saveFilePath = "";
-    tileFilePath = readLine(mainFilePath, 0, &tileFilePath);  //figure out way to load this map file based on user input
-    tileFilePath = removeChar(tileFilePath, '\n', 1024, false);
+    char* mainFilePath = "map-packs/main.txt";
+    char* dummy = "";
+    char mapFilePath[100];
+    char tileFilePath[100];
+    char* saveFilePath[100];
+    uniqueReadLine(&mapFilePath, 100, mainFilePath, 1);
+    printf("%s\n", mapFilePath);
+    uniqueReadLine(&tileFilePath, 100, mainFilePath, 2);
+    printf("%s\n", tileFilePath);
     {
         int initCode = initSDL(tileFilePath);
         if (initCode != 0)
             return initCode;
     }
-    if (checkFile(INIT_FILEPATH, 0))
-        loadConfig(INIT_FILEPATH);
+    if (checkFile(CONFIG_FILEPATH, 6))
+        loadConfig(CONFIG_FILEPATH);
     else
-        initConfig(INIT_FILEPATH);
-    saveFilePath = readLine(mainFilePath, 1, &saveFilePath);
-    saveFilePath = removeChar(saveFilePath, '\n', 1024, false);
+        initConfig(CONFIG_FILEPATH);
+    uniqueReadLine(&saveFilePath, 100, mainFilePath, 3);
     if (checkFile(saveFilePath, 0))
         /*load save file*/;
     else
         createFile(saveFilePath);
-    //printf("%s\n", saveFilePath);
-    loadMapFile(mainFilePath, tilemap, 2, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+    /*load global save file*/
+    printf("%s\n", saveFilePath);
     player person;
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
@@ -61,13 +65,14 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case 1:  //main game loop
+            loadMapFile(mapFilePath, tilemap, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
                 gameState = 2;
             break;
-        case 2:
+        case 2:  //overworld menu
             choice = aMenu("Title", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = 1;

@@ -70,7 +70,8 @@ void loadConfig(char* filePath)
     char* buffer = "";
     for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
     {
-        CUSTOM_SCANCODES[i] = strtol(readLine(filePath, i, &buffer), NULL, 10);
+        readLine(filePath, i, &buffer);
+        CUSTOM_SCANCODES[i] = strtol(buffer, NULL, 10);
     }
 }
 
@@ -205,4 +206,14 @@ void saveConfig(char* filePath)
     appendLine(filePath, intToString(SC_INTERACT, buffer));
     appendLine(filePath, intToString(SC_MENU, buffer));
     //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
+}
+
+char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum)
+{
+    char* dummy = "";
+    readLine(filePath, lineNum, &dummy);
+    strcpy(output, dummy);
+    dummy = removeChar(output, '\n', outputLength, false);
+    strcpy(output, dummy);
+    return *output;
 }
