@@ -33,6 +33,7 @@ void loadConfig(char* filePath);  //loads config data into the public variables
 void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 void saveConfig(char* filePath);  //saves config data to the file
+char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
