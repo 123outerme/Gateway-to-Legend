@@ -20,6 +20,17 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
+void initConfig(char* filePath)
+{
+    SC_UP = SDL_SCANCODE_W;
+    SC_DOWN = SDL_SCANCODE_S;
+    SC_LEFT = SDL_SCANCODE_A;
+    SC_RIGHT = SDL_SCANCODE_D;
+    SC_INTERACT = SDL_SCANCODE_SPACE;
+    SC_MENU = SDL_SCANCODE_ESCAPE;
+    saveConfig(filePath);
+}
+
 void loadPlayerData(player* player, char* filePath, bool forceNew)
 {
     if (!checkFile(filePath, SAVE_FILE_LINES) || forceNew)
@@ -50,6 +61,15 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
 	}
+}
+
+void loadConfig(char* filePath)
+{
+    char* buffer = "";
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        CUSTOM_SCANCODES[i] = strtol(readLine(filePath, i, &buffer), NULL, 10);
+    }
 }
 
 void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x)
@@ -170,4 +190,17 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
         SDL_RenderPresent(mainRenderer);
     }
     return selection;
+}
+
+void saveConfig(char* filePath)
+{
+    char* buffer = "";
+    createFile(filePath);
+    appendLine(filePath, intToString(SC_UP, buffer));
+    appendLine(filePath, intToString(SC_DOWN, buffer));
+    appendLine(filePath, intToString(SC_LEFT, buffer));
+    appendLine(filePath, intToString(SC_RIGHT, buffer));
+    appendLine(filePath, intToString(SC_INTERACT, buffer));
+    appendLine(filePath, intToString(SC_MENU, buffer));
+    //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
 }

@@ -19,20 +19,18 @@ bool checkCollision(player* player, int moveX, int moveY);
 int main(int argc, char* argv[])
 {
     char* filePath = "";
-    filePath = readLine("maps/map.bin", 0, &filePath);
+    filePath = readLine("maps/map.bin", 0, &filePath);  //figure out way to load this map file based on user input
     filePath = removeChar(filePath, '\n', 1024, false);
+    if (checkFile("SDLSeekers.ini", 0))
+        loadConfig("SDLSeekers.ini");
+    else
+        initConfig("SDLSeekers.ini");
     printf("%s\n", filePath);
     {
         int initCode = initSDL(filePath);
         if (initCode != 0)
             return initCode;
     }
-    SC_UP = SDL_SCANCODE_W;
-    SC_DOWN = SDL_SCANCODE_S;
-    SC_LEFT = SDL_SCANCODE_A;
-    SC_RIGHT = SDL_SCANCODE_D;
-    SC_MENU = SDL_SCANCODE_ESCAPE;
-    SC_INTERACT = SDL_SCANCODE_SPACE;
     loadMapFile("maps/map.bin", tilemap, 1, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     player person;
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -120,7 +118,7 @@ int mainLoop(player* playerSprite)
                 {
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
-                    printf("%d\n", exitCode);
+                    //printf("%d\n", exitCode);
                 }
         }
         if (checkSKMenu)
