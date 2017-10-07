@@ -38,6 +38,9 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x);
 void mainLoop(player* playerSprite);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
+void writeTileData();
+
+int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 
 int main(int argc, char* argv[])
 {
@@ -53,14 +56,28 @@ int main(int argc, char* argv[])
 	}
     uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
     uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+    printf("Load this line: ");
+    int loadLine = 0;
+    scanf("%d", &loadLine);
+    if (!checkFile(mapFilePath, loadLine) || loadLine < 0)
+    {
+        printf("Invalid line number.");
+        return 2;
+    }
+    loadMapFile(mapFilePath, tilemap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     initSDL(tileFilePath);
-    loadMapFile(mapFilePath, tilemap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
     mainLoop(&creator);
+    char saveCheck[2];
+    printf("Save? (y/n) ");
+	scanf("%s", saveCheck);
+	if (saveCheck[0] == 'y')
+        writeTileData();
     printf("Ended at %d, %d", creator.spr.x, creator.spr.y);
     //waitForKey();
     closeSDL();
+    SDL_Delay(1000);
     return 0;
 }
 //C:/Stephen/C/CodeBlocks/SDLSeekers/Map-Creator/map-packs/main.txt
@@ -105,7 +122,7 @@ void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const in
 
 void mainLoop(player* playerSprite)
 {
-    bool quit = false;
+    bool quit = false, editingTiles = true;
     SDL_Event e;
     SDL_Keycode keycode;
     SDL_RenderClear(mainRenderer);
@@ -135,6 +152,10 @@ void mainLoop(player* playerSprite)
             playerSprite->spr.tileIndex--;
         if (keycode == SDLK_e && playerSprite->spr.tileIndex < 127)
             playerSprite->spr.tileIndex++;
+        if (keycode == SDLK_SPACE && editingTiles)
+            tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+        if (keycode == SDLK_SPACE && !editingTiles)
+            ;
         drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
@@ -159,4 +180,26 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->movementLocked = false;
     SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+}
+
+void writeTileData()
+{
+    char* outputFile = "output/output.txt";
+    createFile(outputFile);
+    char input[2];
+    char output[601];
+    input[0] = 0;
+    output[0] = 0;
+    for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
+    {
+        for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+        {
+            sprintf(input, "%.2X", tilemap[dy][dx]);
+            //printf("<>%s\n", input);
+            strcat(output, input);
+        }
+    }
+    //printf(">%s\n", output);
+    appendLine("output/output.txt", output);
+    printf("outputted to output/output.txt\n");
 }
