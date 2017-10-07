@@ -21,6 +21,7 @@ bool checkCollision(player* player, int moveX, int moveY);
 
 int main(int argc, char* argv[])
 {
+    //loading map pack stuff
     char* mainFilePath = "map-packs/main.txt";
     char* dummy = "";
     char mapFilePath[100];
@@ -35,10 +36,6 @@ int main(int argc, char* argv[])
         if (initCode != 0)
             return initCode;
     }
-    if (checkFile(CONFIG_FILEPATH, 6))
-        loadConfig(CONFIG_FILEPATH);
-    else
-        initConfig(CONFIG_FILEPATH);
     uniqueReadLine(&saveFilePath, 100, mainFilePath, 3);
     if (checkFile(saveFilePath, 0))
         /*load save file*/;
@@ -46,10 +43,14 @@ int main(int argc, char* argv[])
         createFile(saveFilePath);
     /*load global save file*/
     printf("%s\n", saveFilePath);
+    //done loading map-pack specific stuff
+    if (checkFile(CONFIG_FILEPATH, 6))  //load config
+        loadConfig(CONFIG_FILEPATH);
+    else
+        initConfig(CONFIG_FILEPATH);
     player person;
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
     int gameState = 0;
     bool quitGame = false;
     while(!quitGame)
@@ -58,7 +59,8 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case 0:  //main menu
-            choice = aMenu("Title", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
+            choice = aMenu("Main Menu", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = 1;
             else
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
                 gameState = 2;
             break;
         case 2:  //overworld menu
-            choice = aMenu("Title", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu("Overworld Menu", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = 1;
             if (choice == 2)
