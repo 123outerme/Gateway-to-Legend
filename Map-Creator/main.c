@@ -1,46 +1,71 @@
 #include "outermeSDL.h"
 
-char* readStringInput(char* str, int limit);
-char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum);
+#define checkSKUp keyStates[26]
+#define checkSKDown keyStates[2]
+#define checkSKLeft keyStates[4]
+#define checkSKRight keyStates[7]
+#define checkSKInteract keyStates[44]
+#define checkSKMenu keyStates[41]
+//SDL_SCANCODE_W
+//SDL_SCANCODE_S
+//SDL_SCANCODE_A
+//SDL_SCANCODE_D
+//SDL_SCANCODE_SPACE
+//SDL_SCANCODE_ESCAPE
+
+#define PIXELS_MOVED 48
+
+typedef struct {
+    sprite spr;  //?
+    char name[8 + 1];  //9 bytes
+    int level;  //
+    int experience;  //
+    int money;  //
+    int HP;  //
+    int maxHP;  //
+    int worldNum;  //
+    int mapScreen;  //8 bytes
+    int lastScreen;  //8 bytes
+    int overworldX;  //
+    int overworldY;  //
+    SDL_RendererFlip flip;  //
+    bool movementLocked;  // 1 byte
+} player;
+
+#define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
+
+char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
+void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x);
+void mainLoop(player* playerSprite);
+void initPlayer(player* player, int x, int y, int size, int tileIndex);
 
 int main(int argc, char* argv[])
 {
-    char* mainFilePath = calloc(100 + 1, sizeof(char));
-    char mapFilePath[100];
-    char tileFilePath[100];
-    mainFilePath = readStringInput(mainFilePath, 100);
-    uniqueReadLine(&mapFilePath, 100, mainFilePath, 1);
-    uniqueReadLine(&tileFilePath, 100, mainFilePath, 2);
-    initSDL(tileFilePath);
-    waitForKey();
-    closeSDL();
-}
-
-char* readStringInput(char* str, int limit)
-{
-	printf("Enter a string (Limit of %d characters): ", limit);
-	//get input using a getc() loop and terminate upon a newline
-	int i = 0;
-	char c;
-	while (i < limit)
+    char* mainFilePath = calloc(200 + 1, sizeof(char));
+    char mapFilePath[200];
+    char tileFilePath[200];
+	printf("Enter a filepath: ");
+	scanf("%s", mainFilePath);
+	if (!checkFile(mainFilePath, 1))
 	{
-		c = getc(stdin);
-		if (c == '\n')
-			break;
-		str[i] = c;
-		i++;
-
+	    printf("Invalid file.\n");
+        return 1;
 	}
-	if (i >= limit)
-		i = limit;
-	str = realloc(str, sizeof(char[++i]));
-	str[i] = '\0';
-	return str;
-	//this works when i < limit because apparently you can just increase the size of arrays
-	//by storing a new value at [dim + 1]
+    uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
+    uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+    initSDL(tileFilePath);
+    loadMapFile(mapFilePath, tilemap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    player creator;
+    initPlayer(&creator, 0, 0, TILE_SIZE, 0);
+    mainLoop(&creator);
+    printf("Ended at %d, %d", creator.spr.x, creator.spr.y);
+    //waitForKey();
+    closeSDL();
+    return 0;
 }
+//C:/Stephen/C/CodeBlocks/SDLSeekers/Map-Creator/map-packs/main.txt
 
-char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum)
+char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
 {
     char* dummy = "";
     readLine(filePath, lineNum, &dummy);
@@ -48,4 +73,90 @@ char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int
     dummy = removeChar(output, '\n', outputLength, false);
     strcpy(output, dummy);
     return *output;
+}
+
+void loadMapFile(char* filePath, int* tilemapData[], const int lineNum, const int y, const int x)
+{
+    int numsC = 0, numsR = 0,  i, num;
+    int sameArray[y][x];
+    char thisLine[601], substring[3];
+    strcpy(thisLine, readLine(filePath, lineNum, thisLine));
+    //printf("%s\n", thisLine);
+    for(i = 0; i < 600; i += 2)
+    {
+        sprintf(substring, "%.*s", 2, thisLine + i);
+        //*(array + numsR++ + numsC * x)
+        num = (int)strtol(substring, NULL, 16);
+        sameArray[numsC][numsR++] = num;
+        //printf("nums[%d][%d] = %d = %d (%s)\n", numsC, numsR - 1, num, sameArray[numsC][numsR - 1], substring);
+        if (numsR > x - 1)
+        {
+            numsC++;
+            numsR = 0;
+        }
+        //printf("%d\n", num);
+    }
+    for(int dy = 0; dy < y; dy++)
+    {
+        for(int dx = 0; dx < x; dx++)
+            *(tilemapData + dx + dy * x) = sameArray[dy][dx];
+    }
+}
+
+void mainLoop(player* playerSprite)
+{
+    bool quit = false;
+    SDL_Event e;
+    SDL_Keycode keycode;
+    SDL_RenderClear(mainRenderer);
+    drawTilemap(0, 0, 20, 15, false);
+    drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+    SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
+    SDL_RenderPresent(mainRenderer);
+    while(!quit)
+    {
+        SDL_RenderClear(mainRenderer);
+        drawTilemap(0, 0, 20, 15, false);
+        keycode = waitForKey();
+        if (!playerSprite->movementLocked && (keycode == SDLK_w || keycode == SDLK_s || keycode == SDLK_a || keycode == SDLK_d))
+        {
+                if (playerSprite->spr.y > 0 && keycode == SDLK_w)
+                    playerSprite->spr.y -= PIXELS_MOVED;
+                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && keycode == SDLK_s)
+                    playerSprite->spr.y += PIXELS_MOVED;
+                if (playerSprite->spr.x > 0 && keycode == SDLK_a)
+                    playerSprite->spr.x -= PIXELS_MOVED;
+                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keycode == SDLK_d)
+                    playerSprite->spr.x += PIXELS_MOVED;
+        }
+        if (keycode == SDLK_ESCAPE)
+            quit = true;
+        if (keycode == SDLK_q && playerSprite->spr.tileIndex > 0)
+            playerSprite->spr.tileIndex--;
+        if (keycode == SDLK_e && playerSprite->spr.tileIndex < 127)
+            playerSprite->spr.tileIndex++;
+        drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
+        SDL_RenderPresent(mainRenderer);
+    }
+}
+
+void initPlayer(player* player, int x, int y, int size, int tileIndex)
+{
+    //inputName(player);  //custom text input routine to get player->name
+    initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
+	player->level = 1;
+	player->experience = 0;
+	player->money = 0;
+	player->HP = 50;
+	player->maxHP = 50;
+	player->worldNum = 1;
+	player->mapScreen = 10;
+	player->lastScreen = 10;
+	player->overworldX = x;
+	player->overworldY = y;
+	player->flip = SDL_FLIP_NONE;
+	player->movementLocked = false;
+    SDL_Delay(300);
+    //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
