@@ -1,5 +1,7 @@
 #include "SDLSeekers.h"
 
+#define TILE_ID_CURSOR 17
+
 void initPlayer(player* player, int x, int y, int size, int tileIndex)
 {
     //inputName(player);  //custom text input routine to get player->name
@@ -105,7 +107,7 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
     if (curSelect < 1)
         curSelect = 1;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, /*TILE_ID_CURSOR*/0, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
     SDL_Event e;
     bool quit = false;
     int selection = -1;

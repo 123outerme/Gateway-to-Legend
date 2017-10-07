@@ -13,29 +13,39 @@
 #define ARRAY_OF_COLLIDED_TILES {8,9,10,11,12,13,14,15}
 #define SIZE_OF_COLLISION_ARRAY 8
 
+#define INIT_FILEPATH "SDLSeekers.ini"
+
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
 
 int main(int argc, char* argv[])
 {
-    char* filePath = "";
-    filePath = readLine("maps/map.bin", 0, &filePath);  //figure out way to load this map file based on user input
-    filePath = removeChar(filePath, '\n', 1024, false);
-    if (checkFile("SDLSeekers.ini", 0))
-        loadConfig("SDLSeekers.ini");
-    else
-        initConfig("SDLSeekers.ini");
-    printf("%s\n", filePath);
+    char* mainFilePath = "maps/map.bin";
+    char* tileFilePath = "";
+    char* saveFilePath = "";
+    tileFilePath = readLine(mainFilePath, 0, &tileFilePath);  //figure out way to load this map file based on user input
+    tileFilePath = removeChar(tileFilePath, '\n', 1024, false);
     {
-        int initCode = initSDL(filePath);
+        int initCode = initSDL(tileFilePath);
         if (initCode != 0)
             return initCode;
     }
-    loadMapFile("maps/map.bin", tilemap, 1, WIDTH_IN_TILES, HEIGHT_IN_TILES);
+    if (checkFile(INIT_FILEPATH, 0))
+        loadConfig(INIT_FILEPATH);
+    else
+        initConfig(INIT_FILEPATH);
+    saveFilePath = readLine(mainFilePath, 1, &saveFilePath);
+    saveFilePath = removeChar(saveFilePath, '\n', 1024, false);
+    if (checkFile(saveFilePath, 0))
+        /*load save file*/;
+    else
+        createFile(saveFilePath);
+    //printf("%s\n", saveFilePath);
+    loadMapFile(mainFilePath, tilemap, 2, WIDTH_IN_TILES, HEIGHT_IN_TILES);
     player person;
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    initPlayer(&person, 0, 2 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
+    initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
     int gameState = 0;
     bool quitGame = false;
     while(!quitGame)
@@ -44,8 +54,8 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case 0:  //main menu
-            choice = aMenu("Title", "Go", " ", " ", " ", " " , 1, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-            if (choice != ANYWHERE_QUIT)
+            choice = aMenu("Title", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            if (choice == 1)
                 gameState = 1;
             else
                 quitGame = true;
@@ -55,7 +65,16 @@ int main(int argc, char* argv[])
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
+                gameState = 2;
+            break;
+        case 2:
+            choice = aMenu("Title", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            if (choice == 1)
+                gameState = 1;
+            if (choice == 2)
                 gameState = 0;
+            if (choice == 3)
+                quitGame = true;
             break;
         }
     }
