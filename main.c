@@ -150,7 +150,7 @@ int mainLoop(player* playerSprite)
                     }
                 }*/
                 exitCode = checkCollision(playerSprite, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
-                if(exitCode)
+                if (exitCode)
                 {
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;

@@ -51,24 +51,45 @@ int main(int argc, char* argv[])
     char* mainFilePath = calloc(200 + 1, sizeof(char));
     char mapFilePath[200];
     char tileFilePath[200];
-	printf("Enter a filepath: ");
-	scanf("%s", mainFilePath);
-	if (!checkFile(mainFilePath, 1))
-	{
-	    printf("Invalid file.\n");
-        return 1;
-	}
-    uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
-    uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
-    printf("Load this line: ");
-    int loadLine = 0;
-    scanf("%d", &loadLine);
-    if (!checkFile(mapFilePath, loadLine) || loadLine < 0)
+    char loadCheck[2];
+    printf("Load? (y/n) ");
+	scanf("%s", loadCheck);
+	if (loadCheck[0] == 'y')
     {
-        printf("Invalid line number.");
-        return 2;
+        printf("Enter a filepath: ");
+        scanf("%s", mainFilePath);
+        if (!checkFile(mainFilePath, 1))
+        {
+            printf("Invalid file.\n");
+            return 1;
+        }
+        uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
+        uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+        printf("Load this line: ");
+        int loadLine = 0;
+        scanf("%d", &loadLine);
+        if (!checkFile(mapFilePath, loadLine) || loadLine < 0)
+        {
+            printf("Invalid line number.");
+            return 2;
+        }
+        loadMapFile(mapFilePath, tilemap, eventmap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     }
-    loadMapFile(mapFilePath, tilemap, eventmap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    else
+    {
+        strcpy(mainFilePath, "map-packs/main.txt");
+        uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
+        uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+        for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
+        {
+            for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+            {
+                tilemap[dy][dx] = 0;
+                eventmap[dy][dx] = 0;
+            }
+        }
+    }
+
     initSDL(tileFilePath);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
