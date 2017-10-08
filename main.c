@@ -20,8 +20,12 @@ int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
 void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
 
+bool debug;
+bool doDebugDraw;
+
 int main(int argc, char* argv[])
 {
+    debug = true;
     //loading map pack stuff
     char* mainFilePath = "map-packs/main.txt";
     char* dummy = "";
@@ -94,6 +98,7 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
+    doDebugDraw = false;
     int frame = 0, framerate;
     int exitCode = 0;
     char whatever[5] = "    \0";
@@ -104,7 +109,8 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
-        //drawEventmap(0, 0, 20, 15, false);
+        if (doDebugDraw)
+            drawEventmap(0, 0, 20, 15, false);
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -113,9 +119,11 @@ int mainLoop(player* playerSprite)
                 quit = true;
                 exitCode = ANYWHERE_QUIT;
             }
+            if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
+                doDebugDraw = !doDebugDraw;
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 28 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 24 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -169,7 +177,6 @@ int mainLoop(player* playerSprite)
             drawFlag = true;
         drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
-
         drawSprite(playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
     }
@@ -191,7 +198,7 @@ bool checkCollision(player* player, int moveX, int moveY)
             collideID += 4;
         if (1 == eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)])
             collideID += 8;
-        if ((collideID == 1 && moveX < 0 && moveY > 0) || ((collideID == 2 || collideID == 10) && moveX > 0 && moveY > 0) || (collideID == 4 && moveX < 0 && moveY < 0) || ((collideID == 8) && moveX > 0 && moveY < 0))
+        if (((collideID == 1 || collideID == 5) && moveX < 0 && moveY > 0) || ((collideID == 2 || collideID == 10) && moveX > 0 && moveY > 0) || ((collideID == 4 || collideID == 5) && moveX < 0 && moveY < 0) || ((collideID == 8 || collideID == 10) && moveX > 0 && moveY < 0))
         {  //manually adding y sliding
             collideID = 0;
             player->spr.x -= moveX * PIXELS_MOVED;
@@ -201,12 +208,16 @@ bool checkCollision(player* player, int moveX, int moveY)
             collideID = 0;
             player->spr.y -= moveY * PIXELS_MOVED;
         }
-        /*drawTile(7, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        drawTile(15, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        drawTile(2, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-        SDL_RenderPresent(mainRenderer);
-        SDL_Delay(30);*/
+        if (collideID && debug && doDebugDraw)
+            printf("X - %d\n", collideID);
+        if (debug && doDebugDraw)
+        {
+            drawTile(7, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(15, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(2, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            SDL_RenderPresent(mainRenderer);
+        }
         return collideID;
     }
     return false;

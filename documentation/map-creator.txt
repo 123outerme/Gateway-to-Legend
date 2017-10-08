@@ -1,0 +1,7 @@
+Controls:
+W - Up
+A - Left
+S - Down
+D - Right
+Space - Place tile/event
+LShift - Switch between placing/seeing tiles and events

@@ -82,7 +82,7 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
     bool writeToTilemap = false;
     char thisLine[1200], substring[2];
     strcpy(thisLine, readLine(filePath, lineNum, thisLine));
-    printf("%s\n", thisLine);
+    //printf("%s\n", thisLine);
     for(i = 0; i < 1200; i += 2)
     {
         sprintf(substring, "%.2s", thisLine + i);
@@ -92,7 +92,7 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
             sameArray[numsC][numsR++] = num;
         else
             eventArray[numsC][numsR] = num;
-        printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
+        //printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
         writeToTilemap = !writeToTilemap;
         if (numsR > x - 1)
         {
