@@ -42,6 +42,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+SDL_Texture* eventTexture;
 
 int main(int argc, char* argv[])
 {
@@ -89,10 +90,12 @@ int main(int argc, char* argv[])
             }
         }
     }
-
     initSDL(tileFilePath);
+    loadIMG("tileset/eventTile48.png", &eventTexture);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
+    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     mainLoop(&creator);
     char saveCheck[2];
     printf("Save? (y/n) ");
@@ -167,7 +170,17 @@ void mainLoop(player* playerSprite)
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
         if (!editingTiles)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
+            SDL_RenderFillRect(mainRenderer, NULL);
             drawEventmap(0, 0, 20, 15, false);
+            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            drawEventTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+        }
+        else
+            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
+        SDL_RenderPresent(mainRenderer);
         keycode = waitForKey();
         if (!playerSprite->movementLocked && (keycode == SDLK_w || keycode == SDLK_s || keycode == SDLK_a || keycode == SDLK_d))
         {
@@ -189,18 +202,15 @@ void mainLoop(player* playerSprite)
         if (keycode == SDLK_SPACE && editingTiles)
             tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
         if (keycode == SDLK_SPACE && !editingTiles)
-            eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = 127 - playerSprite->spr.tileIndex;
+            eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
         if (keycode == SDLK_LSHIFT)
         {
             editingTiles = !editingTiles;
             if (!editingTiles)
-                playerSprite->spr.tileIndex = 126;
+                playerSprite->spr.tileIndex = 1;
             else
                 playerSprite->spr.tileIndex = 0;
         }
-        drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
-        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
-        SDL_RenderPresent(mainRenderer);
     }
 }
 
@@ -228,9 +238,16 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawTile(127 - eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawEventTile(eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
+}
+
+void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+{
+    //printf("%d , %d\n", id  / 8, (id % 8));
+    SDL_RenderCopyEx(mainRenderer, eventTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+    //SDL_RenderPresent(mainRenderer);
 }
 
 void writeTileData()

@@ -27,7 +27,7 @@ int initSDL(const char* tilesetFilePath)
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
-        mainWindow = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        mainWindow = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_GRABBED);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());

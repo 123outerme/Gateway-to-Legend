@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case 1:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, 2, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
