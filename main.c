@@ -22,6 +22,7 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
 
 bool debug;
 bool doDebugDraw;
+SDL_Texture* eventTexture;
 
 int main(int argc, char* argv[])
 {
@@ -54,9 +55,11 @@ int main(int argc, char* argv[])
     else
         initConfig(CONFIG_FILEPATH);
     player person;
+    if (debug)
+        loadIMG("tileset/eventTile48.png", &eventTexture);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    int gameState = 0;
+    int gameState = 1;
     bool quitGame = false;
     while(!quitGame)
     {
@@ -64,27 +67,29 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case 0:  //main menu
+            break;
+        case 1:  //map menu
             initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
             choice = aMenu("Main Menu", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
-                gameState = 1;
+                gameState = 2;
             else
                 quitGame = true;
             break;
-        case 1:  //main game loop
+        case 2:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, 2, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
-                gameState = 2;
+                gameState = 3;
             break;
-        case 2:  //overworld menu
+        case 3:  //overworld menu
             choice = aMenu("Overworld Menu", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
-                gameState = 1;
+                gameState = 2;
             if (choice == 2)
-                gameState = 0;
+                gameState = 1;
             if (choice == 3)
                 quitGame = true;
             break;
@@ -227,7 +232,14 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawTile(127 - eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawEventTile(eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
+}
+
+void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+{
+    //printf("%d , %d\n", id  / 8, (id % 8));
+    SDL_RenderCopyEx(mainRenderer, eventTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+    //SDL_RenderPresent(mainRenderer);
 }

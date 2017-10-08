@@ -225,3 +225,31 @@ char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int
     strcpy(output, dummy);
     return *output;
 }
+
+char** getListOfFiles(const size_t arrayY, const size_t arrayX, const char* directory, int* outY)
+{
+	DIR* dir;
+	struct dirent* ent;
+	dir = opendir(directory);
+    if (dir == NULL)
+	{
+		perror("Can't open this directory.");
+		exit(1);
+	}
+	char** strArray = malloc(arrayY * sizeof(char*));
+	for (int i = 0 ; i < arrayY; ++i)
+		strArray[i] = malloc(arrayX * sizeof(char));
+	int i = 0;
+	while ((ent = readdir (dir)) != NULL)
+	{
+		if (strlen(ent->d_name) > 2)
+		{
+			//printf("%s -> %d\n", ent->d_name, strArray[i]);
+			sprintf(strArray[i++], "%s", ent->d_name);
+		}
+	}
+	*outY = i;
+	closedir(dir);
+	//printf("Done\n\n");
+	return strArray;
+}
