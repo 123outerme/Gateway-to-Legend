@@ -26,6 +26,7 @@
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
+char* mapSelectLoop(char** listOfFilenames, int maxStrNum);
 
 bool debug;
 bool doDebugDraw;
@@ -60,46 +61,14 @@ int main(int argc, char* argv[])
     SDL_RenderClear(mainRenderer);
     int gameState = 0;
     bool quitGame = false;
-    //case 0 stuff
-    bool quitMenu = false;
-    char junkArray[MAX_CHAR_IN_FILEPATH];
-    SDL_Keycode menuKeycode;
-    int menuPage = 0;
-    int selectItem = 0;
-    //end case 0 stuff
     while(!quitGame)
     {
         int choice = 0;
         switch(gameState)
         {
         case 0:  //main menu
-            while(!quitMenu)
-            {
-                SDL_RenderClear(mainRenderer);
-                for(int i = 0; i < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
-                    drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                                  0, &junkArray), TILE_SIZE, (i + 2) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
-                menuKeycode = getKey();
-                if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
-                {
-                    menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
-                    selectItem = 0;
-                }
-
-                if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
-                    selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
-
-                drawTile(17, 0, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
-                SDL_RenderPresent(mainRenderer);
-
-                if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
-                {
-                    selectItem = menuPage * 5 + selectItem;
-                    quitMenu = true;
-                }
-            }
+            strcpy(mainFilePath, mapSelectLoop(listOfFilenames, maxStrNum));
             //loading map pack stuff
-            strncat(strcpy(mainFilePath, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
             char mapFilePath[MAX_CHAR_IN_FILEPATH - 9];
             char tileFilePath[MAX_CHAR_IN_FILEPATH - 9];
             char saveFilePath[MAX_CHAR_IN_FILEPATH - 9];
@@ -147,6 +116,43 @@ int main(int argc, char* argv[])
     printf("Quit successfully\n");
     SDL_DestroyTexture(eventTexture);
     closeSDL();
+}
+
+char* mapSelectLoop(char** listOfFilenames, int maxStrNum)
+{
+    bool quitMenu = false;
+    char junkArray[MAX_CHAR_IN_FILEPATH];
+    SDL_Keycode menuKeycode;
+    int menuPage = 0, selectItem = 0;
+    char* mapPackName = malloc(MAX_CHAR_IN_FILEPATH * sizeof(char*));
+    while(!quitMenu)
+    {
+        SDL_RenderClear(mainRenderer);
+        for(int i = 0; i < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
+            drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
+                          0, &junkArray), TILE_SIZE, (i + 2) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+        menuKeycode = getKey();
+        if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
+        {
+            menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
+            selectItem = 0;
+        }
+
+        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE) - 1))
+            selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
+
+        drawTile(17, 0, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+
+        if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
+        {
+            selectItem = menuPage * 5 + selectItem;
+            quitMenu = true;
+        }
+    }
+    //loading map pack stuff
+    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
+    return mapPackName;
 }
 
 int mainLoop(player* playerSprite)
