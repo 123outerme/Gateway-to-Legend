@@ -98,6 +98,7 @@ int main(int argc, char* argv[])
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     mainLoop(&creator);
+    closeSDL();
     char saveCheck[2];
     printf("Save? (y/n) ");
 	scanf("%s", saveCheck);
@@ -105,7 +106,6 @@ int main(int argc, char* argv[])
         writeTileData();
     //waitForKey();
     SDL_DestroyTexture(eventTexture);
-    closeSDL();
     //SDL_Delay(1000);
     return 0;
 }
@@ -160,13 +160,8 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
 void mainLoop(player* playerSprite)
 {
     bool quit = false, editingTiles = true;
+    int frame = 0;
     SDL_Event e;
-    SDL_Keycode keycode;
-    SDL_RenderClear(mainRenderer);
-    drawTilemap(0, 0, 20, 15, false);
-    drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
-    SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
-    SDL_RenderPresent(mainRenderer);
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -183,36 +178,44 @@ void mainLoop(player* playerSprite)
             drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
-        keycode = getKey();
-        if (!playerSprite->movementLocked && (keycode == SDLK_w || keycode == SDLK_s || keycode == SDLK_a || keycode == SDLK_d))
+        const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+        getKey();  //editor freezes without this
+        if (++frame > 0)
         {
-                if (playerSprite->spr.y > 0 && keycode == SDLK_w)
-                    playerSprite->spr.y -= PIXELS_MOVED;
-                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && keycode == SDLK_s)
-                    playerSprite->spr.y += PIXELS_MOVED;
-                if (playerSprite->spr.x > 0 && keycode == SDLK_a)
-                    playerSprite->spr.x -= PIXELS_MOVED;
-                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keycode == SDLK_d)
-                    playerSprite->spr.x += PIXELS_MOVED;
-        }
-        if (keycode == SDLK_ESCAPE || keycode == -1)
-            quit = true;
-        if (keycode == SDLK_q && playerSprite->spr.tileIndex > 0)
-            playerSprite->spr.tileIndex--;
-        if (keycode == SDLK_e && playerSprite->spr.tileIndex < 127)
-            playerSprite->spr.tileIndex++;
-        if (keycode == SDLK_SPACE && editingTiles)
-            tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-        if (keycode == SDLK_SPACE && !editingTiles)
-            eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-        if (keycode == SDLK_LSHIFT)
-        {
-            editingTiles = !editingTiles;
-            if (!editingTiles)
-                playerSprite->spr.tileIndex = 1;
+            if (playerSprite->spr.y > 0 && keyStates[SDL_SCANCODE_W])
+                playerSprite->spr.y -= PIXELS_MOVED;
+            if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && keyStates[SDL_SCANCODE_S])
+                playerSprite->spr.y += PIXELS_MOVED;
+            if (playerSprite->spr.x > 0 && keyStates[SDL_SCANCODE_A])
+                playerSprite->spr.x -= PIXELS_MOVED;
+            if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keyStates[SDL_SCANCODE_D])
+                playerSprite->spr.x += PIXELS_MOVED;
+            if (keyStates[SDL_SCANCODE_Q] && playerSprite->spr.tileIndex > 0)
+                playerSprite->spr.tileIndex--;
+            if (keyStates[SDL_SCANCODE_E] && playerSprite->spr.tileIndex < 127)
+                playerSprite->spr.tileIndex++;
+            if (keyStates[SDL_SCANCODE_SPACE] && editingTiles)
+                tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+            if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
+                eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+            if (keyStates[SDL_SCANCODE_LSHIFT])
+            {
+                editingTiles = !editingTiles;
+                if (!editingTiles)
+                    playerSprite->spr.tileIndex = 1;
+                else
+                    playerSprite->spr.tileIndex = 0;
+            }
+            if (keyStates[SDL_SCANCODE_W] || keyStates[SDL_SCANCODE_S] || keyStates[SDL_SCANCODE_A] || keyStates[SDL_SCANCODE_D])
+                frame = -6;
             else
-                playerSprite->spr.tileIndex = 0;
+                frame = -12;
         }
+
+        if (keyStates[SDL_SCANCODE_ESCAPE] || keyStates[SDL_SCANCODE_RETURN])
+                quit = true;
+
+        SDL_Delay(15);  //frame cap sorta
     }
 }
 

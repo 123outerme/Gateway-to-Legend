@@ -188,7 +188,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 24 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame++ % 24 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -227,7 +227,6 @@ int mainLoop(player* playerSprite)
             quit = true;
             exitCode = 1;
         }
-        frame++;
         if (time(NULL) > startTime)
             now = time(NULL);
         if (time(NULL) - 1 > lastTime)
