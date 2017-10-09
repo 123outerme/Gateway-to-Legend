@@ -31,10 +31,13 @@ void initConfig(char* filePath);  //resets config data
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 void saveConfig(char* filePath);  //saves config data to the file
 char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
+
+void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
@@ -46,5 +49,6 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_MENU CUSTOM_SCANCODES[5]
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+SDL_Texture* tilesTexture;
 
 #endif // SDLSEEKERS_H_INCLUDED

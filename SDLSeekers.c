@@ -111,12 +111,12 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
     }
 }
 
-int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
 {
     if (curSelect < 1)
         curSelect = 1;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, TILE_ID_CURSOR, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, (entityType) type_na);
     SDL_Event e;
     bool quit = false;
     int selection = -1;
@@ -197,10 +197,29 @@ int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt
                 }*/
             }
         }
-        drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
     return selection;
+}
+
+SDL_Keycode getKey()
+{
+    SDL_Event e;
+    bool quit = false;
+    SDL_Keycode keycode = SDLK_ESCAPE;
+    while(SDL_PollEvent(&e) != 0)
+    {
+        if(e.type == SDL_QUIT)
+            quit = true;
+        else
+            if(e.type == SDL_KEYDOWN)
+            {
+                keycode = e.key.keysym.sym;
+                quit = true;
+            }
+    }
+    return keycode;
 }
 
 void saveConfig(char* filePath)
@@ -254,4 +273,18 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 		*strNum = maxStrings;
 	//printf("Done\n\n");
 	return strArray;
+}
+
+void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen)
+{
+    for(int dy = startY; dy < endY; dy++)
+        for(int dx = startX; dx < endX; dx++)
+            drawATile(texture, eventLayerFlag ? eventmap[dy][dx] : tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
+}
+
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+{
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }

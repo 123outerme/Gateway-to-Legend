@@ -1,4 +1,4 @@
 Main Adventure
 maps/MainMaps.txt
 tileset/SeekersTile48.png
-saves/MainGame.txt
+saves/MainAdventure.txt
