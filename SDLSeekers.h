@@ -34,7 +34,7 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
 int aMenu(char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 void saveConfig(char* filePath);  //saves config data to the file
 char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
-char** getListOfFiles(const size_t arrayY, const size_t arrayX, const char* directory, int* outY);  //gets the list of files in a directory
+char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];

@@ -14,7 +14,10 @@
 #define SIZE_OF_COLLISION_ARRAY 8
 
 #define CONFIG_FILEPATH "SDLSeekers.cfg"
-#define GLOBALSAVE_FILEPATH "SDLSeekers.txt"
+#define GLOBALSAVE_FILEPATH "saves/SDLSeekers.txt"
+#define MAP_PACKS_SUBFOLDER "map-packs/"
+#define MAX_LIST_OF_MAPS 30
+#define MAX_CHAR_IN_FILEPATH 128
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
@@ -26,9 +29,18 @@ SDL_Texture* eventTexture;
 
 int main(int argc, char* argv[])
 {
+    //loading in map pack header file
+    char loadFile[MAX_CHAR_IN_FILEPATH];
+    char** listOfFilenames;
+    int maxStrNum = 0;
+    listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_CHAR_IN_FILEPATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
+    strcpy(loadFile, MAP_PACKS_SUBFOLDER);
+    strncat(loadFile, listOfFilenames[0], MAX_CHAR_IN_FILEPATH - 9);
+    printf("%s\n", loadFile);
+    //done loading map pack header file
     debug = true;
     //loading map pack stuff
-    char* mainFilePath = "map-packs/main.txt";
+    char* mainFilePath = loadFile;
     char* dummy = "";
     char mapFilePath[100];
     char tileFilePath[100];
@@ -77,7 +89,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case 2:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, 2, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
