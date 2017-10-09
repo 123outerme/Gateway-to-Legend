@@ -20,6 +20,8 @@
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH 128
 
+#define MAX_MAPPACKS_PER_PAGE 11
+
 #define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int mainLoop(player* playerSprite);
@@ -74,17 +76,17 @@ int main(int argc, char* argv[])
             while(!quitMenu)
             {
                 SDL_RenderClear(mainRenderer);
-                for(int i = 0; i < (maxStrNum - (menuPage * 5)) % 5; i++)
-                    drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + menuPage]),  /*concatting the path and one of the filenames together into one string*/
+                for(int i = 0; i < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
+                    drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
                                   0, &junkArray), TILE_SIZE, (i + 2) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
                 menuKeycode = getKey();
-                if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum % 5))
+                if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
                 {
                     menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
                     selectItem = 0;
                 }
 
-                if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - (menuPage * 5)) % 5 - 1))
+                if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
                     selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
                 drawTile(17, 0, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
