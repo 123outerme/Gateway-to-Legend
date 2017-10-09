@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
 	if (saveCheck[0] == 'y')
         writeTileData();
     //waitForKey();
+    SDL_DestroyTexture(eventTexture);
     closeSDL();
     //SDL_Delay(1000);
     return 0;

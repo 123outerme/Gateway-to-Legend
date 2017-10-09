@@ -108,6 +108,7 @@ int main(int argc, char* argv[])
         }
     }
     printf("Quit successfully\n");
+    SDL_DestroyTexture(eventTexture);
     closeSDL();
 }
 
