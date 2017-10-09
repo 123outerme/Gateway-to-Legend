@@ -14,6 +14,7 @@
 #define SIZE_OF_COLLISION_ARRAY 8
 
 #define CONFIG_FILEPATH "SDLSeekers.cfg"
+#define GLOBALTILES_FILEPATH "tileset/SeekersTile48.png"
 #define GLOBALSAVE_FILEPATH "saves/SDLSeekers.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
@@ -21,39 +22,40 @@
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
-void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
+void drawATilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool updateScreen);
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 
 bool debug;
 bool doDebugDraw;
+SDL_Texture* tilesTexture;
 SDL_Texture* eventTexture;
 
 int main(int argc, char* argv[])
 {
+    debug = true;
+    {
+        int initCode = initSDL(GLOBALTILES_FILEPATH);
+        if (initCode != 0)
+            return initCode;
+    }
     //loading in map pack header file
-    char loadFile[MAX_CHAR_IN_FILEPATH];
+    char mainFilePath[MAX_CHAR_IN_FILEPATH];
     char** listOfFilenames;
     int maxStrNum = 0;
     listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_CHAR_IN_FILEPATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
-    strcpy(loadFile, MAP_PACKS_SUBFOLDER);
-    strncat(loadFile, listOfFilenames[0], MAX_CHAR_IN_FILEPATH - 9);
-    printf("%s\n", loadFile);
+    strcpy(mainFilePath, MAP_PACKS_SUBFOLDER);
+    strncat(mainFilePath, listOfFilenames[0], MAX_CHAR_IN_FILEPATH - 9);
+    //printf("%s\n", loadFile);
     //done loading map pack header file
-    debug = true;
     //loading map pack stuff
-    char* mainFilePath = loadFile;
     char* dummy = "";
     char mapFilePath[100];
     char tileFilePath[100];
-    char* saveFilePath[100];
+    char saveFilePath[100];
     uniqueReadLine(&mapFilePath, 100, mainFilePath, 1);
     printf("%s\n", mapFilePath);
     uniqueReadLine(&tileFilePath, 100, mainFilePath, 2);
     printf("%s\n", tileFilePath);
-    {
-        int initCode = initSDL(tileFilePath);
-        if (initCode != 0)
-            return initCode;
-    }
     uniqueReadLine(&saveFilePath, 100, mainFilePath, 3);
     if (checkFile(saveFilePath, 0))
         /*load save file*/;
@@ -71,16 +73,23 @@ int main(int argc, char* argv[])
         loadIMG("tileset/eventTile48.png", &eventTexture);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    int gameState = 1;
+    int gameState = 0;
     bool quitGame = false;
+    char junkArray[MAX_CHAR_IN_FILEPATH];
     while(!quitGame)
     {
         int choice = 0;
         switch(gameState)
         {
         case 0:  //main menu
+            for(int i = 0; i < maxStrNum; i++)
+                drawText(readLine(strcat(strcpy(junkArray, "map-packs/"), listOfFilenames[i]),  /*concatting "map-packs/" and a filename together into one var*/
+                                  0, &junkArray), 0, (i + 2) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+            SDL_RenderPresent(mainRenderer);
+            waitForKey();
+            gameState = 1;
             break;
-        case 1:  //map menu
+        case 1:  //map-pack menu
             initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
             choice = aMenu("Main Menu", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
@@ -128,7 +137,7 @@ int mainLoop(player* playerSprite)
         SDL_RenderClear(mainRenderer);
         drawTilemap(0, 0, 20, 15, false);
         if (doDebugDraw)
-            drawEventmap(0, 0, 20, 15, false);
+            drawATilemap(eventTexture, 0, 0, 20, 15, false);
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -241,18 +250,16 @@ bool checkCollision(player* player, int moveX, int moveY)
     return false;
 }
 
-void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
+void drawATilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawEventTile(eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(texture, eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
 
-void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
-    //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopyEx(mainRenderer, eventTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
-    //SDL_RenderPresent(mainRenderer);
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }

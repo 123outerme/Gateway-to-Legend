@@ -221,26 +221,25 @@ char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int
     char* dummy = "";
     readLine(filePath, lineNum, &dummy);
     strcpy(output, dummy);
-    dummy = removeChar(output, '\n', outputLength, false);
+    dummy = removeChar(output, '\n', outputLength, false);  //It's necessary to remove the newline char
     strcpy(output, dummy);
     return *output;
 }
 
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
 {
-	DIR* dir;
-	struct dirent* ent;
-	dir = opendir(directory);
+	DIR* dir = opendir(directory);
 	if (dir == NULL)
 	{
 		perror("Can't open this directory.");
 		exit(1);
 	}
+	struct dirent* ent;
 	char** strArray = malloc(maxStrings * sizeof(char*));
 	for (int i =0 ; i < maxStrings; ++i)
 		strArray[i] = malloc(maxLength * sizeof(char));
 	int i = 0;
-	while ((ent = readdir (dir)) != NULL)
+	while ((ent = readdir(dir)) != NULL)
 	{
 		if (strlen(ent->d_name) > 2)
 		{
