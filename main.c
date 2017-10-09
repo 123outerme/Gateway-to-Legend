@@ -26,11 +26,11 @@
 
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
-char* mapSelectLoop(char** listOfFilenames, int maxStrNum);
+char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
 
 bool debug;
 bool doDebugDraw;
-SDL_Texture* eventTexture;
+SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove this
 
 int main(int argc, char* argv[])
 {
@@ -66,8 +66,13 @@ int main(int argc, char* argv[])
         int choice = 0;
         switch(gameState)
         {
-        case 0:  //main menu
-            strcpy(mainFilePath, mapSelectLoop(listOfFilenames, maxStrNum));
+        case 0:
+            gameState = 1;
+            break;
+        case 1:  //main menu
+            strcpy(mainFilePath, mapSelectLoop(listOfFilenames, maxStrNum, &quitGame));
+            if (quitGame)
+                break;
             //loading map pack stuff
             char mapFilePath[MAX_CHAR_IN_FILEPATH - 9];
             char tileFilePath[MAX_CHAR_IN_FILEPATH - 9];
@@ -84,32 +89,27 @@ int main(int argc, char* argv[])
             printf("%s\n", saveFilePath);
             loadIMG(tileFilePath, &tilesTexture);
             //done loading map-pack specific stuff
-            gameState = 1;
+            gameState = 2;
             break;
-        case 1:  //map-pack menu
+        case 2:  //map-pack menu
             initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
             choice = aMenu(tilesTexture, 17, "Main Menu", "Go", "Quit", " ", " ", " " , 2, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
-                gameState = 2;
-            else
-                quitGame = true;
+                gameState = 3;
+            if (choice == 2)
+                gameState = 0;
             break;
-        case 2:  //main game loop
+        case 3:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
-                gameState = 3;
+                gameState = 4;
             break;
-        case 3:  //overworld menu
+        case 4:  //overworld menu
             choice = aMenu(tilesTexture, 17, "Overworld Menu", "Back", "Menu", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-            if (choice == 1)
-                gameState = 2;
-            if (choice == 2)
-                gameState = 1;
-            if (choice == 3)
-                quitGame = true;
+            gameState = 4 - choice - (choice == 3);
             break;
         }
     }
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
     closeSDL();
 }
 
-char* mapSelectLoop(char** listOfFilenames, int maxStrNum)
+char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
 {
     bool quitMenu = false;
     char junkArray[MAX_CHAR_IN_FILEPATH];
@@ -128,9 +128,10 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum)
     while(!quitMenu)
     {
         SDL_RenderClear(mainRenderer);
-        for(int i = 0; i < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
+        for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, &junkArray), TILE_SIZE, (i + 2) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+                          0, &junkArray), TILE_SIZE, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+        drawText("Back", TILE_SIZE, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
@@ -138,7 +139,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum)
             selectItem = 0;
         }
 
-        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - (menuPage * MAX_MAPPACKS_PER_PAGE) > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE) - 1))
+        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
         drawTile(17, 0, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
@@ -146,8 +147,11 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum)
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
         {
-            selectItem = menuPage * 5 + selectItem;
-            quitMenu = true;
+            if (selectItem != 0)
+                selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
+            else
+                *backFlag = true;
+                quitMenu = true;
         }
     }
     //loading map pack stuff

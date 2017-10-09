@@ -37,6 +37,7 @@ typedef struct {
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x);
 void mainLoop(player* playerSprite);
+SDL_Keycode getKey();
 void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
@@ -182,7 +183,7 @@ void mainLoop(player* playerSprite)
             drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
-        keycode = waitForKey();
+        keycode = getKey();
         if (!playerSprite->movementLocked && (keycode == SDLK_w || keycode == SDLK_s || keycode == SDLK_a || keycode == SDLK_d))
         {
                 if (playerSprite->spr.y > 0 && keycode == SDLK_w)
@@ -194,7 +195,7 @@ void mainLoop(player* playerSprite)
                 if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keycode == SDLK_d)
                     playerSprite->spr.x += PIXELS_MOVED;
         }
-        if (keycode == SDLK_ESCAPE)
+        if (keycode == SDLK_ESCAPE || keycode == -1)
             quit = true;
         if (keycode == SDLK_q && playerSprite->spr.tileIndex > 0)
             playerSprite->spr.tileIndex--;
@@ -213,6 +214,21 @@ void mainLoop(player* playerSprite)
                 playerSprite->spr.tileIndex = 0;
         }
     }
+}
+
+SDL_Keycode getKey()
+{
+    SDL_Event e;
+    SDL_Keycode keycode = 0;
+    while(SDL_PollEvent(&e) != 0)
+    {
+        if(e.type == SDL_QUIT)
+            keycode = -1;
+        else
+            if(e.type == SDL_KEYDOWN)
+                keycode = e.key.keysym.sym;
+    }
+    return keycode;
 }
 
 void initPlayer(player* player, int x, int y, int size, int tileIndex)
