@@ -2,3 +2,5 @@ Main Adventure
 maps/MainMaps.txt
 tileset/SeekersTile48.png
 saves/MainAdventure.txt
+16
+17

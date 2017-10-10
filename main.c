@@ -61,12 +61,12 @@ int main(int argc, char* argv[])
     else
         initConfig(CONFIG_FILEPATH);
     player person;
-    initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_ID_PLAYER);
     if (debug)
         loadIMG("tileset/eventTile48.png", &eventTexture);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    int gameState = 0;
+    char* buffer = "";
+    int gameState = 0, playerIcon = 0, cursorIcon = 0;
     bool quitGame = false;
     while(!quitGame)
     {
@@ -107,7 +107,10 @@ int main(int argc, char* argv[])
             else
                 createFile(saveFilePath);
             printf("%s\n", saveFilePath);
+            playerIcon = strtol(readLine(mainFilePath, 4, &buffer), NULL, 10);
+            cursorIcon = strtol(readLine(mainFilePath, 5, &buffer), NULL, 10);
             loadIMG(tileFilePath, &tilesTexture);
+            initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, playerIcon);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
             break;
@@ -120,7 +123,7 @@ int main(int argc, char* argv[])
                 gameState = OVERWORLDMENU_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            choice = aMenu(tilesTexture, 17, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesTexture, cursorIcon, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
@@ -146,7 +149,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
         SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(mainRenderer);
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
                           0, &junkArray), TILE_SIZE, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);

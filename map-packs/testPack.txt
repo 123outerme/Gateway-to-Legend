@@ -2,3 +2,5 @@ Test Pack
 maps/MainMaps.txt
 tileset/SeekersTile48.png
 saves/MainGame.txt
+17
+16
