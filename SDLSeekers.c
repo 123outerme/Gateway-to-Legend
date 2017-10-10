@@ -75,13 +75,12 @@ void loadConfig(char* filePath)
     }
 }
 
-void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
 {
     int numsC = 0, numsR = 0,  i, num;
-    int sameArray[y][x], eventArray[y][x];
     bool writeToTilemap = false;
     char thisLine[1200], substring[2];
-    strcpy(thisLine, readLine(filePath, lineNum, thisLine));
+    strcpy(thisLine, readLine(filePath, lineNum, &thisLine));
     //printf("%s\n", thisLine);
     for(i = 0; i < 1200; i += 2)
     {
@@ -89,9 +88,9 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
         //*(array + numsR++ + numsC * x)
         num = (int)strtol(substring, NULL, 16);
         if (writeToTilemap)
-            sameArray[numsC][numsR++] = num;
+            tilemapData[numsC][numsR++] = num;
         else
-            eventArray[numsC][numsR] = num;
+            eventmapData[numsC][numsR] = num;
         //printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
         writeToTilemap = !writeToTilemap;
         if (numsR > x - 1)
@@ -101,14 +100,14 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
         }
         //printf("%d\n", num);
     }
-    for(int dy = 0; dy < y; dy++)
+    /*for(int dy = 0; dy < y; dy++)
     {
         for(int dx = 0; dx < x; dx++)
         {
             *(tilemapData + dx + dy * x) = sameArray[dy][dx];
             *(eventmapData + dx + dy * x) = eventArray[dy][dx];
         }
-    }
+    }*/
 }
 
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
@@ -206,17 +205,15 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 SDL_Keycode getKey()
 {
     SDL_Event e;
-    bool quit = false;
     SDL_Keycode keycode = SDLK_ESCAPE;
     while(SDL_PollEvent(&e) != 0)
     {
         if(e.type == SDL_QUIT)
-            quit = true;
+            keycode = -1;
         else
             if(e.type == SDL_KEYDOWN)
             {
                 keycode = e.key.keysym.sym;
-                quit = true;
             }
     }
     return keycode;
@@ -235,13 +232,13 @@ void saveConfig(char* filePath)
     //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
 }
 
-char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum)
+char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
 {
     char* dummy = "";
     readLine(filePath, lineNum, &dummy);
-    strcpy(output, dummy);
-    dummy = removeChar(output, '\n', outputLength, false);  //It's necessary to remove the newline char
-    strcpy(output, dummy);
+    strcpy((char*) output, dummy);
+    dummy = removeChar((char*) output, '\n', outputLength, false);
+    strcpy((char*) output, dummy);
     return *output;
 }
 

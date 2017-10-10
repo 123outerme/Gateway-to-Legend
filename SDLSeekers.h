@@ -30,11 +30,11 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex);  //inits
 void initConfig(char* filePath);  //resets config data
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void loadConfig(char* filePath);  //loads config data into the public variables
-void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
+void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 SDL_Keycode getKey();  //like waitForKey but without waiting.
 void saveConfig(char* filePath);  //saves config data to the file
-char* uniqueReadLine(char* output[], int outputLength, const char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
+char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);

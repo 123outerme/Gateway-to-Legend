@@ -35,10 +35,11 @@ typedef struct {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
-void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x);
+void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainLoop(player* playerSprite);
 SDL_Keycode getKey();
 void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
+void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
 
@@ -65,8 +66,8 @@ int main(int argc, char* argv[])
             printf("Invalid file.\n");
             return 1;
         }
-        uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
-        uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+        uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
+        uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
         printf("Load this line: ");
         int loadLine = 0;
         scanf("%d", &loadLine);
@@ -80,8 +81,8 @@ int main(int argc, char* argv[])
     else
     {
         strcpy(mainFilePath, "map-packs/main.txt");
-        uniqueReadLine(&mapFilePath, 200, mainFilePath, 1);
-        uniqueReadLine(&tileFilePath, 200, mainFilePath, 2);
+        uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
+        uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
         for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
         {
             for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
@@ -115,30 +116,29 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 {
     char* dummy = "";
     readLine(filePath, lineNum, &dummy);
-    strcpy(output, dummy);
-    dummy = removeChar(output, '\n', outputLength, false);
-    strcpy(output, dummy);
+    strcpy((char*) output, dummy);
+    dummy = removeChar((char*) output, '\n', outputLength, false);
+    strcpy((char*) output, dummy);
     return *output;
 }
 
-void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const int lineNum, const int y, const int x)
+void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
 {
     int numsC = 0, numsR = 0,  i, num;
-    int sameArray[y][x], eventArray[y][x];
     bool writeToTilemap = false;
-    char thisLine[1201], substring[2];
-    strcpy(thisLine, readLine(filePath, lineNum, thisLine));
-    printf("%s\n", thisLine);
+    char thisLine[1200], substring[2];
+    strcpy(thisLine, readLine(filePath, lineNum, (char**) &thisLine));
+    //printf("%s\n", thisLine);
     for(i = 0; i < 1200; i += 2)
     {
-        sprintf(substring, "%.*s", 2, thisLine + i);
+        sprintf(substring, "%.2s", thisLine + i);
         //*(array + numsR++ + numsC * x)
         num = (int)strtol(substring, NULL, 16);
         if (writeToTilemap)
-            sameArray[numsC][numsR++] = num;
+            tilemapData[numsC][numsR++] = num;
         else
-            eventArray[numsC][numsR] = num;
-        printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
+            eventmapData[numsC][numsR] = num;
+        //printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
         writeToTilemap = !writeToTilemap;
         if (numsR > x - 1)
         {
@@ -147,21 +147,20 @@ void loadMapFile(char* filePath, int* tilemapData[], int* eventmapData[], const 
         }
         //printf("%d\n", num);
     }
-    for(int dy = 0; dy < y; dy++)
+    /*for(int dy = 0; dy < y; dy++)
     {
         for(int dx = 0; dx < x; dx++)
         {
             *(tilemapData + dx + dy * x) = sameArray[dy][dx];
             *(eventmapData + dx + dy * x) = eventArray[dy][dx];
         }
-    }
+    }*/
 }
 
 void mainLoop(player* playerSprite)
 {
     bool quit = false, editingTiles = true;
     int frame = 0;
-    SDL_Event e;
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);

@@ -97,11 +97,11 @@ int main(int argc, char* argv[])
             char mapFilePath[MAX_CHAR_IN_FILEPATH - 9];
             char tileFilePath[MAX_CHAR_IN_FILEPATH - 9];
             char saveFilePath[MAX_CHAR_IN_FILEPATH - 9];
-            uniqueReadLine(&mapFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 1);
+            uniqueReadLine((char**) &mapFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 1);
             printf("%s\n", mapFilePath);
-            uniqueReadLine(&tileFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 2);
+            uniqueReadLine((char**) &tileFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 2);
             printf("%s\n", tileFilePath);
-            uniqueReadLine(&saveFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 3);
+            uniqueReadLine((char**) &saveFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 3);
             if (checkFile(saveFilePath, 0))
                 /*load local save file*/;
             else
@@ -151,8 +151,8 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
-            drawText(readLine(strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, &junkArray), TILE_SIZE, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+            drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
+                          0, (char**) &junkArray), TILE_SIZE, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
         drawText("Back", TILE_SIZE, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
