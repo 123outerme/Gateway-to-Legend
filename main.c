@@ -237,7 +237,7 @@ int mainLoop(player* playerSprite)
                     }
                 }*/
                 exitCode = checkCollision(playerSprite, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
-                if (exitCode)
+                if (exitCode == 1)
                 {
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
@@ -274,17 +274,10 @@ bool checkCollision(player* player, int moveX, int moveY)
 {
     if (moveX || moveY)
     {
-        int collideID = 0;
-        int thisX = player->spr.x;
-        int thisY = player->spr.y;
-        if (1 == eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE])
-            collideID += 1;
-        if (1 == eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)])
-            collideID += 2;
-        if (1 == eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE])
-            collideID += 4;
-        if (1 == eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)])
-            collideID += 8;
+        int collideID = 0, retCode = 0, thisX = player->spr.x, thisY = player->spr.y;
+        int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
+        if (1 == topLeft || 1 == topRight || 1 == bottomLeft || 1 == bottomRight)
+            collideID = topLeft + 2 * topRight + 4 * bottomLeft + 8 * bottomRight;
         if (((collideID == 1 || collideID == 5) && moveX < 0 && moveY > 0) || ((collideID == 2 || collideID == 10) && moveX > 0 && moveY > 0) || ((collideID == 4 || collideID == 5) && moveX < 0 && moveY < 0) || ((collideID == 8 || collideID == 10) && moveX > 0 && moveY < 0))
         {  //manually adding y sliding
             collideID = 0;
@@ -305,7 +298,9 @@ bool checkCollision(player* player, int moveX, int moveY)
             drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             SDL_RenderPresent(mainRenderer);
         }
-        return collideID;
+        if (collideID > 0)
+            retCode = 1;
+        return retCode;
     }
     return false;
 }
