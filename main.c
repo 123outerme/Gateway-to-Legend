@@ -10,8 +10,6 @@
 
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
-#define ARRAY_OF_COLLIDED_TILES {8,9,10,11,12,13,14,15}
-#define SIZE_OF_COLLISION_ARRAY 8
 
 #define CONFIG_FILEPATH "SDLSeekers.cfg"
 #define GLOBALTILES_FILEPATH "tileset/main.png"
@@ -37,6 +35,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
 bool debug;
 bool doDebugDraw;
 SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove this
+int playerIcon, cursorIcon;
 
 int main(int argc, char* argv[])
 {
@@ -65,8 +64,8 @@ int main(int argc, char* argv[])
         loadIMG("tileset/eventTile48.png", &eventTexture);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    char* buffer = "";
-    int gameState = 0, playerIcon = 0, cursorIcon = 0;
+    int gameState = 0;
+    playerIcon = 0, cursorIcon = 0;
     bool quitGame = false;
     while(!quitGame)
     {
