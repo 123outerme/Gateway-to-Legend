@@ -93,6 +93,7 @@ int main(int argc, char* argv[])
         }
     }
     initSDL(tileFilePath);
+    printf("Not this one\n");
     loadIMG("tileset/eventTile48.png", &eventTexture);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);

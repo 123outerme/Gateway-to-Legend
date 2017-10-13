@@ -1,4 +1,4 @@
-@ROBOCOPY %cd% "C:\Program Files\Git\code\SDL-Seekers" *.c *.h *.txt *.ico *.bin *.rc *.bat SeekersTile48.png /MIR /XD .git
+@ROBOCOPY %cd% "C:\Program Files\Git\code\SDL-Seekers" *.c *.h *.txt *.ico *.bin *.rc *.bat *.png /MIR /XD .git
 @cd "C:\Program Files\Git\code\SDL-Seekers"
 @set commitMessage=""
 @IF [%1]==[] (
