@@ -1,9 +1,16 @@
 #include "outermeSDL.h"
 
 #define MAX_MAP_PACK_DATA 5
+#define PIXELS_MOVED 48
 
+#define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard."}
+
+int* mainLoop(sprite* playerSprite);
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void strPrepend(char* input, const char* prepend);
+SDL_Keycode getKey();
+
+const int maxArraySize = 10;
 
 int main(int argc, char* argv[])
 {
@@ -80,12 +87,69 @@ int main(int argc, char* argv[])
         }
     }
     initSDL(mapPackData[3]);
-    SDL_RenderClear(mainRenderer);
-    SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
-    drawText("Choose the main character tile", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-    //SDL_RenderPresent(mainRenderer);
-    waitForKey();
+    sprite chooser;
+    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
+    int* numbers = mainLoop(&chooser);
+    createFile(mapPackData[0]);
+    for(int i = 1; i < 5; i++)
+    {
+        appendLine(mapPackData[0], mapPackData[i]);
+        printf("%s\n", mapPackData[i]);
+    }
+    char* whoCares = "";
+    for(int i = 0; i < maxArraySize; i++)
+    {
+        appendLine(mapPackData[0], intToString(numbers[i], whoCares));
+        printf("%d\n", numbers[i]);
+    }
+    closeSDL();
     return 0;
+}
+
+int* mainLoop(sprite* playerSprite)
+{
+    int* numArray = (int*) calloc(maxArraySize, sizeof(int));
+    int numArrayTracker = 0, frame = 0;
+    char* text[] = PICK_MESSAGES_ARRAY;
+    bool quit = false;
+    while((numArrayTracker < maxArraySize) && !quit)
+    {
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->x, .y= playerSprite->y, .w = playerSprite->w, .h = playerSprite->h}));
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0x00, 0x0, 0x00}, true);
+        const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+        getKey();  //editor freezes without this
+        if (++frame > 0)
+        {
+            if (playerSprite->y > TILE_SIZE && keyStates[SDL_SCANCODE_W])
+                playerSprite->y -= PIXELS_MOVED;
+            if (playerSprite->y < SCREEN_HEIGHT - playerSprite->h && keyStates[SDL_SCANCODE_S])
+                playerSprite->y += PIXELS_MOVED;
+            if (playerSprite->x > 0 && keyStates[SDL_SCANCODE_A])
+                playerSprite->x -= PIXELS_MOVED;
+            if (playerSprite->x < SCREEN_WIDTH - playerSprite->w && keyStates[SDL_SCANCODE_D])
+                playerSprite->x += PIXELS_MOVED;
+            if (keyStates[SDL_SCANCODE_SPACE])
+                numArray[numArrayTracker++] = 8 * (playerSprite->x / TILE_SIZE) + playerSprite->y / TILE_SIZE - 1;  //-1 because we don't start at y=0
+            if (keyStates[SDL_SCANCODE_W] || keyStates[SDL_SCANCODE_S] || keyStates[SDL_SCANCODE_A] || keyStates[SDL_SCANCODE_D])
+                frame = -6;
+            else
+                frame = -10;
+        }
+
+        if (keyStates[SDL_SCANCODE_ESCAPE] || keyStates[SDL_SCANCODE_RETURN])
+                quit = true;
+
+        SDL_Delay(15);  //frame cap sorta
+        //SDL_RenderPresent(mainRenderer);
+    }
+    for(int i = 0; i < maxArraySize; i++)
+        printf("%d\n", numArray[i]);
+    //waitForKey();
+    return numArray;
 }
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
@@ -105,4 +169,19 @@ void strPrepend(char* input, const char* prepend)
     strcat(temp, input);
     strcpy(input, temp);
     free(temp);
+}
+
+SDL_Keycode getKey()
+{
+    SDL_Event e;
+    SDL_Keycode keycode = 0;
+    while(SDL_PollEvent(&e) != 0)
+    {
+        if(e.type == SDL_QUIT)
+            keycode = -1;
+        else
+            if(e.type == SDL_KEYDOWN)
+                keycode = e.key.keysym.sym;
+    }
+    return keycode;
 }
