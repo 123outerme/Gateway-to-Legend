@@ -34,7 +34,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
 
 bool debug;
 bool doDebugDraw;
-SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove this
+SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove these
 int playerIcon, cursorIcon;
 
 int main(int argc, char* argv[])
@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
     int gameState = 0;
+    char* buffer = "";  //actually needed
     playerIcon = 0, cursorIcon = 0;
     bool quitGame = false;
     while(!quitGame)
