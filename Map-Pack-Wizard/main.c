@@ -3,14 +3,14 @@
 #define MAX_MAP_PACK_DATA 5
 #define PIXELS_MOVED 48
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard."}
+#define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard."}
 
 int* mainLoop(sprite* playerSprite);
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void strPrepend(char* input, const char* prepend);
 SDL_Keycode getKey();
 
-const int maxArraySize = 10;
+const int maxArraySize = 11;
 
 int main(int argc, char* argv[])
 {
@@ -66,12 +66,12 @@ int main(int argc, char* argv[])
             if (wizardState == 4)
                 strPrepend((char*) mapPackData[3], "tileset/");
 
-            printf("%s\n", mapPackData[wizardState - 1]);
+            //printf("%s\n", mapPackData[wizardState - 1]);
 
             if (wizardState == 5)
             {
                 strPrepend((char*) mapPackData[4], "saves/");
-                printf("%s\n", mapPackData[wizardState - 1]);
+                //printf("%s\n", mapPackData[wizardState - 1]);
                 quit = true;
             }
             else
@@ -80,6 +80,11 @@ int main(int argc, char* argv[])
         case 6:
             strcpy(mapPackData[0], getString);
             strPrepend(mapPackData[0], "map-packs/");
+            if (!checkFile(mapPackData[0], 0))
+            {
+                perror("No such map-pack");
+                return 1;
+            }
             for(int i = 1; i < MAX_MAP_PACK_DATA; i++)
                 uniqueReadLine((char**) &mapPackData[i], 128, mapPackData[0], i - 1);
             quit = true;
@@ -94,13 +99,13 @@ int main(int argc, char* argv[])
     for(int i = 1; i < 5; i++)
     {
         appendLine(mapPackData[0], mapPackData[i]);
-        printf("%s\n", mapPackData[i]);
+        //printf("%s\n", mapPackData[i]);
     }
     char* whoCares = "";
     for(int i = 0; i < maxArraySize; i++)
     {
         appendLine(mapPackData[0], intToString(numbers[i], whoCares));
-        printf("%d\n", numbers[i]);
+        //printf("%d\n", numbers[i]);
     }
     closeSDL();
     return 0;
@@ -112,7 +117,7 @@ int* mainLoop(sprite* playerSprite)
     int numArrayTracker = 0, frame = 0;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
-    while((numArrayTracker < maxArraySize) && !quit)
+    while(numArrayTracker < maxArraySize && !quit)
     {
         SDL_RenderClear(mainRenderer);
         SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
@@ -146,8 +151,8 @@ int* mainLoop(sprite* playerSprite)
         SDL_Delay(15);  //frame cap sorta
         //SDL_RenderPresent(mainRenderer);
     }
-    for(int i = 0; i < maxArraySize; i++)
-        printf("%d\n", numArray[i]);
+    /*for(int i = 0; i < maxArraySize; i++)
+        printf("%d\n", numArray[i]);*/
     //waitForKey();
     return numArray;
 }
