@@ -1,7 +1,7 @@
 #include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(const char* tilesetFilePath)
+int initSDL(char* tilesetFilePath)
 {
     int done = 0;
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -47,7 +47,7 @@ int initSDL(const char* tilesetFilePath)
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont(FONT_FILE_NAME, &mainFont, 48);
+                loadTTFont(FONT_FILE_NAME, &mainFont, 24);
                 //loadTTFont(FONT_FILE_NAME, &smallFont, 20);
                 if (!mainFont)
                 {

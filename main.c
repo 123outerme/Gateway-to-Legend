@@ -143,7 +143,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
     char junkArray[MAX_CHAR_IN_FILEPATH];
     SDL_Keycode menuKeycode;
     int menuPage = 0, selectItem = 0;
-    char* mapPackName = malloc(MAX_CHAR_IN_FILEPATH * sizeof(char*));
+    char* mapPackName = (char*) malloc(MAX_CHAR_IN_FILEPATH * sizeof(char));  //find some way to free this please!
     while(!quitMenu)
     {
         SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);

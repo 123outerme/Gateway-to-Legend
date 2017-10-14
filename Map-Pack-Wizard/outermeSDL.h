@@ -34,8 +34,8 @@
 //#define CONFIG_FILE_NAME "sorceryConfig.ini"
 #define FONT_FILE_NAME "Px437_ITT_BIOS_X.ttf"
 #define FRAMERATE 60
-#define SCREEN_WIDTH TILE_SIZE * 20
-#define SCREEN_HEIGHT TILE_SIZE * 15
+#define SCREEN_WIDTH TILE_SIZE * 16
+#define SCREEN_HEIGHT TILE_SIZE * 9
 #define TILE_SIZE 48
 #define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
@@ -62,7 +62,7 @@ typedef struct
     entityType type;
 } sprite;
 
-int initSDL(const char* tilesetFilePath);  //inits SDL and related stuff
+int initSDL(char* tilesetFilePath);  //inits SDL and related stuff
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
