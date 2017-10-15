@@ -1,5 +1,5 @@
 //#include "outermeSDL.h"
-#include "SDLSeekers.h"
+#include "SDLGateway.h"
 
 #define checkSKUp keyStates[SC_UP]
 #define checkSKDown keyStates[SC_DOWN]
@@ -11,9 +11,9 @@
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
 
-#define CONFIG_FILEPATH "SDLSeekers.cfg"
+#define CONFIG_FILEPATH "GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/main.png"
-#define GLOBALSAVE_FILEPATH "saves/SDLSeekers.txt"
+#define GLOBALSAVE_FILEPATH "saves/GatewayMain.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH 128
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case START_GAMECODE:  //start menu
-            choice = aMenu(tilesetTexture, 17, "Title", "Play", "Options", "Quit", " ", " ", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -152,8 +152,8 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, (char**) &junkArray), TILE_SIZE, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
-        drawText("Back", TILE_SIZE, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
+                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
@@ -164,7 +164,7 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
-        drawTile(17, 0, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        drawTile(17, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))

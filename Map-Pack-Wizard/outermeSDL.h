@@ -28,7 +28,7 @@
 #define bool char
 #define false 0
 #define true 1
-#define WINDOW_NAME "SDL Seekers"
+#define WINDOW_NAME "Gateway to Legend Map-Pack Wizard"
 //#define SAVE_FILE_NAME "SAVUVUTU.bin"
 //#define SAVE_FILE_LINES 54
 //#define CONFIG_FILE_NAME "sorceryConfig.ini"

@@ -95,17 +95,21 @@ int main(int argc, char* argv[])
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
     int* numbers = mainLoop(&chooser);
-    createFile(mapPackData[0]);
-    for(int i = 1; i < 5; i++)
+    if (!(numbers[0] == -1))
     {
-        appendLine(mapPackData[0], mapPackData[i]);
-        //printf("%s\n", mapPackData[i]);
-    }
-    char* whoCares = "";
-    for(int i = 0; i < maxArraySize; i++)
-    {
-        appendLine(mapPackData[0], intToString(numbers[i], whoCares));
-        //printf("%d\n", numbers[i]);
+        createFile(mapPackData[0]);
+        for(int i = 1; i < 5; i++)
+        {
+            appendLine(mapPackData[0], mapPackData[i]);
+            //printf("%s\n", mapPackData[i]);
+        }
+        char* whoCares = "";
+        for(int i = 0; i < maxArraySize; i++)
+        {
+            appendLine(mapPackData[0], intToString(numbers[i], whoCares));
+            //printf("%d\n", numbers[i]);
+        }
+        printf("Outputted to your file.\n");
     }
     closeSDL();
     return 0;
@@ -154,6 +158,8 @@ int* mainLoop(sprite* playerSprite)
     /*for(int i = 0; i < maxArraySize; i++)
         printf("%d\n", numArray[i]);*/
     //waitForKey();
+    if (numArrayTracker < maxArraySize)
+        numArray[0] = -1;
     return numArray;
 }
 
