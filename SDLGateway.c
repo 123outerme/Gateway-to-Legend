@@ -80,7 +80,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
     int numsC = 0, numsR = 0,  i, num;
     bool writeToTilemap = false;
     char thisLine[1200], substring[2];
-    strcpy(thisLine, readLine(filePath, lineNum, &thisLine));
+    strcpy(thisLine, readLine(filePath, lineNum, (char**) &thisLine));
     //printf("%s\n", thisLine);
     for(i = 0; i < 1200; i += 2)
     {

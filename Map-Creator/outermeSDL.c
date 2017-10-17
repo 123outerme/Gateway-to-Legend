@@ -1,7 +1,7 @@
 #include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(char* tilesetFilePath)
+int initSDL(char* windowName, char* tilesetFilePath)
 {
     int done = 0;
     mainWindow = NULL;
@@ -27,7 +27,7 @@ int initSDL(char* tilesetFilePath)
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
-        mainWindow = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
+        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());

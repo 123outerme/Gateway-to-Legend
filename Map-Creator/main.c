@@ -13,6 +13,8 @@
 //SDL_SCANCODE_SPACE
 //SDL_SCANCODE_ESCAPE
 
+#define WINDOW_NAME "Gateway to Legend Map Creator"
+
 #define PIXELS_MOVED 48
 
 typedef struct {
@@ -59,9 +61,9 @@ int main(int argc, char* argv[])
 	scanf("%s", loadCheck);
 	if (loadCheck[0] == 'y')
     {
-        printf("Enter a filepath: ");
+        printf("Enter the map-pack filepath: ");
         scanf("%s", mainFilePath);
-        if (!checkFile(mainFilePath, 1))
+        if (!checkFile(mainFilePath, 0))
         {
             printf("Invalid file.\n");
             return 1;
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
         scanf("%d", &loadLine);
         if (!checkFile(mapFilePath, loadLine) || loadLine < 0)
         {
-            printf("Invalid line number.");
+            printf("Invalid line number.\n");
             return 2;
         }
         loadMapFile(mapFilePath, tilemap, eventmap, loadLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
@@ -92,7 +94,7 @@ int main(int argc, char* argv[])
             }
         }
     }
-    initSDL(tileFilePath);
+    initSDL(WINDOW_NAME, tileFilePath);
     loadIMG("tileset/eventTile48.png", &eventTexture);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
@@ -110,7 +112,7 @@ int main(int argc, char* argv[])
     //SDL_Delay(1000);
     return 0;
 }
-//C:/Stephen/C/CodeBlocks/SDLSeekers/Map-Creator/map-packs/main.txt
+//C:/Stephen/C/CodeBlocks/Gateway-to-Legend/Map-Creator/map-packs/a.txt
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
 {

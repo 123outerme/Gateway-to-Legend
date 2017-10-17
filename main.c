@@ -11,6 +11,7 @@
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
 
+#define WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/main.png"
 #define GLOBALSAVE_FILEPATH "saves/GatewayMain.txt"
@@ -33,7 +34,7 @@
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
 char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
-void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender);
+void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
 
 /*bool debug;
 bool doDebugDraw;
@@ -47,7 +48,7 @@ int main(int argc, char* argv[])
 {
     //debug = true;
     {
-        int initCode = initSDL(GLOBALTILES_FILEPATH);
+        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH);
         if (initCode != 0)
             return initCode;
     }
@@ -203,7 +204,7 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
-        drawOverTilemap(tilesTexture, 0, 0, 20, 15, false);
+        drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
         /*if (doDebugDraw)
             drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
@@ -218,7 +219,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 22 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 20 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -327,12 +328,16 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY)
     }
 }
 
-void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender)
+void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender)
 {
+    int searchIndex = 0;
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            drawATile(texture, tileIDArray[eventmap[y][x] + 2 - (eventmap[y][x] >= 1)], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            searchIndex = eventmap[y][x] + 2 - (eventmap[y][x] >= 1);
+            if ((searchIndex == 6 || searchIndex == 7 || searchIndex == 8) && drawDoors[searchIndex - 6] == false)
+                searchIndex = 2;  //2 is index for invis tile
+            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);

@@ -1,4 +1,4 @@
-#include "outermeSDL.h"
+#include "outermeSDL1.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
 int initSDL(char* tilesetFilePath)

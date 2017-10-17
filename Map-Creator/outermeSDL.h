@@ -28,7 +28,6 @@
 #define bool char
 #define false 0
 #define true 1
-#define WINDOW_NAME "Gateway to Legend Map Creator"
 //#define SAVE_FILE_NAME "SAVUVUTU.bin"
 //#define SAVE_FILE_LINES 54
 //#define CONFIG_FILE_NAME "sorceryConfig.ini"
@@ -62,7 +61,7 @@ typedef struct
     entityType type;
 } sprite;
 
-int initSDL(char* tilesetFilePath);  //inits SDL and related stuff
+int initSDL(char* windowName, char* tilesetFilePath);  //inits SDL and related stuff
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
