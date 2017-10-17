@@ -26,6 +26,8 @@
 #define MAINLOOP_GAMECODE 3
 #define OVERWORLDMENU_GAMECODE 4
 
+#define MAX_TILE_ID_ARRAY 11
+
 #define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int mainLoop(player* playerSprite);
@@ -35,7 +37,10 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
 bool debug;
 bool doDebugDraw;
 SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove these
-int playerIcon, cursorIcon;
+
+int tileIDArray[MAX_TILE_ID_ARRAY];
+#define PLAYER_ID tileIDArray[0]
+#define CURSOR_ID tileIDArray[1]
 
 int main(int argc, char* argv[])
 {
@@ -66,7 +71,6 @@ int main(int argc, char* argv[])
     SDL_RenderClear(mainRenderer);
     int gameState = 0;
     char* buffer = "";  //actually needed
-    playerIcon = 0, cursorIcon = 0;
     bool quitGame = false;
     while(!quitGame)
     {
@@ -107,10 +111,12 @@ int main(int argc, char* argv[])
             else
                 createFile(saveFilePath);
             printf("%s\n", saveFilePath);
-            playerIcon = strtol(readLine(mainFilePath, 4, &buffer), NULL, 10);
-            cursorIcon = strtol(readLine(mainFilePath, 5, &buffer), NULL, 10);
+            for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
+            {
+                tileIDArray[i] = strtol(readLine(mainFilePath, 4 + i, &buffer), NULL, 10);
+            }
             loadIMG(tileFilePath, &tilesTexture);
-            initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, playerIcon);
+            initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, PLAYER_ID);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
             break;
@@ -123,7 +129,7 @@ int main(int argc, char* argv[])
                 gameState = OVERWORLDMENU_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            choice = aMenu(tilesTexture, cursorIcon, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
@@ -132,7 +138,7 @@ int main(int argc, char* argv[])
         }
     }
     printf("Quit successfully\n");
-    SDL_DestroyTexture(eventTexture);
+    SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
     closeSDL();
 }
