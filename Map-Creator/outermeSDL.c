@@ -1,7 +1,7 @@
 #include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(const char* tilesetFilePath)
+int initSDL(char* tilesetFilePath)
 {
     int done = 0;
     mainWindow = NULL;

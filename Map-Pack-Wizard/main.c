@@ -3,19 +3,20 @@
 #define MAX_MAP_PACK_DATA 5
 #define PIXELS_MOVED 48
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard."}
+#define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the gate."}
+const int maxArraySize = 14;
+
 
 int* mainLoop(sprite* playerSprite);
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void strPrepend(char* input, const char* prepend);
 SDL_Keycode getKey();
 
-const int maxArraySize = 11;
-
 int main(int argc, char* argv[])
 {
     char getString[128];
     char mapPackData[MAX_MAP_PACK_DATA][128];
+    int* numbers = (int*) calloc(maxArraySize, sizeof(int));
     int wizardState = 0;
     bool quit = false;
 	while (!quit)
@@ -41,6 +42,11 @@ int main(int argc, char* argv[])
         case 5:
             printf("Path for savefile? saves/");
             break;
+        case 7:
+            printf("Initial X spawn-coordinate? ");
+            break;
+        case 8:
+            printf("Initial Y spawn-coordinate? ");
         }
         gets(getString);
         switch(wizardState)
@@ -71,11 +77,9 @@ int main(int argc, char* argv[])
             if (wizardState == 5)
             {
                 strPrepend((char*) mapPackData[4], "saves/");
-                //printf("%s\n", mapPackData[wizardState - 1]);
-                quit = true;
+                wizardState++;  //gets us past loading
             }
-            else
-                wizardState++;
+            wizardState++;
             break;
         case 6:
             strcpy(mapPackData[0], getString);
@@ -89,12 +93,18 @@ int main(int argc, char* argv[])
                 uniqueReadLine((char**) &mapPackData[i], 128, mapPackData[0], i - 1);
             quit = true;
             break;
+        case 7:
+        case 8:
+            sscanf(getString, "%d", &(numbers[wizardState++ - 7]));
+            if (wizardState == 9)  //since we did wizardState++ before this
+                quit = true;
+            break;
         }
     }
     initSDL(mapPackData[3]);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
-    int* numbers = mainLoop(&chooser);
+    numbers = mainLoop(&chooser);
     if (!(numbers[0] == -1))
     {
         createFile(mapPackData[0]);
@@ -112,13 +122,14 @@ int main(int argc, char* argv[])
         printf("Outputted to your file.\n");
     }
     closeSDL();
+    free(numbers);
     return 0;
 }
 
 int* mainLoop(sprite* playerSprite)
 {
     int* numArray = (int*) calloc(maxArraySize, sizeof(int));
-    int numArrayTracker = 0, frame = 0;
+    int numArrayTracker = 2, frame = 0;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
     while(numArrayTracker < maxArraySize && !quit)

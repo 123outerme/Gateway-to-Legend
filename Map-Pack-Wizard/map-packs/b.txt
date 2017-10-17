@@ -1,0 +1,18 @@
+Literally Cancer
+maps/map.txt
+tileset/SeekersTile48.png
+saves/save.txt
+0
+0
+16
+17
+127
+18
+19
+20
+26
+27
+28
+21
+22
+23

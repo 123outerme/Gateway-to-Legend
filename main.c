@@ -33,10 +33,11 @@
 int mainLoop(player* playerSprite);
 bool checkCollision(player* player, int moveX, int moveY);
 char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
+void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender);
 
-bool debug;
+/*bool debug;
 bool doDebugDraw;
-SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove these
+SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove these*/
 
 int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
@@ -44,7 +45,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 
 int main(int argc, char* argv[])
 {
-    debug = true;
+    //debug = true;
     {
         int initCode = initSDL(GLOBALTILES_FILEPATH);
         if (initCode != 0)
@@ -65,8 +66,8 @@ int main(int argc, char* argv[])
     else
         initConfig(CONFIG_FILEPATH);
     player person;
-    if (debug)
-        loadIMG("tileset/eventTile48.png", &eventTexture);
+    /*if (debug)
+        loadIMG("tileset/eventTile48.png", &eventTexture);*/
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
     int gameState = 0;
@@ -113,15 +114,15 @@ int main(int argc, char* argv[])
             printf("%s\n", saveFilePath);
             for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
             {
-                tileIDArray[i] = strtol(readLine(mainFilePath, 4 + i, &buffer), NULL, 10);
+                tileIDArray[i] = strtol(readLine(mainFilePath, 6 + i, &buffer), NULL, 10);
             }
             loadIMG(tileFilePath, &tilesTexture);
-            initPlayer(&person, 9.5 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, PLAYER_ID);
+            initPlayer(&person, strtol(readLine(mainFilePath, 4, &buffer), NULL, 10), strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), TILE_SIZE, PLAYER_ID);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, 0, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, 2, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
@@ -138,7 +139,7 @@ int main(int argc, char* argv[])
         }
     }
     printf("Quit successfully\n");
-    SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
+    //SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
     closeSDL();
 }
@@ -191,7 +192,7 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
-    doDebugDraw = false;
+    //doDebugDraw = false;
     int frame = 0, framerate;
     int exitCode = 0;
     char whatever[5] = "    \0";
@@ -202,8 +203,9 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
-        if (doDebugDraw)
-            drawATilemap(eventTexture, true, 0, 0, 20, 15, false);
+        drawOverTilemap(tilesTexture, 0, 0, 20, 15, false);
+        /*if (doDebugDraw)
+            drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -212,11 +214,11 @@ int mainLoop(player* playerSprite)
                 quit = true;
                 exitCode = ANYWHERE_QUIT;
             }
-            if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
-                doDebugDraw = !doDebugDraw;
+            /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
+                doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 24 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 22 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -294,19 +296,30 @@ bool checkCollision(player* player, int moveX, int moveY)
             collideID = 0;
             player->spr.y -= moveY * PIXELS_MOVED;
         }
-        if (collideID && debug && doDebugDraw)
-            printf("X - %d\n", collideID);
-        if (debug && doDebugDraw)
+        /*if (collideID && debug && doDebugDraw)
+            printf("X - %d\n", collideID);*/
+        /*if (debug && doDebugDraw)
         {
             drawTile(7, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(15, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(2, (thisX / TILE_SIZE) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             SDL_RenderPresent(mainRenderer);
-        }
+        }*/
         if (collideID > 0)
             retCode = 1;
         return retCode;
     }
     return false;
+}
+
+void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender)
+{
+    for(int y = startY; y < endY; y++)
+        for(int x = startX; x < endX; x++)
+        {
+            drawATile(texture, tileIDArray[eventmap[y][x] + 2 - (eventmap[y][x] >= 1)], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        }
+    if (rerender)
+        SDL_RenderPresent(mainRenderer);
 }
