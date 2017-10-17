@@ -31,7 +31,7 @@
 #define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int mainLoop(player* playerSprite);
-bool checkCollision(player* player, int moveX, int moveY);
+void checkCollision(player* player, int* outputData, int moveX, int moveY);
 char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender);
 
@@ -192,13 +192,13 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
+    bool doorFlags[3] = {true, true, true};
+    int* collisionData = (int*) calloc(7, sizeof(int));
     //doDebugDraw = false;
-    int frame = 0, framerate;
+    int frame = 0, framerate = 0;
     int exitCode = 0;
     char whatever[5] = "    \0";
-    time_t startTime = time(NULL);
-    time_t lastTime = startTime - 1;
-    time_t now = startTime + 1;
+    time_t startTime = time(NULL), lastTime = startTime - 1, now = startTime + 1;
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -244,12 +244,20 @@ int mainLoop(player* playerSprite)
                         playerSprite->spr.x = lastX;
                     }
                 }*/
-                exitCode = checkCollision(playerSprite, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
-                if (exitCode == 1)
+                checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
                 {
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
                     //printf("%d\n", exitCode);
+                }
+                if (collisionData[1] || collisionData[2] || collisionData[3])
+                {
+                    for(int i = 0; i < 3; i++)
+                    {
+                        if (collisionData[i + 1])
+                            doorFlags[i] = false;
+                    }
                 }
         }
         if (checkSKMenu)
@@ -278,24 +286,29 @@ int mainLoop(player* playerSprite)
     return exitCode;
 }
 
-bool checkCollision(player* player, int moveX, int moveY)
+void checkCollision(player* player, int* outputData, int moveX, int moveY)
 {
+    for(int i = 0; i < 7; i++)
+    {
+        outputData[i] = 0;
+    }
     if (moveX || moveY)
     {
-        int collideID = 0, retCode = 0, thisX = player->spr.x, thisY = player->spr.y;
+        int thisX = player->spr.x, thisY = player->spr.y;
         int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
-        if (1 == topLeft || 1 == topRight || 1 == bottomLeft || 1 == bottomRight)
-            collideID = topLeft + 2 * topRight + 4 * bottomLeft + 8 * bottomRight;
-        if (((collideID == 1 || collideID == 5) && moveX < 0 && moveY > 0) || ((collideID == 2 || collideID == 10) && moveX > 0 && moveY > 0) || ((collideID == 4 || collideID == 5) && moveX < 0 && moveY < 0) || ((collideID == 8 || collideID == 10) && moveX > 0 && moveY < 0))
+        if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
+            outputData[0] = topLeft + 2 * topRight + 4 * bottomLeft + 8 * bottomRight;
+        if (((outputData[0] == 1 || outputData[0] == 5) && moveX < 0 && moveY > 0) || ((outputData[0] == 2 || outputData[0] == 10) && moveX > 0 && moveY > 0) || ((outputData[0] == 4 || outputData[0] == 5) && moveX < 0 && moveY < 0) || ((outputData[0] == 8 || outputData[0] == 10) && moveX > 0 && moveY < 0))
         {  //manually adding y sliding
-            collideID = 0;
+            outputData[0] = false;
             player->spr.x -= moveX * PIXELS_MOVED;
         }
-        if (((collideID == 1 || collideID == 3) && moveX > 0 && moveY < 0) || ((collideID == 2 || collideID == 3) && moveX < 0 && moveY < 0) || ((collideID == 4 || collideID == 12) && moveX > 0 && moveY > 0) || ((collideID == 8 || collideID == 12) && moveX < 0 && moveY > 0))
+        if (((outputData[0] == 1 || outputData[0] == 3) && moveX > 0 && moveY < 0) || ((outputData[0] == 2 || outputData[0] == 3) && moveX < 0 && moveY < 0) || ((outputData[0] == 4 || outputData[0] == 12) && moveX > 0 && moveY > 0) || ((outputData[0] == 8 || outputData[0] == 12) && moveX < 0 && moveY > 0))
         {  //manually adding x sliding
-            collideID = 0;
+            outputData[0] = false;
             player->spr.y -= moveY * PIXELS_MOVED;
         }
+
         /*if (collideID && debug && doDebugDraw)
             printf("X - %d\n", collideID);*/
         /*if (debug && doDebugDraw)
@@ -306,11 +319,12 @@ bool checkCollision(player* player, int moveX, int moveY)
             drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             SDL_RenderPresent(mainRenderer);
         }*/
-        if (collideID > 0)
-            retCode = 1;
-        return retCode;
+        for(int i = 1; i < 7; i++)
+        {
+            if (-1 != checkArrayForIVal(i + 1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
+            outputData[i] = true;
+        }
     }
-    return false;
 }
 
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool rerender)
