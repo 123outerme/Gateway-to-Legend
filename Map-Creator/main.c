@@ -40,7 +40,7 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainLoop(player* playerSprite);
 SDL_Keycode getKey();
-void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen);
+void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen);
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        strcpy(mainFilePath, "map-packs/main.txt");
+        strcpy(mainFilePath, "map-packs/default.txt");
         uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
         uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
         for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
@@ -171,10 +171,11 @@ void mainLoop(player* playerSprite)
         {
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
-            drawEventmap(0, 0, 20, 15, false);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-            drawEventTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         }
+        drawEventmap(0, 0, 20, 15, editingTiles, false);
+        if (!editingTiles)
+            drawEventTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         else
             drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
@@ -255,11 +256,11 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
-void drawEventmap(int startX, int startY, int endX, int endY, bool updateScreen)
+void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawEventTile(eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawEventTile(eventmap[dy][dx] == 1 && drawHiddenTiles ? 0 : eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
