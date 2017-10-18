@@ -1,7 +1,7 @@
 #include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(char* windowName, char* tilesetFilePath)
+int initSDL(char* windowName, char* tilesetFilePath, int windowWidth, int windowHeight, int fontSize)
 {
     int done = 0;
     mainWindow = NULL;
@@ -27,7 +27,7 @@ int initSDL(char* windowName, char* tilesetFilePath)
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
-        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
+        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -45,9 +45,9 @@ int initSDL(char* windowName, char* tilesetFilePath)
             else
             {
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+                SDL_RenderSetLogicalSize(mainRenderer, windowWidth, windowHeight);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont(FONT_FILE_NAME, &mainFont, 48);
+                loadTTFont(FONT_FILE_NAME, &mainFont, fontSize);
                 //loadTTFont(FONT_FILE_NAME, &smallFont, 20);
                 if (!mainFont)
                 {

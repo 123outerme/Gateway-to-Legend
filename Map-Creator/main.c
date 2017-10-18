@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
             }
         }
     }
-    initSDL(WINDOW_NAME, tileFilePath);
+    initSDL(WINDOW_NAME, tileFilePath, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG("tileset/eventTile48.png", &eventTexture);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);

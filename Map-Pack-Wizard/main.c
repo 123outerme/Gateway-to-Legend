@@ -1,11 +1,19 @@
-#include "outermeSDL1.h"
+#include "outermeSDL.h"
 
 #define MAX_MAP_PACK_DATA 5
-#define PIXELS_MOVED 48
+#define PIXELS_MOVED TILE_SIZE
 
 #define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the gate."}
 const int maxArraySize = 14;
 
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+#define SCREEN_WIDTH TILE_SIZE * 16
+#define SCREEN_HEIGHT TILE_SIZE * 9
+#undef WIDTH_IN_TILES
+#undef HEIGHT_IN_TILES
+#define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
+#define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
 int* mainLoop(sprite* playerSprite);
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
@@ -101,7 +109,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    initSDL(mapPackData[3]);
+    initSDL("Gateway to Legend Map-Pack Wizard", mapPackData[3], SCREEN_WIDTH, SCREEN_HEIGHT, 24);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
     numbers = mainLoop(&chooser);

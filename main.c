@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 {
     //debug = true;
     {
-        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH);
+        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
     }
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
                 gameState = OVERWORLDMENU_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)

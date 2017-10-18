@@ -1,33 +1,33 @@
-#include "outermeSDL1.h"
+#include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(char* tilesetFilePath)
+int initSDL(char* windowName, char* tilesetFilePath, int windowWidth, int windowHeight, int fontSize)
 {
     int done = 0;
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-    if( !( IMG_Init(IMG_INIT_PNG) & IMG_INIT_FLAGS))
-    {
-        printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
-         done = -1;
-    }
-    //Initialize SDL_ttf
-    if( TTF_Init() == -1 )
-    {
-        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
-        done = -2;
-    }
     mainWindow = NULL;
-    mainScreen = NULL;
-    tilesetTexture = NULL;
-    mainRenderer = NULL;
-    mainFont = NULL;
-	if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-            printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-            return 1;
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
+    {
+        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
     }
     else
     {
-        mainWindow = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        if(!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_FLAGS))
+        {
+            printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+            done = -1;
+        }
+        //Initialize SDL_ttf
+        if(TTF_Init() == -1)
+        {
+            printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+            done = -2;
+        }
+        mainScreen = NULL;
+        tilesetTexture = NULL;
+        mainRenderer = NULL;
+        mainFont = NULL;
+        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -45,9 +45,9 @@ int initSDL(char* tilesetFilePath)
             else
             {
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                SDL_RenderSetLogicalSize(mainRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+                SDL_RenderSetLogicalSize(mainRenderer, windowWidth, windowHeight);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont(FONT_FILE_NAME, &mainFont, 24);
+                loadTTFont(FONT_FILE_NAME, &mainFont, fontSize);
                 //loadTTFont(FONT_FILE_NAME, &smallFont, 20);
                 if (!mainFont)
                 {
