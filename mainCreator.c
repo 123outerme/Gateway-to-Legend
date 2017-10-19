@@ -274,12 +274,12 @@ void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip f
 
 void writeTileData()
 {
-    char* outputFile = "output/output.txt";
+    char* outputFile = "output/map.txt";
     createFile(outputFile);
     char input[2];
     char output[1201];
-    input[0] = 0;
-    output[0] = 0;
+    input[0] = '\0';
+    output[0] = '\0';  //these two lines are necessary for output being correct
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
     {
         for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
@@ -292,7 +292,7 @@ void writeTileData()
         }
     }
     //printf(">%s\n", output);
-    appendLine("output/output.txt", output);
-    printf("%s", output);
-    printf("outputted to output/output.txt\n");
+    appendLine("output/map.txt", output);
+    printf("%s\n", output);
+    printf("outputted to output/map.txt\n");
 }
