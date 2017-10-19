@@ -2,6 +2,7 @@ Main Adventure
 maps/MainMaps.txt
 tileset/SeekersTile48.png
 saves/MainAdventure.txt
+scripts/MainAdventure.txt
 456
 336
 16

@@ -1,6 +1,6 @@
 #include "outermeSDL.h"
 
-#define MAX_MAP_PACK_DATA 5
+#define MAX_MAP_PACK_DATA 6
 #define PIXELS_MOVED TILE_SIZE
 
 #define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the gate."}
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
             printf("Create new file? (y/n) ");
             break;
         case 1:
-        case 6:
+        case 7:
             printf("File name? map-packs/");
             break;
         case 2:
@@ -50,11 +50,15 @@ int main(int argc, char* argv[])
         case 5:
             printf("Path for savefile? saves/");
             break;
-        case 7:
-            printf("Initial X spawn-coordinate? ");
+        case 6:
+            printf("Path for scripts? scripts/");
             break;
         case 8:
+            printf("Initial X spawn-coordinate? ");
+            break;
+        case 9:
             printf("Initial Y spawn-coordinate? ");
+            break;
         }
         gets(getString);
         switch(wizardState)
@@ -63,13 +67,14 @@ int main(int argc, char* argv[])
             if (getString[0] == 'y')
                 wizardState = 1;
             else
-                wizardState = 6;
+                wizardState = 7;
             break;
         case 1:
         case 2:
         case 3:
         case 4:
         case 5:
+        case 6:
             strcpy(mapPackData[wizardState - 1], getString);
             if (wizardState == 1)
                 strPrepend(mapPackData[0], "map-packs/");
@@ -81,15 +86,17 @@ int main(int argc, char* argv[])
                 strPrepend((char*) mapPackData[3], "tileset/");
 
             //printf("%s\n", mapPackData[wizardState - 1]);
-
             if (wizardState == 5)
-            {
                 strPrepend((char*) mapPackData[4], "saves/");
+
+            if (wizardState == 6)
+            {
+                strPrepend((char*) mapPackData[5], "scripts/");
                 wizardState++;  //gets us past loading
             }
             wizardState++;
             break;
-        case 6:
+        case 7:
             strcpy(mapPackData[0], getString);
             strPrepend(mapPackData[0], "map-packs/");
             if (!checkFile(mapPackData[0], 0))
@@ -101,10 +108,10 @@ int main(int argc, char* argv[])
                 uniqueReadLine((char**) &mapPackData[i], 128, mapPackData[0], i - 1);
             quit = true;
             break;
-        case 7:
         case 8:
-            sscanf(getString, "%d", &(numbers[wizardState++ - 7]));
-            if (wizardState == 9)  //since we did wizardState++ before this
+        case 9:
+            sscanf(getString, "%d", &(numbers[wizardState++ - 8]));
+            if (wizardState == 10)  //since we did wizardState++ before this
                 quit = true;
             break;
         }
@@ -116,7 +123,7 @@ int main(int argc, char* argv[])
     if (!(numbers[0] == -1))
     {
         createFile(mapPackData[0]);
-        for(int i = 1; i < 5; i++)
+        for(int i = 1; i < MAX_MAP_PACK_DATA; i++)
         {
             appendLine(mapPackData[0], mapPackData[i]);
             //printf("%s\n", mapPackData[i]);

@@ -53,7 +53,8 @@ int main(int argc, char* argv[])
             return initCode;
     }
     //loading in map pack header files
-    char mainFilePath[MAX_CHAR_IN_FILEPATH];
+    char mainFilePath[MAX_CHAR_IN_FILEPATH], mapFilePath[MAX_CHAR_IN_FILEPATH - 9], tileFilePath[MAX_CHAR_IN_FILEPATH - 9],
+            saveFilePath[MAX_CHAR_IN_FILEPATH - 9], scriptFilePath[MAX_CHAR_IN_FILEPATH - 9];
     char** listOfFilenames;
     int maxStrNum = 0;
     listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_CHAR_IN_FILEPATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
@@ -100,30 +101,30 @@ int main(int argc, char* argv[])
                 break;
             }
             //loading map pack stuff
-            char mapFilePath[MAX_CHAR_IN_FILEPATH - 9];
-            char tileFilePath[MAX_CHAR_IN_FILEPATH - 9];
-            char saveFilePath[MAX_CHAR_IN_FILEPATH - 9];
             uniqueReadLine((char**) &mapFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 1);
-            printf("%s\n", mapFilePath);
+            //printf("%s\n", mapFilePath);
             uniqueReadLine((char**) &tileFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 2);
-            printf("%s\n", tileFilePath);
+            //printf("%s\n", tileFilePath);
             uniqueReadLine((char**) &saveFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 3);
+            //printf("%s\n", saveFilePath);
+            uniqueReadLine((char**) &scriptFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 4);
+            //printf("%s\n", scriptFilePath);
             if (checkFile(saveFilePath, 0))
                 /*load local save file*/;
             else
                 createFile(saveFilePath);
-            printf("%s\n", saveFilePath);
+
             for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
             {
-                tileIDArray[i] = strtol(readLine(mainFilePath, 6 + i, &buffer), NULL, 10);
+                tileIDArray[i] = strtol(readLine(mainFilePath, 7 + i, &buffer), NULL, 10);
             }
             loadIMG(tileFilePath, &tilesTexture);
-            initPlayer(&person, strtol(readLine(mainFilePath, 4, &buffer), NULL, 10), strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), TILE_SIZE, PLAYER_ID);
+            initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, PLAYER_ID);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, 2, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, 2/*Note: Make this a variable number*/, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
