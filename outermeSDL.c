@@ -27,7 +27,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
-        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS);
+        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -44,6 +44,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             }
             else
             {
+                SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, windowWidth, windowHeight);
                 SDL_RenderClear(mainRenderer);
