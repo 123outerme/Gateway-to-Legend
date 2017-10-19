@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    initSDL("Gateway to Legend Map-Pack Wizard", mapPackData[3], SCREEN_WIDTH, SCREEN_HEIGHT, 24);
+    initSDL("Gateway to Legend Map-Pack Wizard", mapPackData[3], FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
     numbers = mainLoop(&chooser);

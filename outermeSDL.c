@@ -1,7 +1,7 @@
 #include "outermeSDL.h"
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 
-int initSDL(char* windowName, char* tilesetFilePath, int windowWidth, int windowHeight, int fontSize)
+int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int windowWidth, int windowHeight, int fontSize)
 {
     int done = 0;
     mainWindow = NULL;
@@ -47,7 +47,7 @@ int initSDL(char* windowName, char* tilesetFilePath, int windowWidth, int window
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, windowWidth, windowHeight);
                 SDL_RenderClear(mainRenderer);
-                loadTTFont(FONT_FILE_NAME, &mainFont, fontSize);
+                loadTTFont(fontFilePath, &mainFont, fontSize);
                 //loadTTFont(FONT_FILE_NAME, &smallFont, 20);
                 if (!mainFont)
                 {

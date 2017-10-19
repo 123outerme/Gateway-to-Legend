@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        strcpy(mainFilePath, "map-packs/default.txt");
+        strcpy(mainFilePath, "map-packs/a.txt");
         uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
         uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
         for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
             }
         }
     }
-    initSDL(WINDOW_NAME, tileFilePath, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG("tileset/eventTile48.png", &eventTexture);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);

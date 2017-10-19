@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 {
     //debug = true;
     {
-        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
     }
