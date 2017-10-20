@@ -1,6 +1,5 @@
 #include "outermeSDL.h"
 
-#define MAX_MAP_PACK_DATA 6
 #define PIXELS_MOVED TILE_SIZE
 
 typedef struct {
@@ -33,14 +32,15 @@ typedef struct {
 //SDL_SCANCODE_SPACE
 //SDL_SCANCODE_ESCAPE
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
+#define WINDOW_NAME "Gateway to Legend Map Creator"
 
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the gate."}
 const int maxArraySize = 14;
-#define WINDOW_NAME "Gateway to Legend Map Creator"
+#define MAX_MAP_PACK_DATA 6
 
-int mainMapCreator(int argc, char* argv[]);
+int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainMapCreatorLoop(player* playerSprite);
@@ -50,8 +50,8 @@ void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip f
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
 void writeTileData();
 //^map creator functions. v map-pack wizard functions
-int mainMapPackWizard(int argc, char* argv[]);
-int* mainMapPackWizardLoop(sprite* playerSprite);
+int mainMapPackWizard();
+void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
 void strPrepend(char* input, const char* prepend);
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
@@ -64,15 +64,15 @@ int main(int argc, char* argv[])
     SDL_Keycode keycode = waitForKey();
     closeSDL();
     if (keycode == SDLK_1)
-        mainMapCreator(0, &(char[]){});
+        mainMapCreator();
     if (keycode == SDLK_2)
-        mainMapPackWizard(0, &(char[]){});
+        mainMapPackWizard();
     if (keycode != SDLK_1 && keycode != SDLK_2)
         printf("Invalid keypress.\n");
     return 0;
 }
 
-int mainMapCreator(int argc, char* argv[])
+int mainMapCreator()
 {
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
         for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
@@ -332,10 +332,9 @@ void writeTileData()
 #define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
-int mainMapPackWizard(int argc, char* argv[])
+int mainMapPackWizard()
 {
-    char getString[128];
-    char mapPackData[MAX_MAP_PACK_DATA][128];
+    char getString[128], mapPackData[MAX_MAP_PACK_DATA][128], garbageData[128];
     int* numbers = (int*) calloc(maxArraySize, sizeof(int));
     int wizardState = 0;
     bool quit = false;
@@ -418,6 +417,11 @@ int mainMapPackWizard(int argc, char* argv[])
             }
             for(int i = 1; i < MAX_MAP_PACK_DATA; i++)
                 uniqueReadLine((char**) &mapPackData[i], 128, mapPackData[0], i - 1);
+            for(int i = 0; i < 2; i++)
+            {
+                uniqueReadLine((char**) &garbageData, 128, mapPackData[0], i + 5);
+                numbers[i] = strtol(garbageData, NULL, 10);
+            }
             quit = true;
             break;
         case 8:
@@ -431,7 +435,7 @@ int mainMapPackWizard(int argc, char* argv[])
     initSDL("Gateway to Legend Map-Pack Wizard", mapPackData[3], FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
-    numbers = mainMapPackWizardLoop(&chooser);
+    mainMapPackWizardLoop(&chooser, numbers);
     if (!(numbers[0] == -1))
     {
         createFile(mapPackData[0]);
@@ -453,9 +457,8 @@ int mainMapPackWizard(int argc, char* argv[])
     return 0;
 }
 
-int* mainMapPackWizardLoop(sprite* playerSprite)
+void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
 {
-    int* numArray = (int*) calloc(maxArraySize, sizeof(int));
     int numArrayTracker = 2, frame = 0;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
@@ -498,7 +501,6 @@ int* mainMapPackWizardLoop(sprite* playerSprite)
     //waitForKey();
     if (numArrayTracker < maxArraySize)
         numArray[0] = -1;
-    return numArray;
 }
 
 void strPrepend(char* input, const char* prepend)

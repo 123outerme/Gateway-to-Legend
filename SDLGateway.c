@@ -22,6 +22,17 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
+void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data)
+{
+	scriptPtr->mapNum = mapNum;
+	scriptPtr->x = x;
+	scriptPtr->y = y;
+	scriptPtr->w = w;
+	scriptPtr->h = h;
+	scriptPtr->action = action;
+	scriptPtr->data = data;
+}
+
 void initConfig(char* filePath)
 {
     SC_UP = SDL_SCANCODE_W;
@@ -240,6 +251,23 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
     dummy = removeChar((char*) output, '\n', outputLength, false);
     strcpy((char*) output, dummy);
     return *output;
+}
+
+int readScript(script* scriptPtr, char* input)
+{
+	int intData[6];
+	char* strData;
+	//printf("Splitting string \"%s\" into tokens:\n", input);
+	intData[0] = strtol(strtok(input, "{,}"), NULL, 10);
+	for(int i = 1; i < 6; i++)
+    {
+        intData[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
+    }
+	strData = strtok(NULL, "{,}");
+	//printf("{%d,%d,%d,%d,%d,%d,%s}\n", mapNum, x, y, w, h, (int) action, data);
+	initScript(scriptPtr, intData[0], intData[1], intData[2], intData[3], intData[4], (scriptBehavior) intData[5], strData);
+	//printf("done.\n");
+	return 0;
 }
 
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
