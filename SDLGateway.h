@@ -29,7 +29,7 @@ typedef enum {
     script_trigger_dialogue,  //1 if player steps in coords, trigger a dialogue/text box
     script_trigger_boss,      //2 if player steps in coords, spawn boss
     script_switch_rooms,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile
-    script_use_portal,        //4 triggers a playing of an animation followed by a switching of rooms. Only to be used for warp gates.
+    script_use_portal,        //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
     script_open_door,         //4 if player steps in coords or other action occurs, open a door
     script_animation,         //5 if player steps in coords, do animation
     script_boss_actions,      //6 if boss is still alive, execute boss actions
@@ -51,6 +51,7 @@ typedef struct {
 
 void initPlayer(player* player, int x, int y, int size, int tileIndex);  //inits new player struct
 void initConfig(char* filePath);  //resets config data
+void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data);
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
@@ -62,6 +63,7 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 
 void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
+void executeScriptAction(script* scriptData, player* player);
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];

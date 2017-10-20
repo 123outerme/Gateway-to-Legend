@@ -313,3 +313,11 @@ void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, 
 {
     SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }
+
+void executeScriptAction(script* scriptData, player* player)
+{
+    if (scriptData->action == script_trigger_dialogue)
+        drawText(scriptData->data, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color){0, 0, 0}, false);  //change coords & color? Possibly use a drawTextBox funct instead?
+    if (scriptData->action == script_gain_exp)
+        player->experience += strtol(scriptData->data, NULL, 10);
+}
