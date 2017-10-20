@@ -194,7 +194,7 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
-    bool doorFlags[3] = {true, true, true};
+    static bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
     int* collisionData = (int*) calloc(7, sizeof(int));
     //doDebugDraw = false;
     int frame = 0, framerate = 0;

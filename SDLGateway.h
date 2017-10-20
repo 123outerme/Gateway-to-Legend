@@ -31,7 +31,7 @@ typedef enum {
     script_open_door,         //3 if player steps in coords or other action occurs, open a door
     script_animation,         //4 if player steps in coords, do animation
     script_boss_actions,      //5 if boss is still alive, execute boss actions
-    script_placeholder;       //6 ???
+    script_placeholder,       //6 ???
 } scriptBehavior;
 
 typedef struct {
