@@ -335,7 +335,7 @@ void writeTileData()
 int mainMapPackWizard()
 {
     char getString[128], mapPackData[MAX_MAP_PACK_DATA][128], garbageData[128];
-    int* numbers = (int*) calloc(maxArraySize, sizeof(int));
+    int* numbers = calloc(maxArraySize, sizeof(int));
     int wizardState = 0;
     bool quit = false;
 	while (!quit)
@@ -505,7 +505,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
 
 void strPrepend(char* input, const char* prepend)
 {
-    char* temp = (char*) calloc(128, sizeof(char));
+    char* temp = calloc(128, sizeof(char));
     strcpy(temp, prepend);
     strcat(temp, input);
     strcpy(input, temp);

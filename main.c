@@ -33,7 +33,7 @@
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
-char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag);
+void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
 
 /*bool debug;
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
             gameState = START_GAMECODE;
             break;
         case PLAY_GAMECODE:  //main menu
-            strcpy(mainFilePath, mapSelectLoop(listOfFilenames, maxStrNum, &quitGame));
+            mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &quitGame);
             if (quitGame)
             {
                 gameState = START_GAMECODE;
@@ -151,13 +151,12 @@ int main(int argc, char* argv[])
     closeSDL();
 }
 
-char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
+void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
 {
     bool quitMenu = false;
     char junkArray[MAX_CHAR_IN_FILEPATH];
     SDL_Keycode menuKeycode;
     int menuPage = 0, selectItem = 0;
-    char* mapPackName = (char*) malloc(MAX_CHAR_IN_FILEPATH * sizeof(char));  //find some way to free this please!
     while(!quitMenu)
     {
         SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
@@ -192,14 +191,13 @@ char* mapSelectLoop(char** listOfFilenames, int maxStrNum, bool* backFlag)
     }
     //loading map pack stuff
     strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
-    return mapPackName;
 }
 
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
-    int* collisionData = (int*) calloc(7, sizeof(int));
+    int* collisionData = calloc(7, sizeof(int));
     //doDebugDraw = false;
     int frame = 0, framerate = 0;
     int exitCode = 0;
