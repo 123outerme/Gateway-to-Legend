@@ -257,7 +257,7 @@ int createFile(char* filePath)
 	filePtr = fopen(filePath,"w");
 	if (!filePtr)
 	{
-		printf("Error opening file!\n");
+		printf("Error opening/creating file!\n");
 		return -1;
 	}
 	else

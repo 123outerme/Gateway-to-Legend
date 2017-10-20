@@ -43,6 +43,7 @@ SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, 
 int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define CURSOR_ID tileIDArray[1]
+bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
 
 int main(int argc, char* argv[])
 {
@@ -136,7 +137,11 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
+            {
                 gameState = START_GAMECODE;
+                for(int i = 0; i < 3; i++)
+                    doorFlags[i] = true;
+            }
             break;
         }
     }
@@ -194,7 +199,6 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false, drawFlag = true;
-    static bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
     int* collisionData = (int*) calloc(7, sizeof(int));
     //doDebugDraw = false;
     int frame = 0, framerate = 0;
@@ -220,7 +224,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 20 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 18 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
