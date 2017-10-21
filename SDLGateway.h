@@ -17,11 +17,9 @@ typedef struct {
     int maxHP;  //
     int worldNum;  //
     int mapScreen;  //8 bytes
-    int lastScreen;  //8 bytes
-    int overworldX;  //
-    int overworldY;  //
     SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
+    char* extraData;
 } player;
 
 typedef enum {
@@ -45,6 +43,7 @@ typedef struct {
     int h;
     scriptBehavior action;
     char* data;
+    bool active;
 } script;
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
@@ -62,8 +61,8 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);
+void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
-void executeScriptAction(script* scriptData, player* player);
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];

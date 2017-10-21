@@ -27,7 +27,8 @@
 #define MAINLOOP_GAMECODE 3
 #define OVERWORLDMENU_GAMECODE 4
 
-#define MAX_TILE_ID_ARRAY 11
+#define MAX_TILE_ID_ARRAY 12
+#define MAX_COLLISIONDATA_ARRAY 10
 
 #define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
@@ -35,6 +36,7 @@ int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
+void executeScriptAction(script* scriptData, player* player);
 
 /*bool debug;
 bool doDebugDraw;
@@ -44,6 +46,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define CURSOR_ID tileIDArray[1]
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
+int mapLine;
 
 int main(int argc, char* argv[])
 {
@@ -82,6 +85,7 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case START_GAMECODE:  //start menu
+            mapLine = 2;
             choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
@@ -125,7 +129,8 @@ int main(int argc, char* argv[])
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, 2/*Note: Make this a variable number*/, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, mapLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            person.extraData = mapFilePath;
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
@@ -196,8 +201,10 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-    bool quit = false, drawFlag = true;
-    int* collisionData = calloc(7, sizeof(int));
+    bool quit = false, drawFlag = true, portalActive = true;
+    char* mapFilePath = playerSprite->extraData;
+    int* collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
+    script thisScript;
     //doDebugDraw = false;
     int frame = 0, framerate = 0;
     int exitCode = 0;
@@ -222,7 +229,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && frame % 18 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || keyStates[SDL_SCANCODE_H]) && frame % 18 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -240,6 +247,8 @@ int mainLoop(player* playerSprite)
                     playerSprite->flip = SDL_FLIP_HORIZONTAL;
                 if (checkSKRight)
                     playerSprite->flip = SDL_FLIP_NONE;
+                if (keyStates[SDL_SCANCODE_H])
+                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 /*if (checkCollision(playerSprite, tilemap[playerSprite->spr.y / TILE_SIZE + checkSKDown][playerSprite->spr.x / TILE_SIZE + checkSKRight], 0, 0))
                 {
                     if (SDL_HasIntersection(&((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect) {.x = (playerSprite->spr.x / TILE_SIZE) * TILE_SIZE + checkSKRight, .y = (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE + checkSKDown, .w = TILE_SIZE, .h = TILE_SIZE})))
@@ -263,6 +272,14 @@ int mainLoop(player* playerSprite)
                             doorFlags[i] = false;
                     }
                 }
+                if (collisionData[9] && portalActive == true)
+                {
+                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
+                    playerSprite->extraData = mapFilePath;
+                    portalActive = false;
+                }
+                if (!collisionData[9] && portalActive == false)
+                    portalActive = true;
         }
         if (checkSKMenu)
         {
@@ -286,13 +303,15 @@ int mainLoop(player* playerSprite)
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
+        if (thisScript.active)
+            executeScriptAction(&thisScript, playerSprite);
     }
     return exitCode;
 }
 
 void checkCollision(player* player, int* outputData, int moveX, int moveY)
 {
-    for(int i = 0; i < 7; i++)
+    for(int i = 0; i < MAX_COLLISIONDATA_ARRAY; i++)
     {
         outputData[i] = 0;
     }
@@ -323,7 +342,7 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY)
             drawTile(9, (thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)) * TILE_SIZE, (thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
             SDL_RenderPresent(mainRenderer);
         }*/
-        for(int i = 1; i < 7; i++)
+        for(int i = 1; i < MAX_COLLISIONDATA_ARRAY; i++)
         {
             if (-1 != checkArrayForIVal(i + 1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
             outputData[i] = true;
@@ -344,4 +363,49 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);
+}
+
+void executeScriptAction(script* scriptData, player* player)
+{
+    if (scriptData->action == script_trigger_dialogue)
+    {
+        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
+        waitForKey();
+    }
+    if (scriptData->action == script_use_portal)
+    {
+        for(int i = 0; i < 3; i++)
+            doorFlags[i] = true;
+        for(int i = 120; i > -1; i--)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+            SDL_RenderClear(mainRenderer);
+            SDL_RenderPresent(mainRenderer);
+            SDL_Delay(8);
+        }
+        SDL_Delay(90);
+        char* data = calloc(99, sizeof(char));
+        strcpy(data, scriptData->data);
+        //printf("%s\n", data);
+        int mapNum = strtol(strtok(data, "[,]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        //printf("%d/", mapNum);
+        mapLine = mapNum;
+        player->spr.x = strtol(strtok(NULL, "[,]"), NULL, 10);
+        //printf("%d/", player->spr.x);
+        player->spr.y = strtol(strtok(NULL, "[,]"), NULL, 10);
+        //printf("%d\n", player->spr.y);
+        //switch maps
+        loadMapFile(player->extraData, tilemap, eventmap, mapNum, 15, 20);
+        for(int i = 0; i < 120; i++)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+            SDL_RenderClear(mainRenderer);
+            SDL_RenderPresent(mainRenderer);
+            SDL_Delay(4);
+        }
+        free(data);
+    }
+    if (scriptData->action == script_gain_exp)
+        player->experience += strtol(scriptData->data, NULL, 10);
+    scriptData->active = false;
 }

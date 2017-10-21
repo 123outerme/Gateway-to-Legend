@@ -85,8 +85,9 @@ int mainMapCreator()
 	scanf("%s", loadCheck);
 	if (loadCheck[0] == 'y')
     {
-        printf("Enter the map-pack filepath: ");
+        printf("Enter the map-pack filepath: map-packs/");
         scanf("%s", mainFilePath);
+        strPrepend(mainFilePath, "map-packs/");
         if (!checkFile(mainFilePath, 0))
         {
             printf("Invalid file.\n");

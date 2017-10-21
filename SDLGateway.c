@@ -13,11 +13,9 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->maxHP = 50;
 	player->worldNum = 1;
 	player->mapScreen = 10;
-	player->lastScreen = 10;
-	player->overworldX = x;
-	player->overworldY = y;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
+	player->extraData = "";
     SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
@@ -31,6 +29,7 @@ void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scrip
 	scriptPtr->h = h;
 	scriptPtr->action = action;
 	scriptPtr->data = data;
+	scriptPtr->active = true;
 }
 
 void initConfig(char* filePath)
@@ -68,9 +67,6 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
         player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
         player->mapScreen = strtol(readLine(filePath, 16, &buffer), NULL, 10);
-        player->lastScreen = strtol(readLine(filePath, 17, &buffer), NULL, 10);
-        player->overworldX = strtol(readLine(filePath, 18, &buffer), NULL, 10);
-        player->overworldY = strtol(readLine(filePath, 19, &buffer), NULL, 10);
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;
 	}
@@ -314,10 +310,16 @@ void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, 
     SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }
 
-void executeScriptAction(script* scriptData, player* player)
+void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw)
 {
-    if (scriptData->action == script_trigger_dialogue)
-        drawText(scriptData->data, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color){0, 0, 0}, false);  //change coords & color? Possibly use a drawTextBox funct instead?
-    if (scriptData->action == script_gain_exp)
-        player->experience += strtol(scriptData->data, NULL, 10);
+    Uint8 oldR, oldG, oldB, oldA;
+    SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
+    //19 letters per line/5 lines at 48pt font
+    SDL_SetRenderDrawColor(mainRenderer, outlineColor.r, outlineColor.g, outlineColor.b, 0xFF);
+    SDL_RenderFillRect(mainRenderer, &(textBoxRect));
+    SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
+    SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8,
+                                                  .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
+    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, redraw);
+    SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
