@@ -231,7 +231,7 @@ int mainLoop(player* playerSprite)
             theseScripts[maxTheseScripts++] = allScripts[i];
     }
     theseScripts = realloc(theseScripts, maxTheseScripts * sizeof(script));
-    printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
+    //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int frame = 0, framerate = 0;
     int exitCode = 0;
@@ -330,11 +330,17 @@ int mainLoop(player* playerSprite)
                 }
                 if (collisionData[9] && portalActive == true)
                 {
+                    bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
-                        if (theseScripts[i].action == script_use_portal)
-                            thisScript = theseScripts[i];
+                        if (theseScripts[i].action == script_use_portal && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
+                            {
+                                thisScript = theseScripts[i];
+                                found = true;
+                            }
                     }
+                    if (!found)
+                        initScript(&thisScript, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, script_use_portal, "[0/48/48]");
                     thisScript.active = true;
                     printf("%s\n", thisScript.data);
                     //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
