@@ -220,7 +220,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-    bool quit = false, drawFlag = true, portalActive = true;
+    bool quit = false, portalActive = true;
     char* mapFilePath = playerSprite->extraData;
     int* collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
@@ -236,7 +236,7 @@ int mainLoop(player* playerSprite)
     int frame = 0, framerate = 0;
     int exitCode = 0;
     char whatever[5] = "    \0";
-    time_t startTime = time(NULL), lastTime = startTime - 1, now = startTime + 1;
+    int startTime = SDL_GetTicks() - 1;
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -342,7 +342,7 @@ int mainLoop(player* playerSprite)
                     if (!found)
                         initScript(&thisScript, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, script_use_portal, "[0/48/48]");
                     thisScript.active = true;
-                    printf("%s\n", thisScript.data);
+                    //printf("%s\n", thisScript.data);
                     //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
                     playerSprite->extraData = mapFilePath;
                     portalActive = false;
@@ -356,18 +356,10 @@ int mainLoop(player* playerSprite)
             exitCode = 1;
         }
         frame++;
-        if (time(NULL) > startTime)
-            now = time(NULL);
-        if (time(NULL) - 1 > lastTime)
-            lastTime = time(NULL);
-        if (lastTime == now)
-        {
-            if (drawFlag)
-                framerate = frame / ((int) now - (int) startTime);
-            drawFlag = false;
-        }
-        else
-            drawFlag = true;
+        if ((SDL_GetTicks() - startTime) % 500 == 0)
+                framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
+        //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
+
         drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
