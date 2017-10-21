@@ -283,7 +283,7 @@ bool checkFile(char* filePath, int desiredLines)
       }
     }
     fclose(filePtr);
-    return lines >= desiredLines;
+    return desiredLines >= 0 ? lines >= desiredLines : lines;
 }
 
 int appendLine(char* filePath, char* stuff)
@@ -322,7 +322,7 @@ char* readLine(char* filePath, int lineNum, char** output)
 	}
 }
 
-char* intToString(int value, char * result)
+char* intToString(int value, char* result)
 {
     if (value == 0)
         return "0";
@@ -374,7 +374,7 @@ int pwrOf10(int power)
 	return val;
 }
 
-void freeThisMem(int ** x)
+void freeThisMem(void** x)
 {
 	free(*x);
 	*x = NULL;

@@ -2,7 +2,7 @@
 
 #define TILE_ID_CURSOR 17
 
-void initPlayer(player* player, int x, int y, int size, int tileIndex)
+void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
 {
     //inputName(player);  //custom text input routine to get player->name
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
@@ -11,8 +11,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->money = 0;
 	player->HP = 50;
 	player->maxHP = 50;
-	player->worldNum = 1;
-	player->mapScreen = 10;
+	player->mapScreen = mapScreen;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
 	player->extraData = "";
@@ -65,7 +64,6 @@ void loadPlayerData(player* player, char* filePath, bool forceNew)
         player->HP = strtol(readLine(filePath, 6, &buffer), NULL, 10);
         player->maxHP = strtol(readLine(filePath, 7, &buffer), NULL, 10);
         player->spr.clipRect = &((SDL_Rect){.x = (player->spr.tileIndex / 8) * player->spr.w, .y = (player->spr.tileIndex % 8) * player->spr.w, .w = player->spr.w, .h = player->spr.w});
-        player->worldNum = strtol(readLine(filePath, 15, &buffer), NULL, 10);
         player->mapScreen = strtol(readLine(filePath, 16, &buffer), NULL, 10);
         player->flip = SDL_FLIP_NONE;
         player->movementLocked = false;

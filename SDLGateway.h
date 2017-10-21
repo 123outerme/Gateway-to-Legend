@@ -15,7 +15,6 @@ typedef struct {
     int money;  //
     int HP;  //
     int maxHP;  //
-    int worldNum;  //
     int mapScreen;  //8 bytes
     SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
@@ -48,9 +47,9 @@ typedef struct {
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
-void initPlayer(player* player, int x, int y, int size, int tileIndex);  //inits new player struct
+void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex);  //inits new player struct
 void initConfig(char* filePath);  //resets config data
-void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data);
+void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data);  //initializes a new script struct
 void loadPlayerData(player* player, char* filePath, bool forceNew);  //loads data from filePath. If not, or forceNew = true, inits new sprite.
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
@@ -58,11 +57,12 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 SDL_Keycode getKey();  //like waitForKey but without waiting.
 void saveConfig(char* filePath);  //saves config data to the file
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
+int readScript(script* scriptPtr, char* input);  //inits a script from a string input
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
-void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);
-void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
+void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap from a given tileset texture.
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
+void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];

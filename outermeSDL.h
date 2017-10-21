@@ -81,7 +81,7 @@ char* readLine(char* filePath, int lineNum, char** output);  //reads a certain l
 char* intToString(int value, char * result);  //turns inputted int into a string
 int digits(int num);  //gets the number of digits an int has
 int pwrOf10(int power);  //gets 10 ^ input
-void freeThisMem(int** x);  //frees memory of any type/object/whatever and nulls its pointer.
+void freeThisMem(void** x);  //frees memory of any type/object/whatever and nulls its pointer.
 
 SDL_Window* mainWindow;
 SDL_Surface* mainScreen;

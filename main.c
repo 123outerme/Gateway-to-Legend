@@ -26,6 +26,7 @@
 #define PLAY_GAMECODE 2
 #define MAINLOOP_GAMECODE 3
 #define OVERWORLDMENU_GAMECODE 4
+#define RELOAD_GAMECODE 5
 
 #define MAX_TILE_ID_ARRAY 12
 #define MAX_COLLISIONDATA_ARRAY 10
@@ -46,7 +47,8 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define CURSOR_ID tileIDArray[1]
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
-int mapLine;
+script* allScripts;
+int sizeOfAllScripts;
 
 int main(int argc, char* argv[])
 {
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case START_GAMECODE:  //start menu
-            mapLine = 2;
+            person.mapScreen = 2;
             choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
@@ -114,6 +116,15 @@ int main(int argc, char* argv[])
             //printf("%s\n", saveFilePath);
             uniqueReadLine((char**) &scriptFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 4);
             //printf("%s\n", scriptFilePath);
+            allScripts = calloc(checkFile(scriptFilePath, -1) + 1, sizeof(script));
+            for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
+            {
+                script thisScript;
+                readScript(&thisScript, readLine(scriptFilePath, i, &buffer));
+                allScripts[i] = thisScript;
+                sizeOfAllScripts = i + 1;
+            }
+            quitGame = false;
             if (checkFile(saveFilePath, 0))
                 /*load local save file*/;
             else
@@ -124,18 +135,20 @@ int main(int argc, char* argv[])
                 tileIDArray[i] = strtol(readLine(mainFilePath, 7 + i, &buffer), NULL, 10);
             }
             loadIMG(tileFilePath, &tilesTexture);
-            initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, PLAYER_ID);
+            initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
-            loadMapFile(mapFilePath, tilemap, eventmap, mapLine, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             person.extraData = mapFilePath;
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
                 gameState = OVERWORLDMENU_GAMECODE;
+            if (choice == 2)
+                gameState = RELOAD_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
@@ -148,11 +161,17 @@ int main(int argc, char* argv[])
                     doorFlags[i] = true;
             }
             break;
+        case RELOAD_GAMECODE:
+            for(int i = 0; i < 3; i++)
+                doorFlags[i] = true;
+            gameState = MAINLOOP_GAMECODE;
+            break;
         }
     }
     printf("Quit successfully\n");
     //SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
+    free(allScripts);
     closeSDL();
 }
 
@@ -204,7 +223,15 @@ int mainLoop(player* playerSprite)
     bool quit = false, drawFlag = true, portalActive = true;
     char* mapFilePath = playerSprite->extraData;
     int* collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
-    script thisScript;
+    script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
+    int maxTheseScripts = 0;
+    for(int i = 0; i < sizeOfAllScripts; i++)
+    {
+        if (allScripts[i].mapNum == playerSprite->mapScreen)
+            theseScripts[maxTheseScripts++] = allScripts[i];
+    }
+    theseScripts = realloc(theseScripts, maxTheseScripts * sizeof(script));
+    printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int frame = 0, framerate = 0;
     int exitCode = 0;
@@ -257,6 +284,35 @@ int mainLoop(player* playerSprite)
                         playerSprite->spr.x = lastX;
                     }
                 }*/
+                if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
+                {
+                    if (!playerSprite->spr.x)
+                    {
+                        playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
+                        if (playerSprite->mapScreen % 10 > 0)
+                            playerSprite->mapScreen--;
+
+                    }
+                    if (!playerSprite->spr.y)
+                    {
+                        playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
+                        if (playerSprite->mapScreen / 10 > 0)
+                            playerSprite->mapScreen -= 10;
+                    }
+                    if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE)
+                    {
+                        playerSprite->spr.x = TILE_SIZE;
+                        if (playerSprite->mapScreen % 10 < 9)
+                            playerSprite->mapScreen++;
+                    }
+                    if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
+                    {
+                        playerSprite->spr.y = TILE_SIZE;
+                        if (playerSprite->mapScreen / 10 < 9)
+                            playerSprite->mapScreen += 10;
+                    }
+                    return 2;
+                }
                 checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
                 {
@@ -274,7 +330,14 @@ int mainLoop(player* playerSprite)
                 }
                 if (collisionData[9] && portalActive == true)
                 {
-                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
+                    for(int i = 0; i < maxTheseScripts; i++)
+                    {
+                        if (theseScripts[i].action == script_use_portal)
+                            thisScript = theseScripts[i];
+                    }
+                    thisScript.active = true;
+                    printf("%s\n", thisScript.data);
+                    //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
                     playerSprite->extraData = mapFilePath;
                     portalActive = false;
                 }
@@ -306,6 +369,8 @@ int mainLoop(player* playerSprite)
         if (thisScript.active)
             executeScriptAction(&thisScript, playerSprite);
     }
+    free(theseScripts);
+    free(collisionData);
     return exitCode;
 }
 
@@ -381,21 +446,19 @@ void executeScriptAction(script* scriptData, player* player)
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
             SDL_RenderClear(mainRenderer);
             SDL_RenderPresent(mainRenderer);
-            SDL_Delay(8);
+            SDL_Delay(10);
         }
         SDL_Delay(90);
         char* data = calloc(99, sizeof(char));
-        strcpy(data, scriptData->data);
         //printf("%s\n", data);
-        int mapNum = strtol(strtok(data, "[,]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        player->mapScreen = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
         //printf("%d/", mapNum);
-        mapLine = mapNum;
-        player->spr.x = strtol(strtok(NULL, "[,]"), NULL, 10);
+        player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d/", player->spr.x);
-        player->spr.y = strtol(strtok(NULL, "[,]"), NULL, 10);
+        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
         //switch maps
-        loadMapFile(player->extraData, tilemap, eventmap, mapNum, 15, 20);
+        loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
         for(int i = 0; i < 120; i++)
         {
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
