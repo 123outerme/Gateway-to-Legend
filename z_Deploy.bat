@@ -1,24 +1,22 @@
-@ROBOCOPY %cd% "%cd%\SoU-bin\build" *.c *.h *.txt maps.bin
-@ROBOCOPY %cd% "%cd%\SoU-bin" *.txt
-@copy %cd% "%cd%\SoU-bin\execute" maps.bin
-@ROBOCOPY %cd% "%cd%\SoU-bin\stuff" *.ico *.rc
-@del %cd%\builds\binaries\SorceryOfUvutuPCbin.zip
-@del %cd%\SoU-bin\execute\SorceryOfUvutu.exe
-@del %cd%\SoU-bin\execute\sorceryConfig.ini
-@del %cd%\SoU-bin\execute\SAVUVUTU.bin
-@cd SoU-bin
+@ROBOCOPY %cd% "%cd%\GtL-bin\build" *.c *.h *.ico *.rc
+@ROBOCOPY %cd% "%cd%\GtL-bin\execute" *.txt *.png /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj"
+@ROBOCOPY %cd% "%cd%\GtL-bin" *.txt
+@ROBOCOPY %cd% "%cd%\GtL-bin\stuff" *.ico *.rc
+@del %cd%\builds\binaries\GatewayToLegendbin.zip
+@del %cd%\GtL-bin\execute\GatewayToLegend.exe
+@del %cd%\GtL-bin\execute\GatewayToLegend.cfg
+@ROBOCOPY %cd% "%cd%\GtL\execute" *.txt *.png /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj"
+@cd GtL-bin
 @rem zip it up...
-@%cd%\7za.exe a -y -tzip "%cd%\builds\binaries\SorceryOfUvutuPCbin.zip" "%cd%\SoU-bin" -mx5
+@%cd%\..\7za.exe a -y -tzip "%cd%\..\builds\binaries\GatewayToLegendbin.zip" "%cd%" -mx5
 @rem done...
-@del %cd%\builds\prebuilt\SorceryOfUvutuPC.zip
-@del %cd%\SoU\execute\SorceryOfUvutu.exe
-@del %cd%\SoU\execute\sorceryConfig.ini
-@del %cd%\SoU\execute\SAVUVUTU.bin
 @cd build
+@del %cd%\..\..\builds\prebuilt\GatewayToLegend.zip
+@del %cd%\..\..\GtL\execute\GatewayToLegend.exe
+@del %cd%\..\..\GtL\execute\GatewayToLegend.cfg
 call a_makeWindows.bat
-@ROBOCOPY %cd%\SoU-bin\execute %cd%\SoU\execute *.exe *.ico maps.bin
-@ROBOCOPY %cd% %cd%\SoU *.txt
+@ROBOCOPY %cd%\..\execute %cd%\..\..\GtL\execute *.exe *.ico *.bat
 @rem zip it up...
-@%cd%\7za.exe a -y -tzip "%cd%\builds\prebuilt\SorceryOfUvutuPC.zip" "%cd%\SoU" -mx5
+cd ..\..
+@%cd%\7za.exe a -y -tzip "%cd%\builds\prebuilt\GatewayToLegend.zip" "%cd%\GtL" -mx5
 @rem done...
-@cd ..\..

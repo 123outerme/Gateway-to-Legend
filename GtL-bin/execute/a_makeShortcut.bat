@@ -1,0 +1,1 @@
+@powershell "$s=(New-Object -COM WScript.Shell).CreateShortcut('%userprofile%\Desktop\Gateway to Legend.lnk');$s.TargetPath='%execDir%\GatewayToLegend.exe';$s.IconLocation='%cd%\icon.ico';$s.workingDirectory='%execDir%';$s.Save()"
