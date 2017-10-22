@@ -37,7 +37,7 @@ int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
-void executeScriptAction(script* scriptData, player* player);
+bool executeScriptAction(script* scriptData, player* player);
 
 /*bool debug;
 bool doDebugDraw;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         switch(gameState)
         {
         case START_GAMECODE:  //start menu
-            person.mapScreen = 2;
+            person.mapScreen = 0;
             choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
@@ -220,11 +220,10 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-    bool quit = false, portalActive = true;
+    bool quit = false;
     char* mapFilePath = playerSprite->extraData;
-    int* collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
+    int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
-    int maxTheseScripts = 0;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
         if (allScripts[i].mapNum == playerSprite->mapScreen)
@@ -256,7 +255,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || keyStates[SDL_SCANCODE_H]) && frame % 18 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && frame % 18 == 0)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -274,7 +273,7 @@ int mainLoop(player* playerSprite)
                     playerSprite->flip = SDL_FLIP_HORIZONTAL;
                 if (checkSKRight)
                     playerSprite->flip = SDL_FLIP_NONE;
-                if (keyStates[SDL_SCANCODE_H])
+                if (checkSKInteract)
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 /*if (checkCollision(playerSprite, tilemap[playerSprite->spr.y / TILE_SIZE + checkSKDown][playerSprite->spr.x / TILE_SIZE + checkSKRight], 0, 0))
                 {
@@ -286,32 +285,33 @@ int mainLoop(player* playerSprite)
                 }*/
                 if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
-                    if (!playerSprite->spr.x)
+                    bool quitThis = false;
+                    if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
                     {
                         playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                        if (playerSprite->mapScreen % 10 > 0)
-                            playerSprite->mapScreen--;
-
+                        playerSprite->mapScreen--;
+                        quitThis = true;
                     }
-                    if (!playerSprite->spr.y)
+                    if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
                     {
                         playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                        if (playerSprite->mapScreen / 10 > 0)
-                            playerSprite->mapScreen -= 10;
+                        playerSprite->mapScreen -= 10;
+                        quitThis = true;
                     }
-                    if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE)
+                    if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
                     {
                         playerSprite->spr.x = TILE_SIZE;
-                        if (playerSprite->mapScreen % 10 < 9)
-                            playerSprite->mapScreen++;
+                        playerSprite->mapScreen++;
+                        quitThis = true;
                     }
-                    if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
+                    if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
                     {
                         playerSprite->spr.y = TILE_SIZE;
-                        if (playerSprite->mapScreen / 10 < 9)
-                            playerSprite->mapScreen += 10;
+                        playerSprite->mapScreen += 10;
+                        quitThis = true;
                     }
-                    return 2;
+                    if (quitThis)
+                        return 2;
                 }
                 checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
@@ -328,7 +328,7 @@ int mainLoop(player* playerSprite)
                             doorFlags[i] = false;
                     }
                 }
-                if (collisionData[9] && portalActive == true)
+                if (collisionData[9])
                 {
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
@@ -339,16 +339,12 @@ int mainLoop(player* playerSprite)
                                 found = true;
                             }
                     }
-                    if (!found)
-                        initScript(&thisScript, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, script_use_portal, "[0/48/48]");
-                    thisScript.active = true;
+                    thisScript.active = found;
                     //printf("%s\n", thisScript.data);
                     //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
                     playerSprite->extraData = mapFilePath;
-                    portalActive = false;
+                    exitCode = 2;
                 }
-                if (!collisionData[9] && portalActive == false)
-                    portalActive = true;
         }
         if (checkSKMenu)
         {
@@ -365,7 +361,7 @@ int mainLoop(player* playerSprite)
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
         if (thisScript.active)
-            executeScriptAction(&thisScript, playerSprite);
+            quit = executeScriptAction(&thisScript, playerSprite);
     }
     free(theseScripts);
     free(collisionData);
@@ -428,7 +424,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         SDL_RenderPresent(mainRenderer);
 }
 
-void executeScriptAction(script* scriptData, player* player)
+bool executeScriptAction(script* scriptData, player* player)
 {
     if (scriptData->action == script_trigger_dialogue)
     {
@@ -456,7 +452,7 @@ void executeScriptAction(script* scriptData, player* player)
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
         //switch maps
-        loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
+        //loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
         for(int i = 0; i < 120; i++)
         {
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
@@ -465,8 +461,10 @@ void executeScriptAction(script* scriptData, player* player)
             SDL_Delay(4);
         }
         free(data);
+        return true;
     }
     if (scriptData->action == script_gain_exp)
         player->experience += strtol(scriptData->data, NULL, 10);
     scriptData->active = false;
+    return false;  //returns whether or not it wants to exit the loop
 }
