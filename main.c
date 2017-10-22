@@ -37,7 +37,6 @@ int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
-bool executeScriptAction(script* scriptData, player* player);
 
 /*bool debug;
 bool doDebugDraw;
@@ -422,49 +421,4 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);
-}
-
-bool executeScriptAction(script* scriptData, player* player)
-{
-    if (scriptData->action == script_trigger_dialogue)
-    {
-        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
-        waitForKey();
-    }
-    if (scriptData->action == script_use_portal)
-    {
-        for(int i = 0; i < 3; i++)
-            doorFlags[i] = true;
-        for(int i = 120; i > -1; i--)
-        {
-            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
-            SDL_RenderClear(mainRenderer);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(10);
-        }
-        SDL_Delay(90);
-        char* data = calloc(99, sizeof(char));
-        //printf("%s\n", data);
-        player->mapScreen = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
-        //printf("%d/", mapNum);
-        player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
-        //printf("%d/", player->spr.x);
-        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
-        //printf("%d\n", player->spr.y);
-        //switch maps
-        //loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
-        for(int i = 0; i < 120; i++)
-        {
-            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
-            SDL_RenderClear(mainRenderer);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(4);
-        }
-        free(data);
-        return true;
-    }
-    if (scriptData->action == script_gain_exp)
-        player->experience += strtol(scriptData->data, NULL, 10);
-    scriptData->active = false;
-    return false;  //returns whether or not it wants to exit the loop
 }
