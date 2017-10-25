@@ -220,9 +220,11 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
     bool quit = false;
-    char* mapFilePath = playerSprite->extraData;
+    char mapFilePath[MAX_CHAR_IN_FILEPATH];
+    strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
+    thisScript.active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
         if (allScripts[i].mapNum == playerSprite->mapScreen)
@@ -272,7 +274,7 @@ int mainLoop(player* playerSprite)
                     playerSprite->flip = SDL_FLIP_HORIZONTAL;
                 if (checkSKRight)
                     playerSprite->flip = SDL_FLIP_NONE;
-                if (checkSKInteract)
+                if (checkSKInteract && frame / 18 > 5)
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 /*if (checkCollision(playerSprite, tilemap[playerSprite->spr.y / TILE_SIZE + checkSKDown][playerSprite->spr.x / TILE_SIZE + checkSKRight], 0, 0))
                 {
@@ -310,7 +312,10 @@ int mainLoop(player* playerSprite)
                         quitThis = true;
                     }
                     if (quitThis)
-                        return 2;
+                    {
+                        quit = true;
+                        exitCode = 2;
+                    }
                 }
                 checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
@@ -352,7 +357,7 @@ int mainLoop(player* playerSprite)
         }
         frame++;
         if ((SDL_GetTicks() - startTime) % 500 == 0)
-                framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
+            framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
         //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
 
         drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);

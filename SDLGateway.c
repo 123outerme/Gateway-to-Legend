@@ -361,7 +361,10 @@ bool executeScriptAction(script* scriptData, player* player)
         returnThis = true;
     }
     if (scriptData->action == script_gain_exp)
+    {
         player->experience += strtol(scriptData->data, NULL, 10);
+        //play animation?
+    }
     scriptData->active = false;
     return returnThis;  //returns whether or not it wants to exit the loop
 }

@@ -372,7 +372,7 @@ int mainMapPackWizard()
             printf("Initial Y spawn-coordinate? ");
             break;
         }
-        gets(getString);
+        scanf("%[^\n]%*c", getString);
         switch(wizardState)
         {
         case 0:
