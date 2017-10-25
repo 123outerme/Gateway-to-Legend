@@ -324,6 +324,7 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
 
 bool executeScriptAction(script* scriptData, player* player)
 {
+    bool returnThis = false;
     if (scriptData->action == script_trigger_dialogue)
     {
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
@@ -357,10 +358,10 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_Delay(4);
         }
         free(data);
-        return true;
+        returnThis = true;
     }
     if (scriptData->action == script_gain_exp)
         player->experience += strtol(scriptData->data, NULL, 10);
     scriptData->active = false;
-    return false;  //returns whether or not it wants to exit the loop
+    return returnThis;  //returns whether or not it wants to exit the loop
 }
