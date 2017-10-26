@@ -65,6 +65,9 @@ void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script
 
+int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+SDL_Texture* tilesTexture;
+
 #define SIZE_OF_SCANCODE_ARRAY 6
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_UP CUSTOM_SCANCODES[0]
@@ -75,8 +78,5 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_MENU CUSTOM_SCANCODES[5]
 
 int FPS, targetTime;
-
-int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
-SDL_Texture* tilesTexture;
 
 #endif // SDLSEEKERS_H_INCLUDED

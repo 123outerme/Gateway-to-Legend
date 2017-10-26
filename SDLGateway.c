@@ -2,7 +2,7 @@
 
 #define TILE_ID_CURSOR 17
 
-#define calcWaitTime(x) 1000 / x
+#define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
 {
