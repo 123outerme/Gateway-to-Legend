@@ -265,86 +265,85 @@ int mainLoop(player* playerSprite)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
-                if (playerSprite->spr.y > 0 && checkSKUp)
-                    playerSprite->spr.y -= PIXELS_MOVED;
-                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
-                    playerSprite->spr.y += PIXELS_MOVED;
-                if (playerSprite->spr.x > 0 && checkSKLeft)
-                    playerSprite->spr.x -= PIXELS_MOVED;
-                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
-                    playerSprite->spr.x += PIXELS_MOVED;
-                if (checkSKLeft)
-                    playerSprite->flip = SDL_FLIP_HORIZONTAL;
-                if (checkSKRight)
-                    playerSprite->flip = SDL_FLIP_NONE;
-                if (checkSKInteract && frame / 18 > 5)
-                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
-                checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
-                if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
+            if (playerSprite->spr.y > 0 && checkSKUp)
+                playerSprite->spr.y -= PIXELS_MOVED;
+            if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
+                playerSprite->spr.y += PIXELS_MOVED;
+            if (playerSprite->spr.x > 0 && checkSKLeft)
+                playerSprite->spr.x -= PIXELS_MOVED;
+            if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
+                playerSprite->spr.x += PIXELS_MOVED;
+            if (checkSKLeft)
+                playerSprite->flip = SDL_FLIP_HORIZONTAL;
+            if (checkSKRight)
+                playerSprite->flip = SDL_FLIP_NONE;
+            if (checkSKInteract && frame / 18 > 5)
+                initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
+            checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+            if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
+            {
+                bool quitThis = false;
+                if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
                 {
-                    bool quitThis = false;
-                    if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
-                    {
-                        playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                        playerSprite->mapScreen--;
-                        quitThis = true;
-                    }
-                    if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
-                    {
-                        playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                        playerSprite->mapScreen -= 10;
-                        quitThis = true;
-                    }
-                    if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
-                    {
-                        playerSprite->spr.x = TILE_SIZE;
-                        playerSprite->mapScreen++;
-                        quitThis = true;
-                    }
-                    if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
-                    {
-                        playerSprite->spr.y = TILE_SIZE;
-                        playerSprite->mapScreen += 10;
-                        quitThis = true;
-                    }
-                    if (quitThis)
-                    {
-                        quit = true;
-                        exitCode = 2;
-                    }
+                    playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
+                    playerSprite->mapScreen--;
+                    quitThis = true;
                 }
-
-                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
+                if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
                 {
-                    playerSprite->spr.y = lastY;
-                    playerSprite->spr.x = lastX;
-                    //printf("%d\n", exitCode);
+                    playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
+                    playerSprite->mapScreen -= 10;
+                    quitThis = true;
                 }
-                if (collisionData[1] || collisionData[2] || collisionData[3])
+                if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
                 {
-                    for(int i = 0; i < 3; i++)
-                    {
-                        if (collisionData[i + 1])
-                            doorFlags[i] = false;
-                    }
+                    playerSprite->spr.x = TILE_SIZE;
+                    playerSprite->mapScreen++;
+                    quitThis = true;
                 }
-                if (collisionData[9])
+                if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
                 {
-                    bool found = false;
-                    for(int i = 0; i < maxTheseScripts; i++)
-                    {
-                        if (theseScripts[i].action == script_use_portal && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
-                            {
-                                thisScript = theseScripts[i];
-                                found = true;
-                            }
-                    }
-                    thisScript.active = found;
-                    //printf("%s\n", thisScript.data);
-                    //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
-                    playerSprite->extraData = mapFilePath;
+                    playerSprite->spr.y = TILE_SIZE;
+                    playerSprite->mapScreen += 10;
+                    quitThis = true;
+                }
+                if (quitThis)
+                {
+                    quit = true;
                     exitCode = 2;
                 }
+            }
+
+            if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
+            {
+                playerSprite->spr.y = lastY;
+                playerSprite->spr.x = lastX;
+                //printf("%d\n", exitCode);
+            }
+            if (collisionData[1] || collisionData[2] || collisionData[3])
+            {
+                for(int i = 0; i < 3; i++)
+                {
+                    if (collisionData[i + 1])
+                        doorFlags[i] = false;
+                }
+            }
+            if (collisionData[9])
+            {
+                bool found = false;
+                for(int i = 0; i < maxTheseScripts; i++)
+                {
+                    if (theseScripts[i].action == script_use_portal && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
+                        {
+                            thisScript = theseScripts[i];
+                            found = true;
+                        }
+                }
+                thisScript.active = found;
+                //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
+                playerSprite->extraData = mapFilePath;
+                exitCode = 2;
+            }
         }
         if (checkSKMenu)
         {

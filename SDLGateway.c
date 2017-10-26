@@ -357,6 +357,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_RenderPresent(mainRenderer);
             SDL_Delay(4);
         }
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
         free(data);
         returnThis = true;
     }
