@@ -337,7 +337,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
             SDL_RenderClear(mainRenderer);
             SDL_RenderPresent(mainRenderer);
-            SDL_Delay(10);
+            SDL_Delay(9);
         }
         SDL_Delay(90);
         char* data = calloc(99, sizeof(char));

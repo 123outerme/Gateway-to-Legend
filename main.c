@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
     int gameState = 0;
     char* buffer = "";  //actually needed
     bool quitGame = false;
+    allScripts = NULL;
     while(!quitGame)
     {
         int choice = 0;
@@ -115,6 +116,8 @@ int main(int argc, char* argv[])
             //printf("%s\n", saveFilePath);
             uniqueReadLine((char**) &scriptFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 4);
             //printf("%s\n", scriptFilePath);
+            if (allScripts != NULL)
+                free(allScripts);
             allScripts = calloc(checkFile(scriptFilePath, -1) + 1, sizeof(script));
             for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
             {
@@ -123,7 +126,6 @@ int main(int argc, char* argv[])
                 allScripts[i] = thisScript;
                 sizeOfAllScripts = i + 1;
             }
-            quitGame = false;
             if (checkFile(saveFilePath, 0))
                 /*load local save file*/;
             else
@@ -161,9 +163,9 @@ int main(int argc, char* argv[])
             }
             break;
         case RELOAD_GAMECODE:
+            gameState = MAINLOOP_GAMECODE;
             for(int i = 0; i < 3; i++)
                 doorFlags[i] = true;
-            gameState = MAINLOOP_GAMECODE;
             break;
         }
     }
@@ -230,11 +232,14 @@ int mainLoop(player* playerSprite)
         if (allScripts[i].mapNum == playerSprite->mapScreen)
             theseScripts[maxTheseScripts++] = allScripts[i];
     }
-    theseScripts = realloc(theseScripts, maxTheseScripts * sizeof(script));
+    {
+        script* new_ptr = realloc(theseScripts, maxTheseScripts * sizeof(script));
+        if (new_ptr != NULL)
+            theseScripts = new_ptr;
+    }
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
-    int frame = 0, framerate = 0;
-    int exitCode = 0;
+    int frame = 0, framerate = 0, exitCode = 2;
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks() - 1;
     while(!quit)
@@ -260,8 +265,6 @@ int mainLoop(player* playerSprite)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
-                //SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
-                //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE], (playerSprite->spr.x / TILE_SIZE) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
                 if (playerSprite->spr.y > 0 && checkSKUp)
                     playerSprite->spr.y -= PIXELS_MOVED;
                 if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
@@ -276,14 +279,7 @@ int mainLoop(player* playerSprite)
                     playerSprite->flip = SDL_FLIP_NONE;
                 if (checkSKInteract && frame / 18 > 5)
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
-                /*if (checkCollision(playerSprite, tilemap[playerSprite->spr.y / TILE_SIZE + checkSKDown][playerSprite->spr.x / TILE_SIZE + checkSKRight], 0, 0))
-                {
-                    if (SDL_HasIntersection(&((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect) {.x = (playerSprite->spr.x / TILE_SIZE) * TILE_SIZE + checkSKRight, .y = (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE + checkSKDown, .w = TILE_SIZE, .h = TILE_SIZE})))
-                    {
-                        playerSprite->spr.y = lastY;
-                        playerSprite->spr.x = lastX;
-                    }
-                }*/
+                checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
                 if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     bool quitThis = false;
@@ -317,7 +313,7 @@ int mainLoop(player* playerSprite)
                         exitCode = 2;
                     }
                 }
-                checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
                 {
                     playerSprite->spr.y = lastY;
@@ -345,7 +341,7 @@ int mainLoop(player* playerSprite)
                     }
                     thisScript.active = found;
                     //printf("%s\n", thisScript.data);
-                    //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0,456,336]\0");
+                    //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
                     playerSprite->extraData = mapFilePath;
                     exitCode = 2;
                 }
