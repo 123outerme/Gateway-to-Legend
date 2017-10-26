@@ -74,6 +74,8 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_INTERACT CUSTOM_SCANCODES[4]
 #define SC_MENU CUSTOM_SCANCODES[5]
 
+int FPS, targetTime;
+
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
 

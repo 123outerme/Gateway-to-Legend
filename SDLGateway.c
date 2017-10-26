@@ -2,6 +2,8 @@
 
 #define TILE_ID_CURSOR 17
 
+#define calcWaitTime(x) 1000 / x
+
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
 {
     //inputName(player);  //custom text input routine to get player->name
@@ -39,6 +41,8 @@ void initConfig(char* filePath)
     SC_RIGHT = SDL_SCANCODE_D;
     SC_INTERACT = SDL_SCANCODE_SPACE;
     SC_MENU = SDL_SCANCODE_ESCAPE;
+    FPS = 60;
+    targetTime = calcWaitTime(FPS);
     saveConfig(filePath);
 }
 
@@ -78,6 +82,9 @@ void loadConfig(char* filePath)
         readLine(filePath, i, &buffer);
         CUSTOM_SCANCODES[i] = strtol(buffer, NULL, 10);
     }
+    readLine(filePath, SIZE_OF_SCANCODE_ARRAY, &buffer);
+    FPS = strtol(strtok(buffer, "FPS="), NULL, 10);
+    targetTime = calcWaitTime(FPS);
 }
 
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
@@ -234,6 +241,9 @@ void saveConfig(char* filePath)
     appendLine(filePath, intToString(SC_RIGHT, buffer));
     appendLine(filePath, intToString(SC_INTERACT, buffer));
     appendLine(filePath, intToString(SC_MENU, buffer));
+    char newBuffer[8];
+    strcpy(newBuffer, "FPS=");
+    appendLine(filePath, strcat(newBuffer, intToString(FPS, buffer)));
     //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
 }
 
@@ -357,7 +367,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_RenderPresent(mainRenderer);
             SDL_Delay(4);
         }
-        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
         free(data);
         returnThis = true;
     }

@@ -239,9 +239,10 @@ int mainLoop(player* playerSprite)
     }
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
-    int frame = 0, framerate = 0, exitCode = 2;
+    int exitCode = 2;
     char whatever[5] = "    \0";
-    int startTime = SDL_GetTicks() - 1;
+    int startTime = SDL_GetTicks() - 1, lastFrame = startTime,
+        frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks();
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -261,7 +262,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && frame % 18 == 0)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && (SDL_GetTicks() - lastKeypressTime) >= 32)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -344,6 +345,7 @@ int mainLoop(player* playerSprite)
                 playerSprite->extraData = mapFilePath;
                 exitCode = 2;
             }
+            lastKeypressTime = SDL_GetTicks();
         }
         if (checkSKMenu)
         {
@@ -351,7 +353,7 @@ int mainLoop(player* playerSprite)
             exitCode = 1;
         }
         frame++;
-        if ((SDL_GetTicks() - startTime) % 500 == 0)
+        //if ((SDL_GetTicks() - startTime) % 250 == 0)
             framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
         //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
 
@@ -359,6 +361,11 @@ int mainLoop(player* playerSprite)
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
+        //sleepFor = 1000 / (framerate == 0 ? 1 : framerate - (SDL_GetTicks() - lastFrame));
+        sleepFor = (int) (targetTime - (SDL_GetTicks() - lastFrame));  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
+        if (sleepFor > 0)
+            SDL_Delay(sleepFor);
+        lastFrame = SDL_GetTicks();
         if (thisScript.active)
             quit = executeScriptAction(&thisScript, playerSprite);
     }
