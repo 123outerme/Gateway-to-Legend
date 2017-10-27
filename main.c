@@ -221,7 +221,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-    bool quit = false;
+    bool quit = false, textBoxOn = false;
     char mapFilePath[MAX_CHAR_IN_FILEPATH];
     strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
@@ -262,7 +262,7 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && (SDL_GetTicks() - lastKeypressTime) >= 32)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && SDL_GetTicks() - lastKeypressTime >= 32)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -278,8 +278,16 @@ int mainLoop(player* playerSprite)
                 playerSprite->flip = SDL_FLIP_HORIZONTAL;
             if (checkSKRight)
                 playerSprite->flip = SDL_FLIP_NONE;
-            if (checkSKInteract && frame / 18 > 5)
+            if (checkSKInteract && !textBoxOn)
+            {
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
+                textBoxOn = !textBoxOn;
+            }   
+            else if (checkSKInteract && textBoxOn)
+            {
+                textBoxOn = !textBoxOn;
+                thisScript.active = false;
+            }
             checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
             if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
             {
@@ -338,6 +346,7 @@ int mainLoop(player* playerSprite)
                         {
                             thisScript = theseScripts[i];
                             found = true;
+                            break;
                         }
                 }
                 thisScript.active = found;
