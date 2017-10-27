@@ -25,6 +25,12 @@ typedef struct {
 #define checkSKRight keyStates[7]
 #define checkSKInteract keyStates[44]
 #define checkSKMenu keyStates[41]
+#define SC_UP SDL_SCANCODE_W
+#define SC_DOWN SDL_SCANCODE_S
+#define SC_LEFT SDL_SCANCODE_A
+#define SC_RIGHT SDL_SCANCODE_D
+#define SC_INTERACT SDL_SCANCODE_SPACE
+#define SC_MENU SDL_SCANCODE_ESCAPE
 //SDL_SCANCODE_W
 //SDL_SCANCODE_S
 //SDL_SCANCODE_A
@@ -34,12 +40,17 @@ typedef struct {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"
 
+#define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
+
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate."}
 const int maxArraySize = 14;
 #define MAX_MAP_PACK_DATA 6
 
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
+// ^ whatever
 int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
@@ -61,17 +72,111 @@ const int targetTime = 1000 / FRAMERATE;
 
 int main(int argc, char* argv[])
 {
-    initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
-    drawText("Press 1 for Map Creator, 2 for Map-Pack Wizard.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0, 0, 0}, true);
-    SDL_Keycode keycode = waitForKey();
+    initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", " ", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
-    if (keycode == SDLK_1)
+    if (code == 1)
         mainMapCreator();
-    if (keycode == SDLK_2)
+    if (code == 2)
         mainMapPackWizard();
-    if (keycode != SDLK_1 && keycode != SDLK_2)
-        printf("Invalid keypress.\n");
     return 0;
+}
+
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
+{
+    if (curSelect < 1)
+        curSelect = 1;
+    sprite cursor;
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, (entityType) type_na);
+    SDL_Event e;
+    bool quit = false;
+    int selection = -1;
+    //While application is running
+    while(!quit)
+    {
+        SDL_RenderClear(mainRenderer);
+        if (border)
+            SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+        else
+            SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        //background text (drawn first)
+        drawText(title, 1 * TILE_SIZE + (5 - 2 * !isMain) * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
+        //foreground text
+        drawText(title, 1 * TILE_SIZE + TILE_SIZE / (2 + 2 * !isMain) , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
+
+        drawText(opt1, 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+        drawText(opt2, 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+        drawText(opt3, 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        drawText(opt4, 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+        drawText(opt5, 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+
+        /*if (isMain)
+        {
+            char version[12];
+            strcpy(version, FULLVERSION_STRING);
+            strcat(version, STATUS_SHORT);
+            strcat(version, "\0");
+            drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
+            drawText(version, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
+        }*/
+
+        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                selection = ANYWHERE_QUIT;
+            }
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                //const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                {
+                    if (cursor.y > 5 * TILE_SIZE)
+                        cursor.y -= TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (cursor.y < (options + 4) * TILE_SIZE)
+                        cursor.y += TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                {
+                    selection = cursor.y / TILE_SIZE - 4;
+                    quit = true;
+                }
+                /*if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
+                {
+                    SC_UP = SDL_SCANCODE_W;
+                    SC_DOWN = SDL_SCANCODE_S;
+                    SC_LEFT = SDL_SCANCODE_A;
+                    SC_RIGHT = SDL_SCANCODE_D;
+                    SC_INTERACT = SDL_SCANCODE_SPACE;
+                    SC_MENU = SDL_SCANCODE_ESCAPE;
+                    saveConfig(CONFIG_FILE_NAME);
+                }*/
+            }
+        }
+        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+    }
+    return selection;
+}
+
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+{
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }
 
 int mainMapCreator()

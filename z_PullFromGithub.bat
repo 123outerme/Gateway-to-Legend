@@ -8,7 +8,7 @@ git clone https://github.com/123outerme/Gateway-to-Legend.git
     cd /d %folder%
     for /F "delims=" %%i in ('dir /b') do (rmdir "%%i" /s/q || del "%%i" /s/q)
 )
-@ROBOCOPY "C:\Program Files\Git\code\Gateway-to-Legend" %~dp0 *.c *.h *.txt *.ico *.rc *.png /E
+@ROBOCOPY "C:\Program Files\Git\code\Gateway-to-Legend" %~dp0 *.c *.h *.txt *.ico *.rc *.png /MIR /XD dirs .git GtL GtL-bin
 @cd "C:\Program Files\Git\code\Gateway-to-Legend"
 @git init
 @git add -A
