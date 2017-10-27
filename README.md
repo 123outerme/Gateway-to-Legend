@@ -7,9 +7,8 @@ that became it's own thing with its own ideas. The core gameplay involves solvin
 The word "I" refers to the creator of Sorcery of Uvutu, Stephen Policelli.
 I did not write or modify the graphics library, SDL2, any of its extensions or previous versions, or any
 of its code.
-I did not create the font file PX_437_ITT_BIOS_X.ttf. However, I did slight modify it, adding in one
+I did not create the font file PX_437_ITT_BIOS_X.ttf. However, I did slightly modify it, adding in one
 character.
-I originally wrote Sorcery of Uvutu for TI-84+CSE, then for TI-84+, and then for PC.
 You'll see why I mention these things if you read all of the licenses.
 
 ### > Gateway to Legend <
