@@ -361,10 +361,8 @@ int mainLoop(player* playerSprite)
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
-        //sleepFor = 1000 / (framerate == 0 ? 1 : framerate - (SDL_GetTicks() - lastFrame));
-        sleepFor = (int) (targetTime - (SDL_GetTicks() - lastFrame));  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
-        if (sleepFor > 0)
-            SDL_Delay(sleepFor);
+        if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
+            SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         lastFrame = SDL_GetTicks();
         if (thisScript.active)
             quit = executeScriptAction(&thisScript, playerSprite);
