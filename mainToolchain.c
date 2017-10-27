@@ -267,7 +267,7 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
-	player->money = 0;
+	player->money = 2147483647;
 	player->HP = 50;
 	player->maxHP = 50;
 	player->worldNum = 1;
