@@ -1,9 +1,9 @@
 >> Legal Stuff <<
 
-The word "I" refers to the creator of Sorcery of Uvutu, Stephen Policelli.
+The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.
 I did not write or modify the graphics library, SDL2, any of its extensions or previous versions, or any
 of its code.
-I did not create the font file PX_437_ITT_BIOS_X.ttf. However, I did slight modify it, adding in one
+I did not create the font file PX_437_ITT_BIOS_X.ttf. However, I did slightly modify it, adding in one
 character.
 I originally wrote the code behind Gateway to Legend.
 
