@@ -44,7 +44,7 @@ int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainMapCreatorLoop(player* playerSprite);
-SDL_Keycode getKey();
+SDL_Keycode getKey(bool actually);
 void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen);
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
@@ -56,6 +56,8 @@ void strPrepend(char* input, const char* prepend);
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* eventTexture;
+
+const int targetTime = 1000 / FRAMERATE;
 
 int main(int argc, char* argv[])
 {
@@ -187,7 +189,8 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 void mainMapCreatorLoop(player* playerSprite)
 {
     bool quit = false, editingTiles = true;
-    int frame = 0, sleepFor = 0, targetTime = 1000 / 60, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks();
+    int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks();
+    SDL_Event e;
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -205,9 +208,18 @@ void mainMapCreatorLoop(player* playerSprite)
             drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
+        while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
+        {
+            if (e.type == SDL_QUIT)
+            {
+                quit = true;
+            }
+            /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
+                doDebugDraw = !doDebugDraw;*/
+        }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        getKey();  //editor freezes without this
-        if (SDL_GetTicks() - lastKeypressTime) >= 16)
+        //getKey(false);  //editor freezes without this //not anymore sucka
+        if (SDL_GetTicks() - lastKeypressTime >= 80 + 48 * (keyStates[SDL_SCANCODE_LSHIFT] || keyStates[SDL_SCANCODE_Q] || keyStates[SDL_SCANCODE_E]))
         {
             if (playerSprite->spr.y > 0 && keyStates[SDL_SCANCODE_W])
                 playerSprite->spr.y -= PIXELS_MOVED;
@@ -247,7 +259,7 @@ void mainMapCreatorLoop(player* playerSprite)
     }
 }
 
-SDL_Keycode getKey()
+SDL_Keycode getKey(bool actually)
 {
     SDL_Event e;
     SDL_Keycode keycode = 0;
@@ -464,6 +476,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     int numArrayTracker = 2, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
+    SDL_Event e;
     while(numArrayTracker < maxArraySize && !quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -473,8 +486,16 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0x00, 0x0, 0x00}, true);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        getKey();  //editor freezes without this
-        if (SDL_GetTicks() - lastKeypressTime) >= 16)
+        while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
+        {
+            if (e.type == SDL_QUIT)
+            {
+                quit = true;
+            }
+            /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
+                doDebugDraw = !doDebugDraw;*/
+        }
+        if (SDL_GetTicks() - lastKeypressTime >= 80 + 48 * checkSKInteract)
         {
             if (playerSprite->y > TILE_SIZE && checkSKUp)
                 playerSprite->y -= PIXELS_MOVED;
