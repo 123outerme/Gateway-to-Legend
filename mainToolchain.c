@@ -187,7 +187,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 void mainMapCreatorLoop(player* playerSprite)
 {
     bool quit = false, editingTiles = true;
-    int frame = 0;
+    int frame = 0, sleepFor = 0, targetTime = 1000 / 60, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks();
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
@@ -207,7 +207,7 @@ void mainMapCreatorLoop(player* playerSprite)
         SDL_RenderPresent(mainRenderer);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         getKey();  //editor freezes without this
-        if (++frame > 0)
+        if (SDL_GetTicks() - lastKeypressTime) >= 16)
         {
             if (playerSprite->spr.y > 0 && keyStates[SDL_SCANCODE_W])
                 playerSprite->spr.y -= PIXELS_MOVED;
@@ -233,16 +233,17 @@ void mainMapCreatorLoop(player* playerSprite)
                 else
                     playerSprite->spr.tileIndex = 0;
             }
-            if (keyStates[SDL_SCANCODE_W] || keyStates[SDL_SCANCODE_S] || keyStates[SDL_SCANCODE_A] || keyStates[SDL_SCANCODE_D])
-                frame = -6;
-            else
-                frame = -12;
+	    lastKeypressTime = SDL_GetTicks();
         }
 
         if (keyStates[SDL_SCANCODE_ESCAPE] || keyStates[SDL_SCANCODE_RETURN])
                 quit = true;
 
-        SDL_Delay(15);  //frame cap sorta
+        sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
+        if (sleepFor > 0)
+            SDL_Delay(sleepFor);
+        lastFrame = SDL_GetTicks();
+	frame++;
     }
 }
 
@@ -460,7 +461,7 @@ int mainMapPackWizard()
 
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
 {
-    int numArrayTracker = 2, frame = 0;
+    int numArrayTracker = 2, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
     while(numArrayTracker < maxArraySize && !quit)
@@ -473,7 +474,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
         drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0x00, 0x0, 0x00}, true);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         getKey();  //editor freezes without this
-        if (++frame > 0)
+        if (SDL_GetTicks() - lastKeypressTime) >= 16)
         {
             if (playerSprite->y > TILE_SIZE && checkSKUp)
                 playerSprite->y -= PIXELS_MOVED;
@@ -485,16 +486,17 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
                 playerSprite->x += PIXELS_MOVED;
             if (checkSKInteract)
                 numArray[numArrayTracker++] = 8 * (playerSprite->x / TILE_SIZE) + playerSprite->y / TILE_SIZE - 1;  //-1 because we don't start at y=0
-            if (checkSKUp || checkSKDown || checkSKLeft || checkSKRight)
-                frame = -3;
-            else
-                frame = -6;
+            lastKeypressTime = SDL_GetTicks();
         }
 
         if (checkSKMenu || keyStates[SDL_SCANCODE_RETURN])
                 quit = true;
 
-        SDL_Delay(15);  //frame cap sorta
+        sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
+        if (sleepFor > 0)
+            SDL_Delay(sleepFor);
+        lastFrame = SDL_GetTicks();
+	frame++;
         //SDL_RenderPresent(mainRenderer);
     }
     /*for(int i = 0; i < maxArraySize; i++)
