@@ -51,6 +51,7 @@ int sizeOfAllScripts;
 
 int main(int argc, char* argv[])
 {
+    //setting up default values
     //debug = true;
     {
         int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
@@ -101,7 +102,7 @@ int main(int argc, char* argv[])
             break;
         case PLAY_GAMECODE:  //main menu
             mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &quitGame);
-            if (quitGame)
+            if (quitGame)  //yes I do need this, this is gonna tell me if we
             {
                 gameState = START_GAMECODE;
                 quitGame = false;
@@ -116,8 +117,8 @@ int main(int argc, char* argv[])
             //printf("%s\n", saveFilePath);
             uniqueReadLine((char**) &scriptFilePath, MAX_CHAR_IN_FILEPATH - 9, mainFilePath, 4);
             //printf("%s\n", scriptFilePath);
-            if (allScripts != NULL)
-                free(allScripts);
+            loadIMG(tileFilePath, &tilesTexture);
+            free(allScripts);
             allScripts = calloc(checkFile(scriptFilePath, -1) + 1, sizeof(script));
             for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
             {
@@ -126,16 +127,21 @@ int main(int argc, char* argv[])
                 allScripts[i] = thisScript;
                 sizeOfAllScripts = i + 1;
             }
-            if (checkFile(saveFilePath, 0))
-                /*load local save file*/;
-            else
-                createFile(saveFilePath);
-
             for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 7 + i, &buffer), NULL, 10);
             }
-            loadIMG(tileFilePath, &tilesTexture);
+            quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), "New Game", "Load Game", "Back", " ", " ", 3, 2, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            if (quitGame == 3)
+            {
+                quitGame = false;
+                break;
+            }
+            if (checkFile(saveFilePath, 0) && quitGame == 2)
+                /*load local save file*/;
+            else
+                createFile(saveFilePath);
+            quitGame = false;
             initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
             //done loading map-pack specific stuff
             gameState = MAINLOOP_GAMECODE;
@@ -282,7 +288,7 @@ int mainLoop(player* playerSprite)
             {
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 textBoxOn = !textBoxOn;
-            }   
+            }
             else if (checkSKInteract && textBoxOn)
             {
                 textBoxOn = !textBoxOn;
