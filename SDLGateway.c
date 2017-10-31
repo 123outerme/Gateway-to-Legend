@@ -42,6 +42,7 @@ void initConfig(char* filePath)
     SC_RIGHT = SDL_SCANCODE_D;
     SC_INTERACT = SDL_SCANCODE_SPACE;
     SC_MENU = SDL_SCANCODE_ESCAPE;
+    SC_ATTACK = SDL_SCANCODE_LSHIFT;
     FPS = 60;
     targetTime = calcWaitTime(FPS);
     saveConfig(filePath);
@@ -235,6 +236,7 @@ void saveConfig(char* filePath)
     appendLine(filePath, intToString(SC_RIGHT, buffer));
     appendLine(filePath, intToString(SC_INTERACT, buffer));
     appendLine(filePath, intToString(SC_MENU, buffer));
+    appendLine(filePath, intToString(SC_ATTACK, buffer));
     char newBuffer[8];
     strcpy(newBuffer, "FPS=");
     appendLine(filePath, strcat(newBuffer, intToString(FPS, buffer)));

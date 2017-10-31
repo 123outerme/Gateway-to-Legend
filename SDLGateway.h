@@ -71,7 +71,7 @@ bool executeScriptAction(script* scriptData, player* player);  //executes a scri
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
 
-#define SIZE_OF_SCANCODE_ARRAY 6
+#define SIZE_OF_SCANCODE_ARRAY 7
 int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_UP CUSTOM_SCANCODES[0]
 #define SC_DOWN CUSTOM_SCANCODES[1]
@@ -79,6 +79,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_RIGHT CUSTOM_SCANCODES[3]
 #define SC_INTERACT CUSTOM_SCANCODES[4]
 #define SC_MENU CUSTOM_SCANCODES[5]
+#define SC_ATTACK CUSTOM_SCANCODES[6]
 
 int FPS, targetTime;
 
