@@ -73,7 +73,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath)
 void loadGlobalPlayer(player* playerSprite, char* filePath)
 {
     char* buffer = "";
-    strcpy(playerSprite->name, readLine(filePath, 0, &buffer));
+    strcpy(playerSprite->name, removeChar(readLine(filePath, 0, &buffer), '\n', 8, true));
     playerSprite->maxHP = strtol(readLine(filePath, 1, &buffer), NULL, 10);
     playerSprite->level = strtol(readLine(filePath, 2, &buffer), NULL, 10);
     playerSprite->experience = strtol(readLine(filePath, 3, &buffer), NULL, 10);
