@@ -6,20 +6,27 @@
 
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
 {
-    strcpy(player->name, "Player");
-    //inputName(player);  //custom text input routine to get player->name
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
-	player->level = 1;
-	player->experience = 0;
-	player->money = 0;
-	player->HP = 50;
-	player->maxHP = 50;
-	player->mapScreen = mapScreen;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
 	player->extraData = "";
-    SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
+}
+
+void createGlobalPlayer(player* playerSprite, char* filePath)
+{
+    strcpy(playerSprite->name, "Player");
+    //inputName(playerSprite);  //custom text input routine to get player->name
+    initSprite(&(playerSprite->spr), 0, 0, TILE_SIZE, 0, (entityType) type_player);
+	playerSprite->level = 1;
+	playerSprite->experience = 0;
+	playerSprite->money = 0;
+	playerSprite->HP = 12;
+	playerSprite->maxHP = 12;
+	playerSprite->mapScreen = 0;
+	playerSprite->flip = SDL_FLIP_NONE;
+	playerSprite->movementLocked = false;
+	playerSprite->extraData = "";
 }
 
 void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data)

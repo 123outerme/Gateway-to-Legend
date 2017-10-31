@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
         {
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesetTexture, 17, "Gateway to Legend", "Play", "Options", "Quit", " ", "(Not final menu)", 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, true);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -143,6 +143,8 @@ int main(int argc, char* argv[])
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
                 loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten
+            else
+                createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
