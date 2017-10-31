@@ -14,7 +14,7 @@
 #define WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/main.png"
-#define GLOBALSAVE_FILEPATH "saves/GatewayMain.txt"
+#define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH 128
@@ -27,6 +27,7 @@
 #define MAINLOOP_GAMECODE 3
 #define OVERWORLDMENU_GAMECODE 4
 #define RELOAD_GAMECODE 5
+#define SAVE_GAMECODE 6
 
 #define MAX_TILE_ID_ARRAY 12
 #define MAX_COLLISIONDATA_ARRAY 10
@@ -65,15 +66,13 @@ int main(int argc, char* argv[])
     int maxStrNum = 0;
     listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_CHAR_IN_FILEPATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
     //done loading map pack header files
+    player person;
     if (checkFile(GLOBALSAVE_FILEPATH, 0))
-        /*load global save file*/;
-    else
-        createFile(GLOBALSAVE_FILEPATH);
+        loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
     if (checkFile(CONFIG_FILEPATH, 6))  //load config
         loadConfig(CONFIG_FILEPATH);
     else
         initConfig(CONFIG_FILEPATH);
-    player person;
     /*if (debug)
         loadIMG("tileset/eventTile48.png", &eventTexture);*/
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -82,9 +81,9 @@ int main(int argc, char* argv[])
     char* buffer = "";  //actually needed
     bool quitGame = false;
     allScripts = NULL;
+    int choice = 0;
     while(!quitGame)
     {
-        int choice = 0;
         switch(gameState)
         {
         case START_GAMECODE:  //start menu
@@ -137,13 +136,13 @@ int main(int argc, char* argv[])
                 quitGame = false;
                 break;
             }
-            if (checkFile(saveFilePath, 0) && quitGame == 2)
-                /*load local save file*/;
-            else
-                createFile(saveFilePath);
-            quitGame = false;
             initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
+            if (checkFile(saveFilePath, 0) && quitGame == 2)
+                loadLocalPlayer(&person, saveFilePath);
+            quitGame = false;
             //done loading map-pack specific stuff
+            if (checkFile(GLOBALSAVE_FILEPATH, 0))
+                loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten
             gameState = MAINLOOP_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
@@ -158,12 +157,13 @@ int main(int argc, char* argv[])
                 gameState = RELOAD_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", " ", "Quit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", "Back", "Save", "Exit", " ", " " , 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
+            if (choice == 2 || choice == 3)
+                gameState = SAVE_GAMECODE;
             if (choice == 3)
             {
-                gameState = START_GAMECODE;
                 for(int i = 0; i < 3; i++)
                     doorFlags[i] = true;
             }
@@ -173,8 +173,16 @@ int main(int argc, char* argv[])
             for(int i = 0; i < 3; i++)
                 doorFlags[i] = true;
             break;
+        case SAVE_GAMECODE:
+            saveLocalPlayer(person, saveFilePath);
+            if (choice == 2)
+                gameState = MAINLOOP_GAMECODE;
+            if (choice == 3)
+                gameState = START_GAMECODE;
+            break;
         }
     }
+    saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
     printf("Quit successfully\n");
     //SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
