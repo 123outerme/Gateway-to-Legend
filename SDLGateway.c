@@ -29,14 +29,14 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 	playerSprite->extraData = "";
 }
 
-void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data)
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
 {
+	scriptPtr->action = action;
 	scriptPtr->mapNum = mapNum;
 	scriptPtr->x = x;
 	scriptPtr->y = y;
 	scriptPtr->w = w;
 	scriptPtr->h = h;
-	scriptPtr->action = action;
 	scriptPtr->data = data;
 	scriptPtr->active = true;
 }
@@ -295,7 +295,7 @@ int readScript(script* scriptPtr, char* input)
     }
 	strData = strtok(NULL, "{,}");
 	//printf("{%d,%d,%d,%d,%d,%d,%s}\n", mapNum, x, y, w, h, (int) action, data);
-	initScript(scriptPtr, intData[0], intData[1], intData[2], intData[3], intData[4], (scriptBehavior) intData[5], strData);
+	initScript(scriptPtr, (scriptBehavior) intData[0], intData[1], intData[2], intData[3], intData[4], intData[5], strData);
 	//printf("done.\n");
 	return 0;
 }
