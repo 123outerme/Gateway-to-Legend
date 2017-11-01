@@ -1,0 +1,36 @@
+~~ Gateway to Legend Toolchain ~~
+
+The Toolchain application is a set of tools that mapmakers can use to create their own puzzle adventures! These include
+the Map Creator, Map-Pack Header Wizard, and the Script Creator.
+
+~ Map Creator ~
+Use this to make individual maps, which you paste into your map file. It outputs to
+(folder where Gateway is downloaded)/output/map.txt.
+It asks you if you want to make a new map, and if not, asks where the map is that you want to edit, all in the console
+window. After that, a window pops up, and this is your map editor.
+
+Controls:
+W - Up
+A - Left
+S - Down
+D - Right
+Space - Place tile/event
+LShift - Switch between placing/seeing tiles and events
+
+
+~ Map-Pack Header Wizard ~
+For the first part, you input information through the console window. Then, after everything is added, you select
+sprites from the specified tileset to define them as the events/items/enemies you want them to be.
+
+Controls:
+W - Up
+A - Left
+S - Down
+D - Right
+Space - Select the tile highlighted
+Enter / Esc / Exiting window: Quit early. Upon completing all required selections, the window will close 
+                              automatically. If you do any of those three, you can quit before the file is written to.
+
+
+~ Script Creator ~
+No information at this time
