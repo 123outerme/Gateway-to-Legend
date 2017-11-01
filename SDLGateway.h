@@ -50,7 +50,7 @@ typedef struct {
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex);  //inits new player struct
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initConfig(char* filePath);  //resets config data
-void initScript(script* scriptPtr, int mapNum, int x, int y, int w, int h, scriptBehavior action, char* data);  //initializes a new script struct
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadLocalPlayer(player* playerSprite, char* filePath);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
