@@ -357,7 +357,7 @@ int mainLoop(player* playerSprite)
                 bool found = false;
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
-                    if (theseScripts[i].action == script_use_portal && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
+                    if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
                         {
                             thisScript = theseScripts[i];
                             found = true;

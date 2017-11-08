@@ -26,12 +26,13 @@ typedef enum {
     script_trigger_dialogue,  //1 if player steps in coords, trigger a dialogue/text box
     script_trigger_boss,      //2 if player steps in coords, spawn boss
     script_switch_rooms,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile
-    script_use_portal,        //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
-    script_open_door,         //4 if player steps in coords or other action occurs, open a door
-    script_animation,         //5 if player steps in coords, do animation
-    script_boss_actions,      //6 if boss is still alive, execute boss actions
-    script_gain_exp,          //7 gives player some EXP. Don't abuse please
-    script_placeholder,       //8 ???
+    script_use_warp_gate,     //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
+    script_use_teleporter,    //5 teleports to a specified matching teleporter
+    script_open_door,         //6 if player steps in coords or other action occurs, open a door
+    script_animation,         //7 if player steps in coords, do animation
+    script_boss_actions,      //8 if boss is still alive, execute boss actions
+    script_gain_exp,          //9 gives player some EXP. Don't abuse please
+    script_placeholder,       //10 ???
 } scriptBehavior;
 
 typedef struct {
