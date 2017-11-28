@@ -15,13 +15,13 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         if(!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_FLAGS))
         {
             printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
-            done = -1;
+            return -1;
         }
         //Initialize SDL_ttf
         if(TTF_Init() == -1)
         {
             printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
-            done = -2;
+            return -2;
         }
         mainScreen = NULL;
         tilesetTexture = NULL;
@@ -53,7 +53,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                 if (!mainFont)
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "Nothing", TTF_GetError());
-                    return -3;
+                    done = -3;
                 }
                 else
                 {
@@ -61,7 +61,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                     if (!tilesetTexture)
                     {
                         printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
-                        return 6;
+                        done = 6;
                     }
                     /*else
                     {
