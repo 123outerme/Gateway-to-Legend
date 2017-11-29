@@ -91,5 +91,7 @@ SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+bool canDrawTiles;
+bool canDrawText;
 
 #endif // OUTERMESDL_H_INCLUDED

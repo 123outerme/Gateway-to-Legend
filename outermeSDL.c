@@ -27,6 +27,8 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
+	canDrawText = true;
+	canDrawTiles = true;
         mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
         if (!mainWindow)
         {
@@ -53,6 +55,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                 if (!mainFont)
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "Nothing", TTF_GetError());
+		    canDrawText = false;
                     done = -3;
                 }
                 else
@@ -61,6 +64,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                     if (!tilesetTexture)
                     {
                         printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
+			canDrawTiles = false;
                         done = 6;
                     }
                     /*else
@@ -150,20 +154,24 @@ void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
-    SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+    if (canDrawTiles)
+	SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
     //SDL_RenderPresent(mainRenderer);
 }
 
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render)
 {
-    SDL_Texture* txtTexture = NULL;
-    int* wh;
-    wh = loadTextTexture(input, &txtTexture, maxW, color, true);
-    SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}),
-                                             &((SDL_Rect){.x =  x, .y = y, .w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}));
-    if (render)
-        SDL_RenderPresent(mainRenderer);
-    SDL_DestroyTexture(txtTexture);
+    if (canDrawText)
+    {
+        SDL_Texture* txtTexture = NULL;
+        int* wh;
+        wh = loadTextTexture(input, &txtTexture, maxW, color, true);
+        SDL_RenderCopy(mainRenderer, txtTexture, &((SDL_Rect){.w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}),
+                                                 &((SDL_Rect){.x =  x, .y = y, .w = *wh > maxW ? maxW : *wh, .h = *(wh + 1) > maxH ? maxH : *(wh + 1)}));
+        if (render)
+            SDL_RenderPresent(mainRenderer);
+        SDL_DestroyTexture(txtTexture);
+    }
 }
 
 SDL_Keycode waitForKey()
