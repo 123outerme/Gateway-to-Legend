@@ -27,8 +27,8 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
-	canDrawText = true;
-	canDrawTiles = true;
+        canDrawText = true;
+        canDrawTiles = true;
         mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
         if (!mainWindow)
         {
@@ -55,29 +55,26 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                 if (!mainFont)
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "Nothing", TTF_GetError());
-		    canDrawText = false;
+                    canDrawText = false;
                     done = -3;
                 }
-                else
+                loadIMG(tilesetFilePath, &tilesetTexture);
+                if (!tilesetTexture)
                 {
-                    loadIMG(tilesetFilePath, &tilesetTexture);
-                    if (!tilesetTexture)
-                    {
-                        printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
-			canDrawTiles = false;
-                        done = 6;
-                    }
-                    /*else
-                    {
-                        srand((unsigned int) time(NULL));
-                        if (checkFile(CONFIG_FILE_NAME, SIZE_OF_SCANCODE_ARRAY))
-                        {
-                            loadConfig(CONFIG_FILE_NAME);
-                        }
-                        else
-                            initConfig(CONFIG_FILE_NAME);
-                    }*/
+                    printf("Tileset could not load! SDL Error: %s\n", SDL_GetError());
+                    canDrawTiles = false;
+                    done = 6;
                 }
+                /*else
+                {
+                    srand((unsigned int) time(NULL));
+                    if (checkFile(CONFIG_FILE_NAME, SIZE_OF_SCANCODE_ARRAY))
+                    {
+                        loadConfig(CONFIG_FILE_NAME);
+                    }
+                    else
+                        initConfig(CONFIG_FILE_NAME);
+                }*/
             }
         }
     }
@@ -87,9 +84,11 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
 bool loadIMG(char* imgPath, SDL_Texture** dest)
 {
     SDL_Surface* surf = IMG_Load(imgPath);
+    if (!surf)
+        return false;
     SDL_SetColorKey(surf, 1, SDL_MapRGB(surf->format, 255, 28, 198));
     *dest = SDL_CreateTextureFromSurface(mainRenderer, surf);
-    if (!*dest)
+    if (!(*dest))
     {
         printf("Unable to load image/create texture for %s! SDL_Error: %s\n", imgPath, SDL_GetError());
         return false;
@@ -103,7 +102,7 @@ bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts)
     *dest = TTF_OpenFont(filePath, sizeInPts);
     if (!*dest)
     {
-        printf( "Font could not be loaded! SDL Error: %s\n", SDL_GetError() );
+        printf("Font could not be loaded! SDL Error: %s\n", SDL_GetError());
         return false;
     }
     return true;
@@ -155,7 +154,7 @@ void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
     if (canDrawTiles)
-	SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+        SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
     //SDL_RenderPresent(mainRenderer);
 }
 
