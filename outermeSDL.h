@@ -1,7 +1,8 @@
 #ifndef OUTERMESDL_H_INCLUDED
 #define OUTERMESDL_H_INCLUDED
 
-/*
+/* ++ outermeSDL version 1.1 - last update 11/29/2017 ++
+
  error code -3; TTFs failed to load
  error code -2: SDL_ttf failed to initialize
  error code -1: SDL_img failed to initialize

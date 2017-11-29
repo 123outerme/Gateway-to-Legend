@@ -85,12 +85,15 @@ bool loadIMG(char* imgPath, SDL_Texture** dest)
 {
     SDL_Surface* surf = IMG_Load(imgPath);
     if (!surf)
+    {
+	printf("Unable to load image for %s! SDL_Error: %s\n", imgPath, SDL_GetError());
         return false;
-    SDL_SetColorKey(surf, 1, SDL_MapRGB(surf->format, 255, 28, 198));
+    }
+	    SDL_SetColorKey(surf, 1, SDL_MapRGB(surf->format, 255, 28, 198));
     *dest = SDL_CreateTextureFromSurface(mainRenderer, surf);
     if (!(*dest))
     {
-        printf("Unable to load image/create texture for %s! SDL_Error: %s\n", imgPath, SDL_GetError());
+        printf("Unable to create texture for %s! SDL_Error: %s\n", imgPath, SDL_GetError());
         return false;
     }
     SDL_FreeSurface(surf);
