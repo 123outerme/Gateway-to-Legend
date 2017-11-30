@@ -445,9 +445,9 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] >= 1);
+            searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
             if ((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false)  //7,8,9 are the door indexes
-                searchIndex = 3;  //2 is index for invis tile
+                searchIndex = 3;  //3 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         }
     if (rerender)
