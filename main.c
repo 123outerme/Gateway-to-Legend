@@ -29,7 +29,7 @@
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
 
-#define MAX_TILE_ID_ARRAY 12
+#define MAX_TILE_ID_ARRAY 13
 #define MAX_COLLISIONDATA_ARRAY 10
 
 #define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
@@ -46,6 +46,8 @@ SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, 
 int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define CURSOR_ID tileIDArray[1]
+#define HP_ID tileIDArray[2]
+
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
 script* allScripts;
 int sizeOfAllScripts;
@@ -443,9 +445,9 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            searchIndex = eventmap[y][x] + 2 - (eventmap[y][x] >= 1);
-            if ((searchIndex == 6 || searchIndex == 7 || searchIndex == 8) && drawDoors[searchIndex - 6] == false)
-                searchIndex = 2;  //2 is index for invis tile
+            searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] >= 1);
+            if ((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false)  //7,8,9 are the door indexes
+                searchIndex = 3;  //2 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         }
     if (rerender)
