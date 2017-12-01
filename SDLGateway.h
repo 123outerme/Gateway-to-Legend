@@ -66,7 +66,7 @@ int readScript(script* scriptPtr, char* input);  //inits a script from a string 
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap from a given tileset texture.
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script
 
