@@ -15,6 +15,13 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileI
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int tileIndex)
+{
+    initPlayer(playerSprite, x, y, size, mapScreen, tileIndex);
+    playerSprite->HP = playerSprite->maxHP;
+    saveLocalPlayer(*playerSprite, filePath);
+}
+
 void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     strcpy(playerSprite->name, "Player");
@@ -23,9 +30,7 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 	playerSprite->level = 1;
 	playerSprite->experience = 0;
 	playerSprite->money = 0;
-	playerSprite->HP = 12;
 	playerSprite->maxHP = 12;
-	playerSprite->mapScreen = 0;
 	playerSprite->flip = SDL_FLIP_NONE;
 	playerSprite->movementLocked = false;
 	playerSprite->extraData = "";

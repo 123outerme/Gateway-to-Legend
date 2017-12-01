@@ -140,9 +140,10 @@ int main(int argc, char* argv[])
                 quitGame = false;
                 break;
             }
-            initPlayer(&person, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath);
+            else
+                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
