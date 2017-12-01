@@ -32,7 +32,7 @@
 #define MAX_TILE_ID_ARRAY 13
 #define MAX_COLLISIONDATA_ARRAY 10
 
-#define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, flip)
+#define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, flip)
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
@@ -268,6 +268,11 @@ int mainLoop(player* playerSprite)
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
         drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
+        /*(int i = 0; i < playerSprite->HP; i += 4)
+        {
+            drawATile(tilesTexture, HP_ID, 0, TILE_SIZE * (i / 4), ((playerSprite->HP - i) % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
+        }
+        */
         /*if (doDebugDraw)
             drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
@@ -448,7 +453,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
             searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
             if ((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false)  //7,8,9 are the door indexes
                 searchIndex = 3;  //3 is index for invis tile
-            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);
