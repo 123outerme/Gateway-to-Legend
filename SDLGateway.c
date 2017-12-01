@@ -10,6 +10,8 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileI
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
 	player->extraData = "";
+	player->xVeloc = 0;
+    player->yVeloc = 0;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 

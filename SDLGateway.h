@@ -17,6 +17,8 @@ typedef struct {
     int maxHP;  //
     int mapScreen;  //8 bytes
     SDL_RendererFlip flip;  //
+    int xVeloc;
+    int yVeloc;
     bool movementLocked;  // 1 byte
     char* extraData;
 } player;

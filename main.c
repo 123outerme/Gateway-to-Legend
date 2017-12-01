@@ -265,10 +265,11 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks() - 1, lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks();
-    while(!quit)
+    while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
+        drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
         for(int i = 0; i < playerSprite->HP; i += 4)  //draw HP
             drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
         /*if (doDebugDraw)
@@ -287,7 +288,7 @@ int mainLoop(player* playerSprite)
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         if (!checkSKInteract)
                 textBoxOn = false;
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract) && SDL_GetTicks() - lastKeypressTime >= 32)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc) && SDL_GetTicks() - lastKeypressTime >= 32)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
@@ -307,6 +308,16 @@ int mainLoop(player* playerSprite)
             {
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 textBoxOn = true;
+            }
+            if (playerSprite->xVeloc)
+            {
+                playerSprite->spr.x += playerSprite->xVeloc;
+                playerSprite->xVeloc -= 6;
+            }
+            if (playerSprite->yVeloc)
+            {
+                playerSprite->spr.y += playerSprite->yVeloc;
+                playerSprite->yVeloc -= 6;
             }
             checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
             if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
@@ -357,6 +368,12 @@ int mainLoop(player* playerSprite)
                         doorFlags[i] = false;
                 }
             }
+            if (collisionData[8])
+            {
+                playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
+                playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
+                playerSprite->HP -= 1;
+            }
             if (collisionData[9])
             {
                 bool found = false;
@@ -395,6 +412,11 @@ int mainLoop(player* playerSprite)
         lastFrame = SDL_GetTicks();
         if (thisScript.active)
             quit = executeScriptAction(&thisScript, playerSprite);
+    }
+    if (playerSprite->HP < 1)
+    {
+        exitCode = 1;
+        playerSprite->HP = 12;
     }
     free(theseScripts);
     free(collisionData);
