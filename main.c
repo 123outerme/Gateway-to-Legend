@@ -269,11 +269,8 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
-        for(int i = 0; i < playerSprite->HP; i += 4)
-        {
+        for(int i = 0; i < playerSprite->HP; i += 4)  //draw HP
             drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
-            waitForKey();
-        }
         /*if (doDebugDraw)
             drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
