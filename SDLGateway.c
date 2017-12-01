@@ -27,6 +27,7 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 	playerSprite->flip = SDL_FLIP_NONE;
 	playerSprite->movementLocked = false;
 	playerSprite->extraData = "";
+	saveGlobalPlayer(*playerSprite, filePath);
 }
 
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
@@ -81,7 +82,8 @@ void loadLocalPlayer(player* playerSprite, char* filePath)
 void loadGlobalPlayer(player* playerSprite, char* filePath)
 {
     char* buffer = "";
-    strcpy(playerSprite->name, removeChar(readLine(filePath, 0, &buffer), '\n', 8, true));
+    strcpy(playerSprite->name, readLine(filePath, 0, &buffer));
+    playerSprite->name[strnlen(playerSprite->name, 10) - 1] = 0;  //removes \n
     playerSprite->maxHP = strtol(readLine(filePath, 1, &buffer), NULL, 10);
     playerSprite->level = strtol(readLine(filePath, 2, &buffer), NULL, 10);
     playerSprite->experience = strtol(readLine(filePath, 3, &buffer), NULL, 10);

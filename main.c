@@ -71,6 +71,8 @@ int main(int argc, char* argv[])
     player person;
     if (checkFile(GLOBALSAVE_FILEPATH, 0))
         loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
+    else
+        createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
     if (checkFile(CONFIG_FILEPATH, 6))  //load config
         loadConfig(CONFIG_FILEPATH);
     else
@@ -267,12 +269,12 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
-        drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
-        /*(int i = 0; i < playerSprite->HP; i += 4)
+        for(int i = 0; i < playerSprite->HP; i += 4)
         {
-            drawATile(tilesTexture, HP_ID, 0, TILE_SIZE * (i / 4), ((playerSprite->HP - i) % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
+            SDL_RenderPresent()
+            waitForKey();
         }
-        */
         /*if (doDebugDraw)
             drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
         //drawTile(tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)], (playerSprite->spr.x / TILE_SIZE  + 1 * (playerSprite->spr.x % TILE_SIZE > .5 * TILE_SIZE)) * TILE_SIZE, (playerSprite->spr.y / TILE_SIZE) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
@@ -388,7 +390,7 @@ int mainLoop(player* playerSprite)
             framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
         //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
 
-        drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+        //drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
