@@ -210,7 +210,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
                 }*/
             }
         }
-        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
     return selection;
@@ -334,14 +334,14 @@ void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int sta
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawATile(texture, eventLayerFlag ? eventmap[dy][dx] : tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(texture, eventLayerFlag ? eventmap[dy][dx] : tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
 
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, SDL_RendererFlip flip)
 {
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), 0, &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
 }
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw)
