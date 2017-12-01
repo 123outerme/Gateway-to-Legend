@@ -272,7 +272,6 @@ int mainLoop(player* playerSprite)
         for(int i = 0; i < playerSprite->HP; i += 4)
         {
             drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
-            SDL_RenderPresent()
             waitForKey();
         }
         /*if (doDebugDraw)
