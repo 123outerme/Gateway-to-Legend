@@ -49,13 +49,15 @@ const int maxArraySize = 16;
 #define MAX_MAP_PACK_DATA 6
 
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
+void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
 int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainMapCreatorLoop(player* playerSprite);
-SDL_Keycode getKey(bool actually);
+void viewMap(char* filePath, int thisLineNum);
+SDL_Keycode getKey();
 void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen);
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void initPlayer(player* player, int x, int y, int size, int tileIndex);
@@ -179,6 +181,15 @@ void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, 
     SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
 }
 
+void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen)
+{
+    for(int dy = startY; dy < endY; dy++)
+        for(int dx = startX; dx < endX; dx++)
+            drawATile(texture, hideCollision && map[dy][dx] == 1 ? 0 : map[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
+}
+
 int mainMapCreator()
 {
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
@@ -246,6 +257,17 @@ int mainMapCreator()
 }
 //C:/Stephen/C/CodeBlocks/Gateway-to-Legend/Map-Creator/map-packs/a.txt
 
+void viewMap(char* filePath, int thisLineNum)
+{
+    SDL_RenderClear(mainRenderer);
+    int newTilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+    int newEventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+    loadMapFile(filePath, newTilemap, newEventmap, thisLineNum, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    drawATilemap(tilesetTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false, false);
+    drawATilemap(eventTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true);
+    waitForKey();
+}
+
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
 {
     char* dummy = "";
@@ -293,6 +315,8 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 
 void mainMapCreatorLoop(player* playerSprite)
 {
+    /*for(int i = 0; i < 4; i++)
+        viewMap("maps/MainMaps.txt", i);*/
     bool quit = false, editingTiles = true;
     int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks();
     SDL_Event e;
@@ -306,7 +330,7 @@ void mainMapCreatorLoop(player* playerSprite)
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         }
-        drawEventmap(0, 0, 20, 15, editingTiles, false);
+        drawEventmap(0, 0, 20, 15, !editingTiles, false);
         if (!editingTiles)
             drawEventTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
         else
@@ -364,7 +388,7 @@ void mainMapCreatorLoop(player* playerSprite)
     }
 }
 
-SDL_Keycode getKey(bool actually)
+SDL_Keycode getKey()
 {
     SDL_Event e;
     SDL_Keycode keycode = 0;
@@ -403,7 +427,7 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTil
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawEventTile(eventmap[dy][dx] == 1 && drawHiddenTiles ? 0 : eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawEventTile(eventmap[dy][dx] == 1 && !drawHiddenTiles ? 0 : eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
