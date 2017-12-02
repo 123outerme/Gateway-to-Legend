@@ -7,6 +7,13 @@
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
 {
     initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
+    strcpy(player->name, "");
+    player->level = 1;
+    player->experience = 0;
+    player->money = 0;
+    player->HP = 12;
+    player->maxHP = 12;
+    player->mapScreen = mapScreen;
 	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
 	player->extraData = "";
@@ -26,14 +33,7 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     strcpy(playerSprite->name, "Player");
     //inputName(playerSprite);  //custom text input routine to get player->name
-    initSprite(&(playerSprite->spr), 0, 0, TILE_SIZE, 0, (entityType) type_player);
-	playerSprite->level = 1;
-	playerSprite->experience = 0;
-	playerSprite->money = 0;
-	playerSprite->maxHP = 12;
-	playerSprite->flip = SDL_FLIP_NONE;
-	playerSprite->movementLocked = false;
-	playerSprite->extraData = "";
+    initPlayer(playerSprite, 0, 0, TILE_SIZE, 0, 0);
 	saveGlobalPlayer(*playerSprite, filePath);
 }
 
@@ -76,13 +76,20 @@ void loadConfig(char* filePath)
     targetTime = calcWaitTime(FPS);
 }
 
-void loadLocalPlayer(player* playerSprite, char* filePath)
+void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
 {
     char* buffer = "";
     playerSprite->mapScreen = strtol(readLine(filePath, 0, &buffer), NULL, 10);
     playerSprite->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
     playerSprite->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
     playerSprite->HP = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+    playerSprite->spr.tileIndex = tileIndex;
+    playerSprite->spr.w = TILE_SIZE;
+    playerSprite->spr.h = TILE_SIZE;
+    playerSprite->movementLocked = false;
+    playerSprite->flip = SDL_FLIP_NONE;
+    playerSprite->xVeloc = 0;
+    playerSprite->yVeloc = 0;
     //loads: map, x, y, current HP
 }
 
@@ -95,6 +102,10 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->level = strtol(readLine(filePath, 2, &buffer), NULL, 10);
     playerSprite->experience = strtol(readLine(filePath, 3, &buffer), NULL, 10);
     playerSprite->money = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+    playerSprite->movementLocked = false;
+    playerSprite->flip = SDL_FLIP_NONE;
+    playerSprite->xVeloc = 0;
+    playerSprite->yVeloc = 0;
     //loads: name, max HP, level, exp, money
 }
 

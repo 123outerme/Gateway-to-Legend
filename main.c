@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
                 break;
             }
             if (checkFile(saveFilePath, 0) && quitGame == 2)
-                loadLocalPlayer(&person, saveFilePath);
+                loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
                 createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
             quitGame = false;
@@ -311,16 +311,18 @@ int mainLoop(player* playerSprite)
                 textBoxOn = true;
             }
             if (playerSprite->xVeloc)
-            {
                 playerSprite->spr.x += playerSprite->xVeloc;
-                playerSprite->xVeloc -= 6;
-            }
+
             if (playerSprite->yVeloc)
-            {
                 playerSprite->spr.y += playerSprite->yVeloc;
-                playerSprite->yVeloc -= 6;
-            }
-            checkCollision(playerSprite, collisionData, checkSKRight + -1 * checkSKLeft, checkSKDown + -1 * checkSKUp);
+
+            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
+
+            if (playerSprite->xVeloc)
+                playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
+
+            if (playerSprite->yVeloc)
+                playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
             if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
             {
                 bool quitThis = false;

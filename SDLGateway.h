@@ -51,11 +51,12 @@ typedef struct {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex);  //inits new player struct
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int tileIndex);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initConfig(char* filePath);  //resets config data
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
 void loadConfig(char* filePath);  //loads config data into the public variables
-void loadLocalPlayer(player* playerSprite, char* filePath);  //loads from local player save file
+void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
