@@ -57,6 +57,7 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 void mainMapCreatorLoop(player* playerSprite);
 void viewMap(char* filePath, int thisLineNum, bool drawLineNum);
+int chooseMap(char* mapFilePath);
 SDL_Keycode getKey();
 void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen);
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
@@ -231,20 +232,7 @@ int mainMapCreator()
     initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG("tileset/eventTile48.png", &eventTexture);
     if (loadCheck[0] == 'y')
-    {
-        bool quit = false;
-        int mapNum = 0, maxMapNum = checkFile(mapFilePath, -1);
-        SDL_Keycode keycode;
-        while(!quit)
-        {
-            viewMap(mapFilePath, mapNum, true);
-            keycode = getKey();
-            mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0);
-            if (keycode == SDLK_RETURN || keycode == SDLK_ESCAPE || keycode == SDLK_SPACE || keycode == -1)
-                quit = true;
-        }
-        loadMapFile(mapFilePath, tilemap, eventmap, mapNum, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-    }
+        loadMapFile(mapFilePath, tilemap, eventmap, chooseMap(mapFilePath), HEIGHT_IN_TILES, WIDTH_IN_TILES);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0);
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
@@ -274,6 +262,22 @@ void viewMap(char* filePath, int thisLineNum, bool drawLineNum)
     drawATilemap(eventTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, !drawLineNum);
     if (drawLineNum)
         drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF}, true);
+}
+
+int chooseMap(char* mapFilePath)
+{
+    bool quit = false;
+    int mapNum = 0, maxMapNum = checkFile(mapFilePath, -1);
+    SDL_Keycode keycode;
+    while(!quit)
+    {
+        viewMap(mapFilePath, mapNum, true);
+        keycode = getKey();
+        mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0);
+        if (keycode == SDLK_RETURN || keycode == SDLK_ESCAPE || keycode == SDLK_SPACE || keycode == -1)
+            quit = true;
+    }
+    return mapNum;
 }
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
