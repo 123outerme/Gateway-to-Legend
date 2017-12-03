@@ -318,7 +318,7 @@ int mainLoop(player* playerSprite)
 
             checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
-            if (playerSprite->xVeloc)
+            if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
                 playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
 
             if (playerSprite->yVeloc)

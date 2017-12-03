@@ -273,7 +273,7 @@ int chooseMap(char* mapFilePath)
     {
         viewMap(mapFilePath, mapNum, true);
         keycode = getKey();
-        mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0);
+        mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0) + 10 * (keycode == SDLK_s && mapNum + 9 < maxMapNum) - 10 * (keycode == SDLK_w && mapNum > 9);
         if (keycode == SDLK_RETURN || keycode == SDLK_ESCAPE || keycode == SDLK_SPACE || keycode == -1)
             quit = true;
     }
@@ -341,12 +341,15 @@ void mainMapCreatorLoop(player* playerSprite)
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        }
-        drawEventmap(0, 0, 20, 15, !editingTiles, false);
-        if (!editingTiles)
+            drawEventmap(0, 0, 20, 15, !editingTiles, false);
             drawATile(eventTexture, playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+        }
         else
+        {
             drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+            drawEventmap(0, 0, 20, 15, !editingTiles, false);
+        }
+
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
