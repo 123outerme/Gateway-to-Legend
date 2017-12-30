@@ -32,7 +32,7 @@
 #define MAX_TILE_ID_ARRAY 14
 #define MAX_COLLISIONDATA_ARRAY 10
 
-#define drawASprite(tileset, spr, rot, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, rot, flip)
+#define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
@@ -191,7 +191,6 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    saveLocalPlayer(person, saveFilePath);
     saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
     //SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
@@ -268,6 +267,9 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks() - 1, lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks();
+    sprite sword;
+    initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
+    bool drawSword = false;
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -318,6 +320,19 @@ int mainLoop(player* playerSprite)
             if (checkSKRight)
                 playerSprite->spr.flip = SDL_FLIP_NONE;
 
+            if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
+            {
+                initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
+                textBoxOn = true;
+            }
+            if (playerSprite->xVeloc)
+                playerSprite->spr.x += playerSprite->xVeloc;
+
+            if (playerSprite->yVeloc)
+                playerSprite->spr.y += playerSprite->yVeloc;
+
+            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
+
             if (lastX != playerSprite->spr.x || lastY != playerSprite->spr.y)
                 playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
 
@@ -335,27 +350,16 @@ int mainLoop(player* playerSprite)
                 else
                     yDir = 0;
                 yDir *= !xDir;  //x direction takes precedence over y direction
-                drawATile(tilesTexture, SWORD_ID, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, TILE_SIZE, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1));
+                initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+                drawSword = true;
             }
-
-            if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
-            {
-                initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
-                textBoxOn = true;
-            }
-            if (playerSprite->xVeloc)
-                playerSprite->spr.x += playerSprite->xVeloc;
-
-            if (playerSprite->yVeloc)
-                playerSprite->spr.y += playerSprite->yVeloc;
-
-            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
             if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
                 playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
 
             if (playerSprite->yVeloc)
                 playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
+
             if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
             {
                 bool quitThis = false;
@@ -438,6 +442,10 @@ int mainLoop(player* playerSprite)
             quit = true;
             exitCode = 1;
         }
+
+        if (!checkSKAttack)
+            drawSword = false;
+
         frame++;
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
             framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
@@ -445,7 +453,9 @@ int mainLoop(player* playerSprite)
         if(keyStates[SDL_SCANCODE_F12])
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
-        drawASprite(tilesTexture, playerSprite->spr, 0, playerSprite->spr.flip);
+        drawASprite(tilesTexture, playerSprite->spr);
+        if (drawSword)
+            drawASprite(tilesTexture, sword);
         SDL_RenderPresent(mainRenderer);
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS

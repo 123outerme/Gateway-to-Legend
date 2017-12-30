@@ -6,7 +6,7 @@
 
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
-    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, (entityType) type_player);
+    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, type_player);
     strcpy(player->name, "");
     player->level = 1;
     player->experience = 0;
@@ -33,7 +33,6 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     strcpy(playerSprite->name, "Player");
     //inputName(playerSprite);  //custom text input routine to get player->name
-    initPlayer(playerSprite, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
 	saveGlobalPlayer(*playerSprite, filePath);
 }
 
@@ -86,6 +85,8 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->spr.tileIndex = tileIndex;
     playerSprite->spr.w = TILE_SIZE;
     playerSprite->spr.h = TILE_SIZE;
+    playerSprite->spr.angle = 0;
+    playerSprite->spr.flip = SDL_FLIP_NONE;
     playerSprite->movementLocked = false;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
