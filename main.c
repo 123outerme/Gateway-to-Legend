@@ -6,7 +6,7 @@
 #define checkSKLeft keyStates[SC_LEFT]
 #define checkSKRight keyStates[SC_RIGHT]
 #define checkSKInteract keyStates[SC_INTERACT]
-#define checKSKAttack keyStates[SC_ATTACK]
+#define checkSKAttack keyStates[SC_ATTACK]
 #define checkSKMenu keyStates[SC_MENU]
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
@@ -29,10 +29,10 @@
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
 
-#define MAX_TILE_ID_ARRAY 13
+#define MAX_TILE_ID_ARRAY 14
 #define MAX_COLLISIONDATA_ARRAY 10
 
-#define drawASprite(tileset, spr, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, flip)
+#define drawASprite(tileset, spr, rot, flip) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, rot, flip)
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
@@ -47,6 +47,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define CURSOR_ID tileIDArray[1]
 #define HP_ID tileIDArray[2]
+#define SWORD_ID tileIDArray[13]
 
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
 script* allScripts;
@@ -276,7 +277,7 @@ int mainLoop(player* playerSprite)
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0x21, 0x7F);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 0, .y = 0, .w = playerSprite->maxHP / 4 * TILE_SIZE, .h = TILE_SIZE}));
             for(int i = 0; i < playerSprite->HP; i += 4)  //draw HP
-                drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, SDL_FLIP_NONE);
+                drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, 0, SDL_FLIP_NONE);
         }
         /*if (doDebugDraw)
             drawATilemap(eventTexture, true, 0, 0, 20, 15, false);*/
@@ -294,22 +295,48 @@ int mainLoop(player* playerSprite)
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         if (!checkSKInteract)
                 textBoxOn = false;
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc) && SDL_GetTicks() - lastKeypressTime >= 32)
+        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || checkSKAttack || playerSprite->xVeloc || playerSprite->yVeloc) && SDL_GetTicks() - lastKeypressTime >= 32)
         {
             int lastY = playerSprite->spr.y;
             int lastX = playerSprite->spr.x;
+
             if (playerSprite->spr.y > 0 && checkSKUp)
                 playerSprite->spr.y -= PIXELS_MOVED;
+
             if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
                 playerSprite->spr.y += PIXELS_MOVED;
+
             if (playerSprite->spr.x > 0 && checkSKLeft)
                 playerSprite->spr.x -= PIXELS_MOVED;
+
             if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
                 playerSprite->spr.x += PIXELS_MOVED;
+
             if (checkSKLeft)
                 playerSprite->flip = SDL_FLIP_HORIZONTAL;
+
             if (checkSKRight)
                 playerSprite->flip = SDL_FLIP_NONE;
+
+            if (lastX != playerSprite->spr.x || lastY != playerSprite->spr.y)
+                playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
+
+            if (checkSKAttack)
+            {
+                int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
+                int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
+                if ((xDir -= 1) != -1)
+                    xDir -= !xDir;  //turns 0 and 1 into -1 and 1
+                else
+                    xDir = 0;
+                if (yDir != -1)
+                    yDir -= !yDir;
+                else
+                    yDir = 0;
+                yDir *= !xDir;  //x direction takes precedence over y direction
+                drawATile(tilesTexture, SWORD_ID, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, TILE_SIZE, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1));
+            }
+
             if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
             {
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
@@ -337,24 +364,28 @@ int mainLoop(player* playerSprite)
                     playerSprite->mapScreen--;
                     quitThis = true;
                 }
+
                 if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
                 {
                     playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
                     playerSprite->mapScreen -= 10;
                     quitThis = true;
                 }
+
                 if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
                 {
                     playerSprite->spr.x = TILE_SIZE;
                     playerSprite->mapScreen++;
                     quitThis = true;
                 }
+
                 if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
                 {
                     playerSprite->spr.y = TILE_SIZE;
                     playerSprite->mapScreen += 10;
                     quitThis = true;
                 }
+
                 if (quitThis)
                 {
                     quit = true;
@@ -413,7 +444,7 @@ int mainLoop(player* playerSprite)
         if(keyStates[SDL_SCANCODE_F12])
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
-        drawASprite(tilesTexture, playerSprite->spr, playerSprite->flip);
+        drawASprite(tilesTexture, playerSprite->spr, 0, playerSprite->flip);
         SDL_RenderPresent(mainRenderer);
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
@@ -481,7 +512,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
             searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
             if ((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false)  //7,8,9 are the door indexes
                 searchIndex = 3;  //3 is index for invis tile
-            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);

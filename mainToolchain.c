@@ -44,9 +44,9 @@ typedef struct {
 
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate."}
-const int maxArraySize = 16;
-#define MAX_MAP_PACK_DATA 6
+#define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword."}
+const int maxArraySize = 16;  //sprite defines and other map-pack data?
+#define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen);
