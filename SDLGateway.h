@@ -16,7 +16,6 @@ typedef struct {
     int HP;  //
     int maxHP;  //
     int mapScreen;  //8 bytes
-    SDL_RendererFlip flip;  //
     int xVeloc;  //
     int yVeloc;  //
     int lastDirection;  //
@@ -51,8 +50,8 @@ typedef struct {
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
-void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex);  //inits new player struct
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int tileIndex);  //creates new local data for player
+void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initConfig(char* filePath);  //resets config data
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct

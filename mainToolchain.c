@@ -15,7 +15,6 @@ typedef struct {
     int lastScreen;  //8 bytes
     int overworldX;  //
     int overworldY;  //
-    SDL_RendererFlip flip;  //
     bool movementLocked;  // 1 byte
 } player;
 
@@ -48,7 +47,7 @@ typedef struct {
 const int maxArraySize = 16;  //sprite defines and other map-pack data?
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
@@ -61,7 +60,7 @@ int chooseMap(char* mapFilePath);
 SDL_Keycode getKey();
 void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTiles, bool updateScreen);
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
-void initPlayer(player* player, int x, int y, int size, int tileIndex);
+void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
 //^map creator functions. v map-pack wizard functions
 int mainMapPackWizard();
@@ -90,7 +89,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
     if (curSelect < 1)
         curSelect = 1;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
     bool quit = false;
     int selection = -1;
@@ -171,22 +170,25 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
                 }*/
             }
         }
-        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, SDL_FLIP_NONE);
+        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
     return selection;
 }
 
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip)
 {
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}),
+                     &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle,
+                     &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
 }
+
 
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawATile(texture, hideCollision && map[dy][dx] == 1 ? 0 : map[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(texture, hideCollision && map[dy][dx] == 1 ? 0 : map[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
@@ -234,7 +236,7 @@ int mainMapCreator()
     if (loadCheck[0] == 'y')
         loadMapFile(mapFilePath, tilemap, eventmap, chooseMap(mapFilePath), HEIGHT_IN_TILES, WIDTH_IN_TILES);
     player creator;
-    initPlayer(&creator, 0, 0, TILE_SIZE, 0);
+    initPlayer(&creator, 0, 0, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     mainMapCreatorLoop(&creator);
@@ -342,11 +344,11 @@ void mainMapCreatorLoop(player* playerSprite)
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             drawEventmap(0, 0, 20, 15, !editingTiles, false);
-            drawATile(eventTexture, playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+            drawATile(eventTexture, playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         }
         else
         {
-            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, playerSprite->flip);
+            drawTile(playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, 0, playerSprite->spr.flip);
             drawEventmap(0, 0, 20, 15, !editingTiles, false);
         }
 
@@ -422,10 +424,10 @@ SDL_Keycode getKey()
     return keycode;
 }
 
-void initPlayer(player* player, int x, int y, int size, int tileIndex)
+void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex)
 {
     //inputName(player);  //custom text input routine to get player->name
-    initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
+    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
 	player->money = 0;
@@ -436,7 +438,6 @@ void initPlayer(player* player, int x, int y, int size, int tileIndex)
 	player->lastScreen = 10;
 	player->overworldX = x;
 	player->overworldY = y;
-	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
     SDL_Delay(300);
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
@@ -446,7 +447,7 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTil
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawATile(eventTexture, eventmap[dy][dx] == 1 && !drawHiddenTiles ? 0 : eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawATile(eventTexture, eventmap[dy][dx] == 1 && !drawHiddenTiles ? 0 : eventmap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
@@ -589,7 +590,7 @@ int mainMapPackWizard()
     }
     initSDL("Gateway to Legend Map-Pack Wizard", mapPackData[3], FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
     sprite chooser;
-    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, type_player);
+    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     mainMapPackWizardLoop(&chooser, numbers);
     if (!(numbers[0] == -1))
     {

@@ -60,6 +60,8 @@ typedef struct
     int w;  //
     int h;  //
     int tileIndex;  //
+    int angle;  //
+    SDL_RendererFlip flip;  //
     SDL_Rect* clipRect;  // 16? bytes (4 ints)
     entityType type;
 } sprite;
@@ -68,9 +70,9 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
-void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType type);  //initializes a new sprite
+void initSprite(sprite* spr, int x, int y, int size, int tileIndex, int angle, SDL_RendererFlip flip, entityType type);  //initializes a new sprite
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
-void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);  //draws a tile to the screen
+void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_RendererFlip flip);  //draws a tile to the screen
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void closeSDL();  //closes SDL and related stuff

@@ -133,13 +133,15 @@ int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, 
     return wh;
 }
 
-void initSprite(sprite* spr, int x, int y, int size, int tileIndex, entityType type)
+void initSprite(sprite* spr, int x, int y, int size, int tileIndex, int angle, SDL_RendererFlip flip, entityType type)
 {
     spr->x = x;
 	spr->y = y;
 	spr->w = size;
 	spr->h = size;
 	spr->tileIndex = tileIndex;
+	spr->angle = angle;
+	spr->flip = flip;
 	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
 	spr->type = type;
 }
@@ -148,16 +150,16 @@ void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+            drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }
 
-void drawTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip)
+void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_RendererFlip flip)
 {
     //printf("%d , %d\n", id  / 8, (id % 8));
     if (canDrawTiles)
-        SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), 0, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
+        SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), angle, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
     //SDL_RenderPresent(mainRenderer);
 }
 

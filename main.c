@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
-                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, PLAYER_ID);
+                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, 0, SDL_FLIP_NONE, PLAYER_ID);
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
@@ -226,7 +226,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
-        drawTile(17, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, SDL_FLIP_NONE);
+        drawTile(17, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
@@ -313,10 +313,10 @@ int mainLoop(player* playerSprite)
                 playerSprite->spr.x += PIXELS_MOVED;
 
             if (checkSKLeft)
-                playerSprite->flip = SDL_FLIP_HORIZONTAL;
+                playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
 
             if (checkSKRight)
-                playerSprite->flip = SDL_FLIP_NONE;
+                playerSprite->spr.flip = SDL_FLIP_NONE;
 
             if (lastX != playerSprite->spr.x || lastY != playerSprite->spr.y)
                 playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
@@ -329,6 +329,7 @@ int mainLoop(player* playerSprite)
                     xDir -= !xDir;  //turns 0 and 1 into -1 and 1
                 else
                     xDir = 0;
+
                 if (yDir != -1)
                     yDir -= !yDir;
                 else
@@ -444,7 +445,7 @@ int mainLoop(player* playerSprite)
         if(keyStates[SDL_SCANCODE_F12])
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
-        drawASprite(tilesTexture, playerSprite->spr, 0, playerSprite->flip);
+        drawASprite(tilesTexture, playerSprite->spr, 0, playerSprite->spr.flip);
         SDL_RenderPresent(mainRenderer);
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS

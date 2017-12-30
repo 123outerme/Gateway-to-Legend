@@ -4,9 +4,9 @@
 
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
-void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileIndex)
+void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
-    initSprite(&(player->spr), x, y, size, tileIndex, (entityType) type_player);
+    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, (entityType) type_player);
     strcpy(player->name, "");
     player->level = 1;
     player->experience = 0;
@@ -14,7 +14,6 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileI
     player->HP = 12;
     player->maxHP = 12;
     player->mapScreen = mapScreen;
-	player->flip = SDL_FLIP_NONE;
 	player->movementLocked = false;
 	player->extraData = "";
 	player->xVeloc = 0;
@@ -23,9 +22,9 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int tileI
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int tileIndex)
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
-    initPlayer(playerSprite, x, y, size, mapScreen, tileIndex);
+    initPlayer(playerSprite, x, y, size, mapScreen, angle, flip, tileIndex);
     playerSprite->HP = playerSprite->maxHP;
     saveLocalPlayer(*playerSprite, filePath);
 }
@@ -34,7 +33,7 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     strcpy(playerSprite->name, "Player");
     //inputName(playerSprite);  //custom text input routine to get player->name
-    initPlayer(playerSprite, 0, 0, TILE_SIZE, 0, 0);
+    initPlayer(playerSprite, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
 	saveGlobalPlayer(*playerSprite, filePath);
 }
 
@@ -88,7 +87,6 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->spr.w = TILE_SIZE;
     playerSprite->spr.h = TILE_SIZE;
     playerSprite->movementLocked = false;
-    playerSprite->flip = SDL_FLIP_NONE;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
     //loads: map, x, y, current HP
@@ -104,7 +102,6 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->experience = strtol(readLine(filePath, 3, &buffer), NULL, 10);
     playerSprite->money = strtol(readLine(filePath, 4, &buffer), NULL, 10);
     playerSprite->movementLocked = false;
-    playerSprite->flip = SDL_FLIP_NONE;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
     //loads: name, max HP, level, exp, money
@@ -150,7 +147,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
     if (curSelect < 1)
         curSelect = 1;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
     bool quit = false;
     int selection = -1;
@@ -362,8 +359,9 @@ void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int sta
 
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip)
 {
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle, &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
-
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}),
+                     &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle,
+                     &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
 }
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw)
