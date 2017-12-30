@@ -266,10 +266,10 @@ int mainLoop(player* playerSprite)
     int exitCode = 2;
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks() - 1, lastFrame = startTime,
-        frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks();
+        frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks(),
+        swordTimer = 0;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
-    bool drawSword = false;
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -336,7 +336,7 @@ int mainLoop(player* playerSprite)
             if (lastX != playerSprite->spr.x || lastY != playerSprite->spr.y)
                 playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
 
-            if (checkSKAttack)
+            if (checkSKAttack || swordTimer)
             {
                 int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
                 int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
@@ -351,7 +351,9 @@ int mainLoop(player* playerSprite)
                     yDir = 0;
                 yDir *= !xDir;  //x direction takes precedence over y direction
                 initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
-                drawSword = true;
+
+                if (!swordTimer)
+                    swordTimer = SDL_GetTicks() + 750;
             }
 
             if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
@@ -443,8 +445,8 @@ int mainLoop(player* playerSprite)
             exitCode = 1;
         }
 
-        if (!checkSKAttack)
-            drawSword = false;
+        if (swordTimer && SDL_GetTicks() >= swordTimer)
+            swordTimer = 0;
 
         frame++;
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
@@ -454,7 +456,7 @@ int mainLoop(player* playerSprite)
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         drawASprite(tilesTexture, playerSprite->spr);
-        if (drawSword)
+        if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
         SDL_RenderPresent(mainRenderer);
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
