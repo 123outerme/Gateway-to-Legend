@@ -270,6 +270,7 @@ int mainLoop(player* playerSprite)
         swordTimer = 0;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
+    playerSprite->lastDirection = 8;  //right
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -314,12 +315,6 @@ int mainLoop(player* playerSprite)
             if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
                 playerSprite->spr.x += PIXELS_MOVED;
 
-            if (checkSKLeft)
-                playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
-
-            if (checkSKRight)
-                playerSprite->spr.flip = SDL_FLIP_NONE;
-
             if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
             {
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
@@ -333,8 +328,13 @@ int mainLoop(player* playerSprite)
 
             checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
-            if (lastX != playerSprite->spr.x || lastY != playerSprite->spr.y)
+            if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKInteract)
                 playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
+
+            if (playerSprite->lastDirection / 4 == 1)
+                playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
+            else
+                playerSprite->spr.flip = SDL_FLIP_NONE;
 
             if (checkSKAttack || swordTimer)
             {
@@ -465,11 +465,13 @@ int mainLoop(player* playerSprite)
         if (thisScript.active)
             quit = executeScriptAction(&thisScript, playerSprite);
     }
+
     if (playerSprite->HP < 1)
     {
         exitCode = 1;
-        playerSprite->HP = 12;
+        playerSprite->HP = playerSprite->maxHP;
     }
+
     free(theseScripts);
     free(collisionData);
     return exitCode;
