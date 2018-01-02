@@ -1,7 +1,7 @@
 #ifndef SDLSEEKERS_H_INCLUDED
 #define SDLSEEKERS_H_INCLUDED
 
-#include "outermeSDL.h"
+#include "outermeSDL.h"  //uses outermeSDL v1.2 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
 #define SAVE_FILE_LINES 0
@@ -68,8 +68,6 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 int readScript(script* scriptPtr, char* input);  //inits a script from a string input
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
-void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap from a given tileset texture.
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script
 

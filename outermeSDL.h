@@ -1,7 +1,7 @@
 #ifndef OUTERMESDL_H_INCLUDED
 #define OUTERMESDL_H_INCLUDED
 
-/* ++ outermeSDL version 1.1 - last update 11/29/2017 ++
+/* ++ outermeSDL version 1.2 - last update 1/1/2018 ++
 
  error code -3; TTFs failed to load
  error code -2: SDL_ttf failed to initialize
@@ -12,7 +12,7 @@
   error code 3: Renderer failed to initialize
   error code 4: TTF font failed to load
   error code 5: tilemap failed to load
-  error code 6: Media could not load/optimize
+  error code 6: Extraneous media could not load/optimize
 */
 
 #define SDL_MAIN_HANDLED 1
@@ -73,6 +73,8 @@ int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, 
 void initSprite(sprite* spr, int x, int y, int size, int tileIndex, int angle, SDL_RendererFlip flip, entityType type);  //initializes a new sprite
 void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
 void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_RendererFlip flip);  //draws a tile to the screen
+void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int hideTileNumOf, bool updateScreen);  //draws a tilemap from a given tileset texture.
+void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void closeSDL();  //closes SDL and related stuff
@@ -86,7 +88,7 @@ char* readLine(char* filePath, int lineNum, char** output);  //reads a certain l
 char* intToString(int value, char * result);  //turns inputted int into a string
 int digits(int num);  //gets the number of digits an int has
 int pwrOf10(int power);  //gets 10 ^ input
-void freeThisMem(void** x);  //frees memory of any type/object/whatever and nulls its pointer.
+void* freeThisMem(void* x);  //frees memory of any type/object/whatever and nulls its pointer.
 
 SDL_Window* mainWindow;
 SDL_Surface* mainScreen;

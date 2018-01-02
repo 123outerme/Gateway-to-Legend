@@ -1,4 +1,5 @@
-#include "outermeSDL.h"
+#include "outermeSDL.h"  //uses outermeSDL v1.2 as of right now. Future versions of the header may not be compatible
+#include "dirent.h"  //for directory searching
 
 #define PIXELS_MOVED TILE_SIZE
 
@@ -36,21 +37,39 @@ typedef struct {
 //SDL_SCANCODE_D
 //SDL_SCANCODE_SPACE
 //SDL_SCANCODE_ESCAPE
+
+#define CACHE_NAME "GtLToolchainCache.cfg"
+
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"
 
-#define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
-
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword."}
-const int maxArraySize = 16;  //sprite defines and other map-pack data?
+#define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
+const int maxArraySize = 19;  //sprite defines and other map-pack data?
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);
-void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen);
+typedef struct {
+SDL_Texture* mapPackTexture;
+char mainFilePath[MAX_PATH];
+char saveFilePath[MAX_PATH];
+char tilesetFilePath[MAX_PATH];
+char mapFilePath[MAX_PATH];
+char scriptFilePath[MAX_PATH];
+} mapPack;
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
+
+#define MAX_LIST_OF_MAPS 30
+#define MAX_CHAR_IN_FILEPATH MAX_PATH
+#define MAP_PACKS_SUBFOLDER "map-packs/"
+#define MAX_MAPPACKS_PER_PAGE 11
+void createMapPack(mapPack* newPack);
+void loadMapPackData(mapPack* loadPack, char* location);
+char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);
+void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
+//^ working with loading a map-pack to work on
+
 int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
@@ -62,11 +81,14 @@ void drawEventmap(int startX, int startY, int endX, int endY, bool drawHiddenTil
 void drawEventTile(int id, int xCoord, int yCoord, int width, SDL_RendererFlip flip);
 void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
-//^map creator functions. v map-pack wizard functions
+//^map creator functions.
+
+//V map-pack wizard functions
 int mainMapPackWizard();
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
 void strPrepend(char* input, const char* prepend);
 
+//V take a look a these later. For now I'm leaving them as is
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* eventTexture;
 
@@ -74,13 +96,165 @@ const int targetTime = 1000 / FRAMERATE;
 
 int main(int argc, char* argv[])
 {
+    mapPack workingPack;
+    strcpy(workingPack.mainFilePath, "/\0");
+    initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    bool quit = false;
+    char* temp = "\0";
+    readLine(CACHE_NAME, 0, &temp);
+    temp += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
+    while(!quit)
+    {
+        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map-Pack Tools", "New Map-Pack", "Load Map-Pack", temp, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        if (code == 1)
+            createMapPack(&workingPack);
+
+        if (code == 2)
+        {
+            char mainFilePath[MAX_PATH];
+            char** listOfFilenames;
+            int maxStrNum = 0;
+            bool back = false;
+            listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_CHAR_IN_FILEPATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
+            mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &back);
+            if (!back)
+            {
+                loadMapPackData(&workingPack, mainFilePath);
+                createFile(CACHE_NAME);
+                appendLine(CACHE_NAME, (char*) mainFilePath);
+                quit = true;
+            }
+            else
+                printf("user selected back or otherwise quit.\n");
+
+        }
+
+        if (code == 3 && checkFile(CACHE_NAME, 1))
+        {
+            char mainFilePath[MAX_PATH];
+            uniqueReadLine((char**) &mainFilePath, MAX_PATH, CACHE_NAME, 0);
+            loadMapPackData(&workingPack, (char*) mainFilePath);
+            quit = true;
+        }
+
+        if (code == 4)
+            ;
+
+        if (code == 5)
+            quit = true;
+    }
+    closeSDL();
+    printf("%s\n", workingPack.mainFilePath);
+    return 0;
+}
+
+void createMapPack(mapPack* newPack)
+{
+    //
+}
+
+void loadMapPackData(mapPack* loadPack, char* location)
+{
+    char buffer[MAX_PATH];
+    strcpy(loadPack->mainFilePath, location);
+    uniqueReadLine((char**) &buffer, MAX_PATH, location, 1);
+    strcpy(loadPack->mapFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_PATH, location, 2);
+    strcpy(loadPack->tilesetFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_PATH, location, 3);
+    strcpy(loadPack->saveFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_PATH, location, 4);
+    strcpy(loadPack->scriptFilePath, buffer);
+    if (!loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture)))
+        printf("error loading tileset!\n");
+}
+
+void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
+{
+    bool quitMenu = false;
+    char junkArray[MAX_CHAR_IN_FILEPATH];
+    SDL_Keycode menuKeycode;
+    int menuPage = 0, selectItem = 0;
+    while(!quitMenu)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_RenderClear(mainRenderer);
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
+            drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
+                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
+        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
+        menuKeycode = getKey();
+        if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
+        {
+            menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
+            selectItem = 0;
+        }
+
+        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
+            selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
+
+        drawTile(17, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+
+        if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
+        {
+            if (selectItem != 0)
+                selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
+            else
+                *backFlag = true;
+                quitMenu = true;
+        }
+    }
+    //loading map pack stuff
+    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
+}
+
+char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
+{
+	DIR* dir = opendir(directory);
+	if (dir == NULL)
+	{
+		perror("Can't open this directory.");
+		exit(1);
+	}
+	struct dirent* ent;
+	char** strArray = malloc(maxStrings * sizeof(char*));
+	for (int i =0 ; i < maxStrings; ++i)
+		strArray[i] = malloc(maxLength * sizeof(char));
+	int i = 0;
+	while ((ent = readdir(dir)) != NULL)
+	{
+		if (strlen(ent->d_name) > 2)
+		{
+			//printf("%s -> %d\n", ent->d_name, strArray[i]);
+			sprintf(strArray[i++], "%s", ent->d_name);
+		}
+	}
+	closedir(dir);
+	if (maxStrings >= i)
+		*strNum = i;
+	else
+		*strNum = maxStrings;
+	//printf("Done\n\n");
+	return strArray;
+}
+
+int fmain(int argc, char* argv[])
+{
     initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", " ", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", "Test Fake-Main", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
     if (code == 1)
         mainMapCreator();
     if (code == 2)
         mainMapPackWizard();
+    if (code == 4)
+    {
+        closeSDL();
+        //fakeMain(argc, argv);
+    }
     return 0;
 }
 
@@ -176,23 +350,6 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
     return selection;
 }
 
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip)
-{
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}),
-                     &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle,
-                     &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
-}
-
-
-void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool updateScreen)
-{
-    for(int dy = startY; dy < endY; dy++)
-        for(int dx = startX; dx < endX; dx++)
-            drawATile(texture, hideCollision && map[dy][dx] == 1 ? 0 : map[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-    if (updateScreen)
-        SDL_RenderPresent(mainRenderer);
-}
-
 int mainMapCreator()
 {
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
@@ -260,8 +417,8 @@ void viewMap(char* filePath, int thisLineNum, bool drawLineNum)
     int newEventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
     char* buffer = "";
     loadMapFile(filePath, newTilemap, newEventmap, thisLineNum, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-    drawATilemap(tilesetTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false, false);
-    drawATilemap(eventTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, !drawLineNum);
+    drawATilemap(tilesetTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -1, false);
+    drawATilemap(eventTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, 1, !drawLineNum);
     if (drawLineNum)
         drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF}, true);
 }

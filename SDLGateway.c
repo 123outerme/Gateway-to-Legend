@@ -18,7 +18,7 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle
 	player->extraData = "";
 	player->xVeloc = 0;
     player->yVeloc = 0;
-    player->lastDirection = 0;
+    player->lastDirection = 8; //facing right
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -90,6 +90,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->movementLocked = false;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
+    playerSprite->lastDirection = 8;
     //loads: map, x, y, current HP
 }
 
@@ -347,22 +348,6 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 		*strNum = maxStrings;
 	//printf("Done\n\n");
 	return strArray;
-}
-
-void drawATilemap(SDL_Texture* texture, bool eventLayerFlag, int startX, int startY, int endX, int endY, bool updateScreen)
-{
-    for(int dy = startY; dy < endY; dy++)
-        for(int dx = startX; dx < endX; dx++)
-            drawATile(texture, eventLayerFlag ? eventmap[dy][dx] : tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-    if (updateScreen)
-        SDL_RenderPresent(mainRenderer);
-}
-
-void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip)
-{
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}),
-                     &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle,
-                     &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
 }
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw)

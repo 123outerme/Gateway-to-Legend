@@ -17,7 +17,7 @@
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
-#define MAX_CHAR_IN_FILEPATH 128
+#define MAX_CHAR_IN_FILEPATH MAX_PATH
 
 #define MAX_MAPPACKS_PER_PAGE 11
 
@@ -265,16 +265,15 @@ int mainLoop(player* playerSprite)
     //doDebugDraw = false;
     int exitCode = 2;
     char whatever[5] = "    \0";
-    int startTime = SDL_GetTicks() - 1, lastFrame = startTime,
+    int startTime = SDL_GetTicks(), lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks(),
         swordTimer = 0;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
-    playerSprite->lastDirection = 8;  //right
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
-        drawATilemap(tilesTexture, false, 0, 0, 20, 15, false);
+        drawATilemap(tilesTexture, tilemap, 0, 0, 20, 15, -1, false);
         drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
         {  //drawing HUD
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0x21, 0x7F);
@@ -320,13 +319,6 @@ int mainLoop(player* playerSprite)
                 initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                 textBoxOn = true;
             }
-            if (playerSprite->xVeloc)
-                playerSprite->spr.x += playerSprite->xVeloc;
-
-            if (playerSprite->yVeloc)
-                playerSprite->spr.y += playerSprite->yVeloc;
-
-            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
             if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKInteract)
                 playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
@@ -335,6 +327,14 @@ int mainLoop(player* playerSprite)
                 playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
             else
                 playerSprite->spr.flip = SDL_FLIP_NONE;
+
+            if (playerSprite->xVeloc)
+                playerSprite->spr.x += playerSprite->xVeloc;
+
+            if (playerSprite->yVeloc)
+                playerSprite->spr.y += playerSprite->yVeloc;
+
+            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
             if (checkSKAttack || swordTimer)
             {
