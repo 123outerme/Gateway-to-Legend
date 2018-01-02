@@ -46,16 +46,21 @@ typedef struct {
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"initial X", "initial Y", "Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
-const int maxArraySize = 19;  //sprite defines and other map-pack data?
+const int maxArraySize = 19;  //sprite defines and other map-pack data? I'm really not sure where this data comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
+#define MAX_SPRITE_MAPPINGS 14
 
 typedef struct {
-SDL_Texture* mapPackTexture;
-char mainFilePath[MAX_PATH];
-char saveFilePath[MAX_PATH];
-char tilesetFilePath[MAX_PATH];
-char mapFilePath[MAX_PATH];
-char scriptFilePath[MAX_PATH];
+    SDL_Texture* mapPackTexture;
+    char mainFilePath[MAX_PATH];
+    char name[MAX_PATH];
+    char mapFilePath[MAX_PATH];
+    char tilesetFilePath[MAX_PATH];
+    char saveFilePath[MAX_PATH];
+    char scriptFilePath[MAX_PATH];
+    int initX;
+    int initY;
+    int tilesetMaps[MAX_SPRITE_MAPPINGS];
 } mapPack;
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
@@ -144,19 +149,109 @@ int main(int argc, char* argv[])
             quit = true;
     }
     closeSDL();
+    if (workingPack.mainFilePath[0] != '/')
+    {
+        //move on
+    }
     printf("%s\n", workingPack.mainFilePath);
     return 0;
 }
 
 void createMapPack(mapPack* newPack)
 {
-    //
+    char getString[MAX_CHAR_IN_FILEPATH - 10];
+    int numbers[2];
+    char* mapPackData[MAX_MAP_PACK_DATA];
+    int wizardState = 0;
+    bool quit = false;
+	while (!quit)
+    {
+        switch(wizardState)
+        {
+        case 0:
+            printf("File name? map-packs/");
+            break;
+        case 1:
+            printf("Title of map pack? ");
+            break;
+        case 2:
+            printf("Path for maps file? maps/");
+            break;
+        case 3:
+            printf("Path for tileset file? tileset/");
+            break;
+        case 4:
+            printf("Path for savefile? saves/");
+            break;
+        case 5:
+            printf("Path for scripts? scripts/");
+            break;
+        case 6:
+            printf("Initial X spawn-coordinate? ");
+            break;
+        case 7:
+            printf("Initial Y spawn-coordinate? ");
+            break;
+        }
+        scanf("%250[^\n]%*c", getString);
+        switch(wizardState)
+        {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            strcpy(mapPackData[wizardState], getString);
+            if (wizardState == 0)
+                strPrepend(mapPackData[0], "map-packs/");
+
+            if (wizardState == 2)
+                strPrepend((char*) mapPackData[2], "maps/");
+
+            if (wizardState == 3)
+                strPrepend((char*) mapPackData[3], "tileset/");
+
+            //printf("%s\n", mapPackData[wizardState - 1]);
+
+            if (wizardState == 4)
+                strPrepend((char*) mapPackData[4], "saves/");
+
+            if (wizardState == 5)
+                strPrepend((char*) mapPackData[5], "scripts/");
+
+            wizardState++;
+            break;
+        case 6:
+        case 7:
+            sscanf(getString, "%d", &(numbers[wizardState++ - 7]));
+            if (wizardState == 8)  //since we did wizardState++ before this
+                quit = true;
+            break;
+        }
+    }
+    strcpy(newPack->mainFilePath, mapPackData[0]);
+    strcpy(newPack->name, mapPackData[1]);
+    strcpy(newPack->mapFilePath, mapPackData[2]);
+    strcpy(newPack->tilesetFilePath, mapPackData[3]);
+    strcpy(newPack->saveFilePath, mapPackData[4]);
+    strcpy(newPack->scriptFilePath, mapPackData[5]);
+    newPack->initX = numbers[0];
+    newPack->initY = numbers[1];
+    createFile(newPack->mainFilePath);
+    for(int i = 1; i < 6; i++)
+        appendLine(newPack->mainFilePath, mapPackData[i]);
+
+    for(int i = 0; i < 2; i++)
+        appendLine(newPack->mainFilePath, intToString(numbers[i], (char*) getString));
 }
 
 void loadMapPackData(mapPack* loadPack, char* location)
 {
     char buffer[MAX_PATH];
     strcpy(loadPack->mainFilePath, location);
+    uniqueReadLine((char**) &buffer, MAX_PATH, location, 0);
+    strcpy(loadPack->name, buffer);
     uniqueReadLine((char**) &buffer, MAX_PATH, location, 1);
     strcpy(loadPack->mapFilePath, buffer);
     uniqueReadLine((char**) &buffer, MAX_PATH, location, 2);
@@ -165,6 +260,11 @@ void loadMapPackData(mapPack* loadPack, char* location)
     strcpy(loadPack->saveFilePath, buffer);
     uniqueReadLine((char**) &buffer, MAX_PATH, location, 4);
     strcpy(loadPack->scriptFilePath, buffer);
+    loadPack->initX = strtol(readLine(loadPack->mainFilePath, 5, (char**) &buffer), NULL, 10);
+    loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
+    for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
+        loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 7, (char**) &buffer), NULL, 10);
+
     if (!loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture)))
         printf("error loading tileset!\n");
 }
