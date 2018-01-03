@@ -115,6 +115,8 @@ int main(int argc, char* argv[])
         {
             closeSDL();
             createMapPack(&workingPack);
+            initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            quit = true;
         }
 
         if (code == 2)
@@ -163,7 +165,6 @@ int main(int argc, char* argv[])
 void createMapPack(mapPack* newPack)
 {
     char* getString = calloc(sizeof(char), MAX_CHAR_IN_FILEPATH);
-    int numbers[2];
     char mapPackData[MAX_MAP_PACK_DATA][MAX_CHAR_IN_FILEPATH];
     int wizardState = 0;
     bool quit = false;
@@ -206,12 +207,9 @@ void createMapPack(mapPack* newPack)
         case 4:
         case 5:
             strncpy(mapPackData[wizardState], getString, 260);
-            
+
             if (wizardState == 0)
                 strPrepend((char*) mapPackData[0], "map-packs/");
-
-            if (wizardState == 1)
-                printf("this is not reached\n");
 
             if (wizardState == 2)
                 strPrepend((char*) mapPackData[2], "maps/");
@@ -230,10 +228,13 @@ void createMapPack(mapPack* newPack)
             wizardState++;
             break;
         case 6:
+            sscanf(getString, "%d", &(newPack->initX));
+            wizardState++;
+            break;
         case 7:
-            sscanf(getString, "%d", &(numbers[wizardState++ - 7]));
-            if (wizardState == 8)  //since we did wizardState++ before this
-                quit = true;
+            sscanf(getString, "%d", &(newPack->initY));
+            wizardState++;
+            quit = true;
             break;
         }
     }
@@ -243,17 +244,16 @@ void createMapPack(mapPack* newPack)
     strcpy(newPack->tilesetFilePath, mapPackData[3]);
     strcpy(newPack->saveFilePath, mapPackData[4]);
     strcpy(newPack->scriptFilePath, mapPackData[5]);
-    newPack->initX = numbers[0];
-    newPack->initY = numbers[1];
     createFile(newPack->mainFilePath);
 
     for(int i = 1; i < 6; i++)
         appendLine(newPack->mainFilePath, mapPackData[i]);
 
-    for(int i = 0; i < 2; i++)
-        appendLine(newPack->mainFilePath, intToString(numbers[i], (char*) getString));
+    appendLine(newPack->mainFilePath, intToString(newPack->initX, getString));
+    appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
 
     getString = freeThisMem((void*) getString);
+    loadMapPackData(newPack, newPack->mainFilePath);
 }
 
 void loadMapPackData(mapPack* loadPack, char* location)
@@ -274,9 +274,6 @@ void loadMapPackData(mapPack* loadPack, char* location)
     loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
         loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 7, (char**) &buffer), NULL, 10);
-
-    if (!loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture)))
-        printf("error loading tileset!\n");
 }
 
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
