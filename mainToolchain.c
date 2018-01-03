@@ -196,7 +196,7 @@ void createMapPack(mapPack* newPack)
             printf("Initial Y spawn-coordinate? ");
             break;
         }
-        scanf("%259[^\n]%*c", getString);
+        scanf(wizardState == 1 ? "%12[^\n]%*c" : "%259[^\n]%*c", getString);
         switch(wizardState)
         {
         case 0:
