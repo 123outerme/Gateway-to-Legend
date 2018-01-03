@@ -164,7 +164,7 @@ void createMapPack(mapPack* newPack)
 {
     char* getString = calloc(sizeof(char), MAX_CHAR_IN_FILEPATH);
     int numbers[2];
-    char* mapPackData[MAX_MAP_PACK_DATA];
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_CHAR_IN_FILEPATH];
     int wizardState = 0;
     bool quit = false;
 	while (!quit)
@@ -205,8 +205,8 @@ void createMapPack(mapPack* newPack)
         case 3:
         case 4:
         case 5:
-            printf("~%d\n", wizardState);
-            strcpy(mapPackData[wizardState], getString);
+            strncpy(mapPackData[wizardState], getString, 260);
+            
             if (wizardState == 0)
                 strPrepend((char*) mapPackData[0], "map-packs/");
 
