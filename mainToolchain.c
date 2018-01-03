@@ -112,7 +112,10 @@ int main(int argc, char* argv[])
     {
         int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map-Pack Tools", "New Map-Pack", "Load Map-Pack", temp, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
+        {
+            closeSDL();
             createMapPack(&workingPack);
+        }
 
         if (code == 2)
         {
@@ -159,7 +162,7 @@ int main(int argc, char* argv[])
 
 void createMapPack(mapPack* newPack)
 {
-    char getString[MAX_CHAR_IN_FILEPATH - 10];
+    char* getString = calloc(sizeof(char), MAX_CHAR_IN_FILEPATH);
     int numbers[2];
     char* mapPackData[MAX_MAP_PACK_DATA];
     int wizardState = 0;
@@ -193,7 +196,7 @@ void createMapPack(mapPack* newPack)
             printf("Initial Y spawn-coordinate? ");
             break;
         }
-        scanf("%250[^\n]%*c", getString);
+        scanf("%259[^\n]%*c", getString);
         switch(wizardState)
         {
         case 0:
@@ -202,9 +205,13 @@ void createMapPack(mapPack* newPack)
         case 3:
         case 4:
         case 5:
+            printf("~%d\n", wizardState);
             strcpy(mapPackData[wizardState], getString);
             if (wizardState == 0)
-                strPrepend(mapPackData[0], "map-packs/");
+                strPrepend((char*) mapPackData[0], "map-packs/");
+
+            if (wizardState == 1)
+                printf("this is not reached\n");
 
             if (wizardState == 2)
                 strPrepend((char*) mapPackData[2], "maps/");
@@ -239,11 +246,14 @@ void createMapPack(mapPack* newPack)
     newPack->initX = numbers[0];
     newPack->initY = numbers[1];
     createFile(newPack->mainFilePath);
+
     for(int i = 1; i < 6; i++)
         appendLine(newPack->mainFilePath, mapPackData[i]);
 
     for(int i = 0; i < 2; i++)
         appendLine(newPack->mainFilePath, intToString(numbers[i], (char*) getString));
+
+    getString = freeThisMem((void*) getString);
 }
 
 void loadMapPackData(mapPack* loadPack, char* location)
