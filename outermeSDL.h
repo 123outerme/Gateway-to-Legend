@@ -29,7 +29,7 @@
 #define false 0
 #define true 1
 
-#define boolString(bool) bool ? "true" : "false"
+#define printBool(bool) bool ? "true" : "false"
 
 //#define SAVE_FILE_NAME "SAVUVUTU.bin"
 //#define SAVE_FILE_LINES 54

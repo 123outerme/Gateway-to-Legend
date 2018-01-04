@@ -69,6 +69,8 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_MAPPACKS_PER_PAGE 11
+int subMain(mapPack* workingPack);
+
 void createMapPack(mapPack* newPack);
 void loadMapPackData(mapPack* loadPack, char* location);
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);
@@ -105,12 +107,16 @@ int main(int argc, char* argv[])
     strcpy(workingPack.mainFilePath, "/\0");
     initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     bool quit = false;
-    char* temp = "\0";
-    readLine(CACHE_NAME, 0, &temp);
-    temp += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
+    char* resumeStr = "\0";
+    readLine(CACHE_NAME, 0, &resumeStr);
+    resumeStr = removeChar(resumeStr, '\n', MAX_PATH, false);
+    if (checkFile(resumeStr, 0))
+        resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
+    else
+        resumeStr = "(No Resume)\0";
     while(!quit)
     {
-        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map-Pack Tools", "New Map-Pack", "Load Map-Pack", temp, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map-Pack Tools", "New Map-Pack", "Load Map-Pack", resumeStr, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
         {
             closeSDL();
@@ -134,12 +140,9 @@ int main(int argc, char* argv[])
                 appendLine(CACHE_NAME, (char*) mainFilePath);
                 quit = true;
             }
-            else
-                printf("user selected back or otherwise quit.\n");
-
         }
 
-        if (code == 3 && checkFile(CACHE_NAME, 1))
+        if (code == 3 && strcmp(resumeStr, "(No Resume)\0") != 0)
         {
             char mainFilePath[MAX_PATH];
             uniqueReadLine((char**) &mainFilePath, MAX_PATH, CACHE_NAME, 0);
@@ -156,7 +159,7 @@ int main(int argc, char* argv[])
     closeSDL();
     if (workingPack.mainFilePath[0] != '/')
     {
-        //move on
+        subMain(&workingPack);
     }
     printf("%s\n", workingPack.mainFilePath);
     return 0;
@@ -254,6 +257,9 @@ void createMapPack(mapPack* newPack)
 
     getString = freeThisMem((void*) getString);
     loadMapPackData(newPack, newPack->mainFilePath);
+
+    createFile(CACHE_NAME);
+    appendLine(CACHE_NAME, newPack->mainFilePath);
 }
 
 void loadMapPackData(mapPack* loadPack, char* location)
@@ -348,19 +354,18 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 	return strArray;
 }
 
-int fmain(int argc, char* argv[])
+int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", "Test Fake-Main", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", "Test New-Main", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
     if (code == 1)
-        mainMapCreator();
+        mainMapCreator(workingPack);
     if (code == 2)
         mainMapPackWizard();
     if (code == 4)
     {
-        closeSDL();
-        //fakeMain(argc, argv);
+        main(0, NULL);
     }
     return 0;
 }
@@ -457,35 +462,34 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
     return selection;
 }
 
-int mainMapCreator()
+int mainMapCreator(mapPack* workingPack)
 {
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
         for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
             eventmap[dy][dx] = 0;
-    char* mainFilePath = calloc(200 + 1, sizeof(char));
-    char mapFilePath[200];
-    char tileFilePath[200];
+    char* mainFilePath = calloc(MAX_PATH, sizeof(char));
+    char mapFilePath[MAX_PATH];
+    char tileFilePath[MAX_PATH];
     char loadCheck[2];
     printf("Load? (y/n) ");
 	scanf("%s", loadCheck);
 	if (loadCheck[0] == 'y')
     {
-        printf("Enter the map-pack filepath: map-packs/");
-        scanf("%s", mainFilePath);
-        strPrepend(mainFilePath, "map-packs/");
+        printf("%s\n", workingPack->mainFilePath);
+        strncpy(mainFilePath, workingPack->mainFilePath, MAX_PATH);
         if (!checkFile(mainFilePath, 0))
         {
-            printf("Invalid file.\n");
+            printf("Invalid main file.\n");
             return 1;
         }
-        uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
-        uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
+        uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
+        uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
     }
     else
     {
         strcpy(mainFilePath, "map-packs/a.txt");
-        uniqueReadLine((char**) &mapFilePath, 200, mainFilePath, 1);
-        uniqueReadLine((char**) &tileFilePath, 200, mainFilePath, 2);
+        uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
+        uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
         for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
         {
             for(int dx = 0; dx < WIDTH_IN_TILES; dx++)

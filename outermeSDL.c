@@ -297,9 +297,13 @@ int createFile(char* filePath)
     }
 }
 
+/** Checks if a file exists and if it has certain number of lines.
+*
+* Checks if a file exists and/or if it has the desired number of lines. desiredLines < 0 -> get number of lines instead.
+*/
 bool checkFile(char* filePath, int desiredLines)
 {
-    FILE* filePtr = fopen(filePath,"r");
+    FILE* filePtr = fopen(filePath, "r");
 	if (!filePtr)
 		return false;
     char ch;
