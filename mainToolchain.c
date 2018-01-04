@@ -111,21 +111,20 @@ int main(int argc, char* argv[])
     initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     bool quit = false;
     char* resumeStr = "\0";
-    readLine(CACHE_NAME, 0, &resumeStr);
-    resumeStr = removeChar(resumeStr, '\n', MAX_PATH, false);
-    if (checkFile(resumeStr, 0))
-        resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
-    else
-        resumeStr = "(No Resume)\0";
     while(!quit)
     {
-        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map-Pack Tools", "New Map-Pack", "Load Map-Pack", resumeStr, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        readLine(CACHE_NAME, 0, &resumeStr);
+        resumeStr = removeChar(resumeStr, '\n', MAX_PATH, false);
+        if (checkFile(resumeStr, 0))
+            resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
+        else
+            resumeStr = "(No Resume)\0";
+        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", "New Map-Pack", "Load Map-Pack", resumeStr, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
         {
             closeSDL();
             createMapPack(&workingPack);
             initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-            quit = true;
         }
 
         if (code == 2)
@@ -141,7 +140,6 @@ int main(int argc, char* argv[])
                 loadMapPackData(&workingPack, mainFilePath);
                 createFile(CACHE_NAME);
                 appendLine(CACHE_NAME, (char*) mainFilePath);
-                quit = true;
             }
         }
 
@@ -150,7 +148,6 @@ int main(int argc, char* argv[])
             char mainFilePath[MAX_PATH];
             uniqueReadLine((char**) &mainFilePath, MAX_PATH, CACHE_NAME, 0);
             loadMapPackData(&workingPack, (char*) mainFilePath);
-            quit = true;
         }
 
         if (code == 4)
@@ -158,12 +155,15 @@ int main(int argc, char* argv[])
 
         if (code == 5)
             quit = true;
+
+        if (code < 4 && workingPack.mainFilePath[0] != '/')
+        {
+            closeSDL();
+            subMain(&workingPack);
+            initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+        }
     }
     closeSDL();
-    if (workingPack.mainFilePath[0] != '/')
-    {
-        subMain(&workingPack);
-    }
     printf("%s\n", workingPack.mainFilePath);
     return 0;
 }
@@ -387,7 +387,7 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Map-Pack Wizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+    int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", "Map Creator", "Map-Pack Wizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
     if (code == 1)
         mainMapCreator(workingPack);
