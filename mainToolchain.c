@@ -46,9 +46,9 @@ typedef struct {
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
-const int maxArraySize = 17;  //sprite defines and other map-pack data? I'm really not sure where this data comes from
+#define MAX_SPRITE_MAPPINGS 17  //sprite defines and other map-pack data? I'm really not sure where this data comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
-#define MAX_SPRITE_MAPPINGS 14
+
 
 typedef struct {
     SDL_Texture* mapPackTexture;
@@ -70,6 +70,9 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_MAPPACKS_PER_PAGE 11
 int subMain(mapPack* workingPack);
+
+void editFilePaths(mapPack* workingPack);
+void editTileEquates(mapPack* workingPack);
 
 void createMapPack(mapPack* newPack);
 void loadMapPackData(mapPack* loadPack, char* location);
@@ -255,6 +258,12 @@ void createMapPack(mapPack* newPack)
     appendLine(newPack->mainFilePath, intToString(newPack->initX, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
 
+    for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
+    {
+        appendLine(newPack->mainFilePath, "0\0");
+        newPack->tilesetMaps[i] = 0;
+    }
+
     getString = freeThisMem((void*) getString);
     loadMapPackData(newPack, newPack->mainFilePath);
 
@@ -280,6 +289,27 @@ void loadMapPackData(mapPack* loadPack, char* location)
     loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
         loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 7, (char**) &buffer), NULL, 10);
+}
+
+void saveMapPack(mapPack* writePack)
+{
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
+    char* getString = "";
+    strcpy(mapPackData[1], writePack->name);
+    strcpy(mapPackData[2], writePack->mapFilePath);
+    strcpy(mapPackData[3], writePack->tilesetFilePath);
+    strcpy(mapPackData[4], writePack->saveFilePath);
+    strcpy(mapPackData[5], writePack->scriptFilePath);
+    createFile(writePack->mainFilePath);
+
+    for(int i = 1; i < 6; i++)
+        appendLine(writePack->mainFilePath, mapPackData[i]);
+
+    appendLine(writePack->mainFilePath, intToString(writePack->initX, getString));
+    appendLine(writePack->mainFilePath, intToString(writePack->initY, getString));
+
+    for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
+        appendLine(writePack->mainFilePath, intToString(writePack->tilesetMaps[i], getString));
 }
 
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
@@ -357,7 +387,7 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Map-Pack Wizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
     if (code == 1)
         mainMapCreator(workingPack);
@@ -754,33 +784,131 @@ void writeTileData()
 
 int mainMapPackWizard(mapPack* workingPack)
 {
-    int numbers[maxArraySize];
-    numbers[0] = -1;
+    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+    bool quit = false;
+    while (!quit)
+    {
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Edit Filepaths", "Edit Tile Equates", " ", " ", "Back", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+
+        if (choice == 1)
+            editFilePaths(workingPack);
+
+        if (choice == 2)
+        {
+            editTileEquates(workingPack);
+            closeSDL();
+            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+        }
+
+        if (choice == 3)
+            ;
+
+        if (choice == 4)
+            ;
+
+        if (choice == 5)
+            quit = true;
+
+    }
+    return 0;
+}
+
+void editFilePaths(mapPack* workingPack)
+{
+    SDL_RenderClear(mainRenderer);
+    bool quit = false;
+    while(!quit)
+    {
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        if (choice < 0)
+        {
+            quit = true;
+        }
+        else
+        {
+            closeSDL();
+            char getString[MAX_PATH];
+            getString[0] = '\0';
+            switch(choice)
+            {
+            case 1:
+                printf("Title of map pack? ");
+                break;
+            case 2:
+                printf("Path for maps file? maps/");
+                break;
+            case 3:
+                printf("Path for tileset file? tileset/");
+                break;
+            case 4:
+                printf("Path for savefile? saves/");
+                break;
+            case 5:
+                printf("Path for scripts? scripts/");
+                break;
+            case 6:
+                printf("Initial X spawn-coordinate? ");
+                break;
+            case 7:
+                printf("Initial Y spawn-coordinate? ");
+                break;
+            }
+            scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+            switch(choice)
+            {
+
+            case 1:
+                strcpy(workingPack->name, getString);
+                break;
+            case 2:
+                strPrepend((char*) getString, "maps/");
+                strcpy(workingPack->mapFilePath, getString);
+                break;
+            case 3:
+                strPrepend((char*) getString, "tileset/");
+                strcpy(workingPack->tilesetFilePath, getString);
+                break;
+            case 4:
+                strPrepend((char*) getString, "saves/");
+                strcpy(workingPack->saveFilePath, getString);
+                break;
+            case 5:
+                strPrepend((char*) getString, "scripts/");
+                strcpy(workingPack->name, getString);
+                break;
+            case 6:
+                sscanf(getString, "%d", &(workingPack->initX));
+                break;
+            case 7:
+                sscanf(getString, "%d", &(workingPack->initY));
+                break;
+            }
+        }
+    }
+    saveMapPack(workingPack);
+    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+}
+
+void editTileEquates(mapPack* workingPack)
+{
+    closeSDL();
     initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
+    SDL_RenderClear(mainRenderer);
+    int numbers[MAX_SPRITE_MAPPINGS];
+    numbers[0] = -1;
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     mainMapPackWizardLoop(&chooser, (int*) numbers);
     if (!(numbers[0] == -1))
     {
-        char* whoCares = "";
-        createFile(workingPack->mainFilePath);
-        appendLine(workingPack->mainFilePath, workingPack->name);
-        appendLine(workingPack->mainFilePath, workingPack->mapFilePath);
-        appendLine(workingPack->mainFilePath, workingPack->tilesetFilePath);
-        appendLine(workingPack->mainFilePath, workingPack->saveFilePath);
-        appendLine(workingPack->mainFilePath, workingPack->scriptFilePath);
-        appendLine(workingPack->mainFilePath, intToString(workingPack->initX, whoCares));
-        appendLine(workingPack->mainFilePath, intToString(workingPack->initY, whoCares));
-        for(int i = 0; i < maxArraySize; i++)
+        for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
         {
-            appendLine(workingPack->mainFilePath, intToString(numbers[i], whoCares));
             workingPack->tilesetMaps[i] = numbers[i];
             //printf("%d\n", numbers[i]);
         }
         printf("Outputted to your file.\n");
+        saveMapPack(workingPack);
     }
-    closeSDL();
-    return 0;
 }
 
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
@@ -789,7 +917,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false;
     SDL_Event e;
-    while(numArrayTracker < maxArraySize && !quit)
+    while(numArrayTracker < MAX_SPRITE_MAPPINGS && !quit)
     {
         SDL_RenderClear(mainRenderer);
         SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
@@ -835,7 +963,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     /*for(int i = 0; i < maxArraySize; i++)
         printf("%d\n", numArray[i]);*/
     //waitForKey();
-    if (numArrayTracker < maxArraySize)
+    if (numArrayTracker < MAX_SPRITE_MAPPINGS)
         numArray[0] = -1;
     printf("%d\n", numArray[0]);
 }
