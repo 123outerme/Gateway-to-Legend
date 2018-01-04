@@ -1,6 +1,6 @@
 Z dot txt
 maps/maps.txt
-tileset/SeekersTile48.png
+tileset/mainTileset8x6.png
 saves/save.txt
 scripts/script.txt
 0

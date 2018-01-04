@@ -13,7 +13,7 @@
 
 #define WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
-#define GLOBALTILES_FILEPATH "tileset/main.png"
+#define GLOBALTILES_FILEPATH "tileset/mainTileset8x6.png"
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30

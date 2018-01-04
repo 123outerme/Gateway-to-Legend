@@ -42,6 +42,7 @@ typedef struct {
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"
+#define MAIN_TILESET "tileset/mainTileset8x6.png"
 
 //^map creator defines. v map-pack wizard defines
 
@@ -108,7 +109,7 @@ int main(int argc, char* argv[])
 {
     mapPack workingPack;
     strcpy(workingPack.mainFilePath, "/\0");
-    initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     bool quit = false;
     char* resumeStr = "\0";
     while(!quit)
@@ -119,12 +120,12 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", "New Map-Pack", "Load Map-Pack", resumeStr, "Settings", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", "New Map-Pack", "Load Map-Pack", resumeStr, "Quit", " ", 4, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
         {
             closeSDL();
             createMapPack(&workingPack);
-            initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
 
         if (code == 2)
@@ -151,20 +152,16 @@ int main(int argc, char* argv[])
         }
 
         if (code == 4)
-            ;
-
-        if (code == 5)
             quit = true;
 
         if (code < 4 && workingPack.mainFilePath[0] != '/')
         {
             closeSDL();
             subMain(&workingPack);
-            initSDL("Gateway to Legend Map-Pack Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
     }
     closeSDL();
-    printf("%s\n", workingPack.mainFilePath);
     return 0;
 }
 
@@ -386,13 +383,19 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 
 int subMain(mapPack* workingPack)
 {
-    initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", "Map Creator", "Map-Pack Wizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-    closeSDL();
-    if (code == 1)
-        mainMapCreator(workingPack);
-    if (code == 2)
-        mainMapPackWizard(workingPack);
+    initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    bool quit = false;
+    while(!quit)
+    {
+        int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", "Map Creator", "Map-Pack Wizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        closeSDL();
+        if (code == 1)
+            mainMapCreator(workingPack);
+        if (code == 2)
+            mainMapPackWizard(workingPack);
+        if (code == 5)
+            quit = true;
+    }
     return 0;
 }
 
@@ -450,7 +453,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
                 selection = ANYWHERE_QUIT;
             }
             //User presses a key
-            else if(e.type == SDL_KEYDOWN)
+            else if (e.type == SDL_KEYDOWN)
             {
                 //const Uint8* keyStates = SDL_GetKeyboardState(NULL);
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
@@ -468,6 +471,11 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
                 {
                     selection = cursor.y / TILE_SIZE - 4;
+                    quit = true;
+                }
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_MENU))
+                {
+                    selection = ANYWHERE_QUIT;
                     quit = true;
                 }
                 /*if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
@@ -965,7 +973,6 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     //waitForKey();
     if (numArrayTracker < MAX_SPRITE_MAPPINGS)
         numArray[0] = -1;
-    printf("%d\n", numArray[0]);
 }
 
 void strPrepend(char* input, const char* prepend)
