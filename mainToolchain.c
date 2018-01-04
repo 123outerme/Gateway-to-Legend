@@ -357,16 +357,12 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", "tileset/SeekersTile48.png", FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", "Test New-Main", "Quit", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+    int code = aMenu(tilesetTexture, 17, "Gateway to Legend Map Tools", "Map Creator", "Pack HeaderWizard", " ", " ", "Back", 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
     closeSDL();
     if (code == 1)
         mainMapCreator(workingPack);
     if (code == 2)
         mainMapPackWizard();
-    if (code == 4)
-    {
-        main(0, NULL);
-    }
     return 0;
 }
 
