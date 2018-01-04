@@ -874,7 +874,7 @@ void editFilePaths(mapPack* workingPack)
                 break;
             case 5:
                 strPrepend((char*) getString, "scripts/");
-                strcpy(workingPack->name, getString);
+                strcpy(workingPack->scriptFilePath, getString);
                 break;
             case 6:
                 sscanf(getString, "%d", &(workingPack->initX));
@@ -883,10 +883,10 @@ void editFilePaths(mapPack* workingPack)
                 sscanf(getString, "%d", &(workingPack->initY));
                 break;
             }
+            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
         }
     }
     saveMapPack(workingPack);
-    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
 }
 
 void editTileEquates(mapPack* workingPack)
