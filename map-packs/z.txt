@@ -5,6 +5,7 @@ saves/save.txt
 scripts/script.txt
 0
 0
+0
 16
 17
 32
