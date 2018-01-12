@@ -241,8 +241,11 @@ void createMapPack(mapPack* newPack)
             sscanf(getString, "%d", &(newPack->initY));
             wizardState++;
             break;
-	case 8:
-	    sscanf(getString, "%d", &(newPack->initMap));
+        case 8:
+            sscanf(getString, "%d", &(newPack->initMap));
+            wizardState++;
+            quit = true;
+            break;
         }
     }
     strcpy(newPack->mainFilePath, mapPackData[0]);
@@ -810,7 +813,7 @@ int mainMapPackWizard(mapPack* workingPack)
 
 	if (choice == 2)
             editInitSpawn(workingPack);
-	
+
         if (choice == 3)
         {
             editTileEquates(workingPack);
