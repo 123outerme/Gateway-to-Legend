@@ -5,6 +5,7 @@ saves/save.txt
 scripts/script.txt
 48
 48
+0
 16
 17
 32
