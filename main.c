@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
             }
             for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
             {
-                tileIDArray[i] = strtol(readLine(mainFilePath, 7 + i, &buffer), NULL, 10);
+                tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
             quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), "New Game", "Load Game", "Back", " ", " ", 3, 2, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (quitGame == 3)
@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
-                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, 0, SDL_FLIP_NONE, PLAYER_ID);
+                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, person.mapScreen, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), SDL_FLIP_NONE, PLAYER_ID);
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
