@@ -61,6 +61,7 @@ typedef struct {
     char scriptFilePath[MAX_PATH];
     int initX;
     int initY;
+    int initMap;
     int tilesetMaps[MAX_SPRITE_MAPPINGS];
 } mapPack;
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
@@ -199,6 +200,8 @@ void createMapPack(mapPack* newPack)
         case 7:
             printf("Initial Y spawn-coordinate? ");
             break;
+	case 8:
+	    printf("Initial map number? ");
         }
         scanf(wizardState == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
         switch(wizardState)
@@ -237,8 +240,9 @@ void createMapPack(mapPack* newPack)
         case 7:
             sscanf(getString, "%d", &(newPack->initY));
             wizardState++;
-            quit = true;
             break;
+	case 8:
+	    sscanf(getString, "%d", &(newPack->initMap));
         }
     }
     strcpy(newPack->mainFilePath, mapPackData[0]);
@@ -254,6 +258,7 @@ void createMapPack(mapPack* newPack)
 
     appendLine(newPack->mainFilePath, intToString(newPack->initX, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
+    appendLine(newPack->mainFilePath, intToString(newPack->initMap, getString));
 
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
     {
@@ -284,8 +289,9 @@ void loadMapPackData(mapPack* loadPack, char* location)
     strcpy(loadPack->scriptFilePath, buffer);
     loadPack->initX = strtol(readLine(loadPack->mainFilePath, 5, (char**) &buffer), NULL, 10);
     loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
+    loadPack->initMap = strtol(readLine(loadPack->mainFilePath, 7, (char**) &buffer), NULL, 10);
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
-        loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 7, (char**) &buffer), NULL, 10);
+        loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 8, (char**) &buffer), NULL, 10);
 }
 
 void saveMapPack(mapPack* writePack)
@@ -304,6 +310,7 @@ void saveMapPack(mapPack* writePack)
 
     appendLine(writePack->mainFilePath, intToString(writePack->initX, getString));
     appendLine(writePack->mainFilePath, intToString(writePack->initY, getString));
+    appendLine(writePack->mainFilePath, intToString(writePack->initMap, getString));
 
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
         appendLine(writePack->mainFilePath, intToString(writePack->tilesetMaps[i], getString));
@@ -796,20 +803,20 @@ int mainMapPackWizard(mapPack* workingPack)
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Edit Filepaths", "Edit Tile Equates", " ", " ", "Back", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
 
         if (choice == 1)
             editFilePaths(workingPack);
 
-        if (choice == 2)
+	if (choice == 2)
+            editInitSpawn(workingPack);
+	
+        if (choice == 3)
         {
             editTileEquates(workingPack);
             closeSDL();
             initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
         }
-
-        if (choice == 3)
-            ;
 
         if (choice == 4)
             ;
@@ -895,6 +902,11 @@ void editFilePaths(mapPack* workingPack)
         }
     }
     saveMapPack(workingPack);
+}
+
+void editInitSpawn(mapPack* workingPack)
+{
+
 }
 
 void editTileEquates(mapPack* workingPack)
