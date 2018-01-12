@@ -51,6 +51,7 @@ typedef enum
     type_npc,  //2
     type_boss,  //3
     type_player,  //4
+    type_enemy  //5
 } entityType;
 
 typedef struct

@@ -29,7 +29,7 @@
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
 
-#define MAX_TILE_ID_ARRAY 14
+#define MAX_TILE_ID_ARRAY 17
 #define MAX_COLLISIONDATA_ARRAY 10
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
@@ -48,6 +48,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define CURSOR_ID tileIDArray[1]
 #define HP_ID tileIDArray[2]
 #define SWORD_ID tileIDArray[13]
+#define ENEMY(x) tileIDArray[13 + x]
 
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
 script* allScripts;
@@ -261,6 +262,23 @@ int mainLoop(player* playerSprite)
         if (new_ptr != NULL)
             theseScripts = new_ptr;
     }
+    sprite enemies[6];
+    int enemyCount = 0;
+    for(int y = 0; y < HEIGHT_IN_TILES; y++)
+    {
+        for(int x = 0; x < WIDTH_IN_TILES; x++)
+        {
+            if(eventmap[y][x] == 12 && enemyCount < 6)
+                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(1), 0, SDL_FLIP_NONE, type_enemy);
+
+            if(eventmap[y][x] == 13 && enemyCount < 6)
+                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(2), 0, SDL_FLIP_NONE, type_enemy);
+
+            if(eventmap[y][x] == 14 && enemyCount < 6)
+                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(3), 0, SDL_FLIP_NONE, type_enemy);
+        }
+    }
+    printf("enemies: %d\n", enemyCount);
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int exitCode = 2;
@@ -455,7 +473,49 @@ int mainLoop(player* playerSprite)
         if(keyStates[SDL_SCANCODE_F12])
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
+
         drawASprite(tilesTexture, playerSprite->spr);
+
+        for(int i = 0; i < enemyCount; i++)
+        {
+            if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
+            {
+                //behavior: move quickly at player, with little HP
+                //todo: check collision with sword
+                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                    && swordTimer > SDL_GetTicks() + 250)
+                    enemies[i].type = type_na;
+
+                if (enemies[i].x != playerSprite->spr.x)
+                    enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                if (enemies[i].y != playerSprite->spr.y)
+                    enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+            }
+
+            if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
+            {
+                //behavior: burst movement towards player
+                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                    && swordTimer > SDL_GetTicks() + 250)
+                    enemies[i].type = type_na;
+                //todo: move, then check collision with environment
+            }
+
+            if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
+            {
+                //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
+                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                    && swordTimer > SDL_GetTicks() + 250)
+                    enemies[i].type = type_na;
+                //todo: move, then check collision with environment
+            }
+            if (enemies[i].type == type_enemy)
+                drawASprite(tilesTexture, enemies[i]);
+        }
+
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
         SDL_RenderPresent(mainRenderer);
@@ -525,7 +585,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         for(int x = startX; x < endX; x++)
         {
             searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if ((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false)  //7,8,9 are the door indexes
+            if (((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false) || (searchIndex == 14 || searchIndex == 15 || searchIndex == 16))  //7,8,9 are the door indexes
                 searchIndex = 3;  //3 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }

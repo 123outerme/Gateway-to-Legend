@@ -74,6 +74,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 int subMain(mapPack* workingPack);
 
 void editFilePaths(mapPack* workingPack);
+void editInitSpawn(mapPack* workingPack);
 void editTileEquates(mapPack* workingPack);
 
 void createMapPack(mapPack* newPack);
@@ -85,7 +86,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
-void mainMapCreatorLoop(player* playerSprite);
+void mainMapCreatorLoop(player* playerSprite, mapPack workingPack);
 void viewMap(char* filePath, int thisLineNum, bool drawLineNum);
 int chooseMap(char* mapFilePath);
 SDL_Keycode getKey();
@@ -295,6 +296,8 @@ void loadMapPackData(mapPack* loadPack, char* location)
     loadPack->initMap = strtol(readLine(loadPack->mainFilePath, 7, (char**) &buffer), NULL, 10);
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
         loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 8, (char**) &buffer), NULL, 10);
+
+    loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture));
 }
 
 void saveMapPack(mapPack* writePack)
@@ -551,7 +554,7 @@ int mainMapCreator(mapPack* workingPack)
     initPlayer(&creator, 0, 0, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    mainMapCreatorLoop(&creator);
+    mainMapCreatorLoop(&creator, *workingPack);
     closeSDL();
     char saveCheck[2];
     printf("Save? (y/n) ");
@@ -561,6 +564,7 @@ int mainMapCreator(mapPack* workingPack)
     //waitForKey();
     SDL_DestroyTexture(eventTexture);
     //SDL_Delay(1000);
+    initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     return 0;
 }
 //C:/Stephen/C/CodeBlocks/Gateway-to-Legend/Map-Creator/map-packs/a.txt
@@ -639,7 +643,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
     }*/
 }
 
-void mainMapCreatorLoop(player* playerSprite)
+void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
 {
     /*for(int i = 0; i < 4; i++)
         viewMap("maps/MainMaps.txt", i);*/
@@ -652,6 +656,7 @@ void mainMapCreatorLoop(player* playerSprite)
         drawTilemap(0, 0, 20, 15, false);
         if (!editingTiles)
         {
+            //todo: fix this so we can use the tilemaps off the tileset!
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -681,29 +686,36 @@ void mainMapCreatorLoop(player* playerSprite)
         {
             if (playerSprite->spr.y > 0 && keyStates[SDL_SCANCODE_W])
                 playerSprite->spr.y -= PIXELS_MOVED;
+
             if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && keyStates[SDL_SCANCODE_S])
                 playerSprite->spr.y += PIXELS_MOVED;
+
             if (playerSprite->spr.x > 0 && keyStates[SDL_SCANCODE_A])
                 playerSprite->spr.x -= PIXELS_MOVED;
+
             if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keyStates[SDL_SCANCODE_D])
                 playerSprite->spr.x += PIXELS_MOVED;
+
             if (keyStates[SDL_SCANCODE_Q] && playerSprite->spr.tileIndex > 0)
                 playerSprite->spr.tileIndex--;
+
             if (keyStates[SDL_SCANCODE_E] && playerSprite->spr.tileIndex < 127)
                 playerSprite->spr.tileIndex++;
+
             if (keyStates[SDL_SCANCODE_SPACE] && editingTiles)
                 tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
                 eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+
             if (keyStates[SDL_SCANCODE_LSHIFT])
             {
                 editingTiles = !editingTiles;
                 int temp = lastTile;
                 lastTile = playerSprite->spr.tileIndex;
+
                 if (!editingTiles && temp == -1)
-                {
                     playerSprite->spr.tileIndex = 1;
-                }
                 else
                     playerSprite->spr.tileIndex = temp;
             }
@@ -909,7 +921,7 @@ void editFilePaths(mapPack* workingPack)
 
 void editInitSpawn(mapPack* workingPack)
 {
-
+    //todo
 }
 
 void editTileEquates(mapPack* workingPack)
