@@ -5,6 +5,7 @@ saves/MainAdventure.txt
 scripts/MainAdventure.txt
 456
 336
+0
 16
 17
 32
