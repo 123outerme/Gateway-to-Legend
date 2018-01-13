@@ -5,8 +5,8 @@
 #define checkSKDown keyStates[SC_DOWN]
 #define checkSKLeft keyStates[SC_LEFT]
 #define checkSKRight keyStates[SC_RIGHT]
-#define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKAttack keyStates[SC_ATTACK]
+#define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKMenu keyStates[SC_MENU]
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
@@ -278,7 +278,6 @@ int mainLoop(player* playerSprite)
                 initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(3), 0, SDL_FLIP_NONE, type_enemy);
         }
     }
-    printf("enemies: %d\n", enemyCount);
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int exitCode = 2;
@@ -313,12 +312,12 @@ int mainLoop(player* playerSprite)
                 doDebugDraw = !doDebugDraw;*/
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!checkSKInteract)
+        if (!checkSKAttack)
                 textBoxOn = false;
 
         if (SDL_GetTicks() - lastUpdateTime >= 32)
         {
-            if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || checkSKAttack || playerSprite->xVeloc || playerSprite->yVeloc))
+            if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKAttack || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
             {
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
@@ -335,13 +334,13 @@ int mainLoop(player* playerSprite)
                 if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
                     playerSprite->spr.x += PIXELS_MOVED;
 
-                if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
+                if (checkSKAttack && !textBoxOn && frame > targetTime / 2)
                 {
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                     textBoxOn = true;
                 }
 
-                if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKInteract)
+                if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKAttack)
                     playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
 
                 if (playerSprite->lastDirection / 4 == 1)
@@ -357,7 +356,7 @@ int mainLoop(player* playerSprite)
 
                 checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
-                if (checkSKAttack || swordTimer)
+                if (checkSKInteract || swordTimer)
                 {
                     int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
                     int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
@@ -535,7 +534,7 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
                         enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
-                    //todo: move, then check collision with environment
+                    //todo: check collision with environment
                 }
             }
             lastUpdateTime = SDL_GetTicks();
