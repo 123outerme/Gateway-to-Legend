@@ -100,9 +100,8 @@ int mainMapPackWizard();
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
 void strPrepend(char* input, const char* prepend);
 
-//V take a look a these later. For now I'm leaving them as is
+//this is to match the tilemap array in outermeSDL.h
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
-SDL_Texture* eventTexture;
 
 const int targetTime = 1000 / FRAMERATE;
 
@@ -553,7 +552,6 @@ int mainMapCreator(mapPack* workingPack)
         }
     }
     initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    loadIMG("tileset/eventTile48.png", &eventTexture);
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
     if (loadCheck[0] == 'y')
         loadMapFile(workingPack->mapFilePath, tilemap, eventmap, chooseMap(*workingPack), HEIGHT_IN_TILES, WIDTH_IN_TILES);
@@ -569,7 +567,6 @@ int mainMapCreator(mapPack* workingPack)
 	if (saveCheck[0] == 'y')
         writeTileData();
     //waitForKey();
-    SDL_DestroyTexture(eventTexture);
     //SDL_Delay(1000);
     initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     return 0;
@@ -663,7 +660,6 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
         drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
         if (!editingTiles)
         {
-            //todo: fix this so we can use the tilemaps off the tileset!
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -673,7 +669,6 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
         else
         {
             drawATile(workingPack.mapPackTexture, playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
-            //drawEventmap(0, 0, 20, 15, !editingTiles, false);
             drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
         }
 
@@ -827,15 +822,6 @@ void writeTileData()
 //end map creator code.
 
 //start map-pack wizard code
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
-#define SCREEN_WIDTH TILE_SIZE * 16
-#define SCREEN_HEIGHT TILE_SIZE * 9
-#undef WIDTH_IN_TILES
-#undef HEIGHT_IN_TILES
-#define WIDTH_IN_TILES SCREEN_WIDTH / TILE_SIZE
-#define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
-
 int mainMapPackWizard(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
@@ -854,7 +840,7 @@ int mainMapPackWizard(mapPack* workingPack)
         {
             editTileEquates(workingPack);
             closeSDL();
-            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
 
         if (choice == 4)
@@ -873,11 +859,76 @@ void editFilePaths(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-        if (choice < 0)
-        {
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Change Name", "Edit Map Path", "Edit Tileset Path", "Next Menu >", "Back", 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        if (choice < 0 || choice == 5)
             quit = true;
+        else
+        {
+            if (choice == 4)
+                choice = 3 + aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Edit Save Path", "Edit Script Path", "< Last Menu", " ", " ", 3, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            if (choice < 6)
+            {
+                closeSDL();
+                char getString[MAX_PATH];
+                getString[0] = '\0';
+                switch(choice)
+                {
+                case 1:
+                    printf("Title of map pack? ");
+                    break;
+                case 2:
+                    printf("Path for maps file? maps/");
+                    break;
+                case 3:
+                    printf("Path for tileset file? tileset/");
+                    break;
+                case 4:
+                    printf("Path for savefile? saves/");
+                    break;
+                case 5:
+                    printf("Path for scripts? scripts/");
+                    break;
+                }
+                scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+                switch(choice)
+                {
+
+                case 1:
+                    strcpy(workingPack->name, getString);
+                    break;
+                case 2:
+                    strPrepend((char*) getString, "maps/");
+                    strcpy(workingPack->mapFilePath, getString);
+                    break;
+                case 3:
+                    strPrepend((char*) getString, "tileset/");
+                    strcpy(workingPack->tilesetFilePath, getString);
+                    break;
+                case 4:
+                    strPrepend((char*) getString, "saves/");
+                    strcpy(workingPack->saveFilePath, getString);
+                    break;
+                case 5:
+                    strPrepend((char*) getString, "scripts/");
+                    strcpy(workingPack->scriptFilePath, getString);
+                    break;
+                }
+                initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            }
         }
+    }
+    saveMapPack(workingPack);
+}
+
+void editInitSpawn(mapPack* workingPack)
+{
+    SDL_RenderClear(mainRenderer);
+    bool quit = false;
+    while(!quit)
+    {
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, "Initial X", "Initial Y", "Initial Map", "Back", " ", 4, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        if (choice < 0 || choice == 4)
+            quit = true;
         else
         {
             closeSDL();
@@ -886,68 +937,39 @@ void editFilePaths(mapPack* workingPack)
             switch(choice)
             {
             case 1:
-                printf("Title of map pack? ");
-                break;
-            case 2:
-                printf("Path for maps file? maps/");
-                break;
-            case 3:
-                printf("Path for tileset file? tileset/");
-                break;
-            case 4:
-                printf("Path for savefile? saves/");
-                break;
-            case 5:
-                printf("Path for scripts? scripts/");
-                break;
-            case 6:
                 printf("Initial X spawn-coordinate? ");
                 break;
-            case 7:
+            case 2:
                 printf("Initial Y spawn-coordinate? ");
                 break;
+            case 3:
+                printf("Initial map spawn code? ");
+                break;
             }
-            scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+            scanf("%259[^\n]%*c", getString);
             switch(choice)
             {
-
             case 1:
-                strcpy(workingPack->name, getString);
-                break;
-            case 2:
-                strPrepend((char*) getString, "maps/");
-                strcpy(workingPack->mapFilePath, getString);
-                break;
-            case 3:
-                strPrepend((char*) getString, "tileset/");
-                strcpy(workingPack->tilesetFilePath, getString);
-                break;
-            case 4:
-                strPrepend((char*) getString, "saves/");
-                strcpy(workingPack->saveFilePath, getString);
-                break;
-            case 5:
-                strPrepend((char*) getString, "scripts/");
-                strcpy(workingPack->scriptFilePath, getString);
-                break;
-            case 6:
                 sscanf(getString, "%d", &(workingPack->initX));
                 break;
-            case 7:
+            case 2:
                 sscanf(getString, "%d", &(workingPack->initY));
                 break;
+            case 3:
+                sscanf(getString, "%d", &(workingPack->initMap));
+                quit = true;
+                break;
             }
-            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
     }
     saveMapPack(workingPack);
 }
 
-void editInitSpawn(mapPack* workingPack)
-{
-    //todo
-}
-
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+#define SCREEN_WIDTH TILE_SIZE * 16
+#define SCREEN_HEIGHT TILE_SIZE * 9
 void editTileEquates(mapPack* workingPack)
 {
     closeSDL();
