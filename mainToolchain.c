@@ -264,10 +264,16 @@ void createMapPack(mapPack* newPack)
     appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initMap, getString));
 
+    sprite chooser;
+    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
+    char* temp = "";
+    mainMapPackWizardLoop(&chooser, newPack->tilesetMaps);
+
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
     {
-        appendLine(newPack->mainFilePath, "0\0");
-        newPack->tilesetMaps[i] = 0;
+        if (newPack->tilesetMaps[0] == -1)
+            newPack->tilesetMaps[i] = 0;
+        appendLine(newPack->mainFilePath, intToString(newPack->tilesetMaps[i], temp));
     }
 
     getString = freeThisMem((void*) getString);
