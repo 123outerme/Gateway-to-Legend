@@ -34,6 +34,8 @@
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
+#define checkRectCol(x1, y1, x2, y2) ((abs(abs(x1) - abs(x2)) < TILE_SIZE) && (abs(abs(y1) - abs(y2)) < TILE_SIZE))
+
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
@@ -452,7 +454,7 @@ int mainLoop(player* playerSprite)
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
-                        if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
+                        if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
                             {
                                 thisScript = theseScripts[i];
                                 found = true;
@@ -467,97 +469,45 @@ int mainLoop(player* playerSprite)
             }
             for(int i = 0; i < enemyCount; i++)
             {
+                if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250)  //sword collision
+                    enemies[i].type = type_na;
+
+                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !playerSprite->invincCounter)  //player collision
+                {
+                     playerSprite->HP -= 2;
+                     playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
+                     - 48 * (enemies[i].x > playerSprite->spr.x);
+
+                     playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
+                     - 48 * (enemies[i].y > playerSprite->spr.y);
+                     playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
+                }
+
                 if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
                 {
                     //behavior: move quickly at player, with little HP
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                        && swordTimer > SDL_GetTicks() + 250)
-                        enemies[i].type = type_na;
-
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
-                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
-                    {
-                         playerSprite->HP--;
-                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                         - 48 * (enemies[i].x > playerSprite->spr.x);
-
-                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                         - 48 * (enemies[i].y > playerSprite->spr.y);
-                         playerSprite->invincCounter = 10;
-                    }
-
-                    sprite nextNode;
-                    //calculate where to go next
-                    initSprite(&nextNode, playerSprite->spr.x, playerSprite->spr.y, enemies[i].w, 0, 0, SDL_FLIP_NONE, type_na);
-
-                    if (enemies[i].x != nextNode.x)
-                        enemies[i].x += 3 - 6 * (nextNode->spr.x < enemies[i].x);
-                    if (enemies[i].y != nextNode.y)
-                        enemies[i].y += 3 - 6 * (nextNode.y < enemies[i].y);
-
-                    //todo: Pathfinding!
+                    if (enemies[i].x != playerSprite->spr.x)
+                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
+                    if (enemies[i].y != playerSprite->spr.y)
+                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
                 {
                     //behavior: burst movement towards player?
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                        && swordTimer > SDL_GetTicks() + 250)
-                        enemies[i].type = type_na;
-
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
-                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
-                    {
-                         playerSprite->HP--;
-                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                         - 48 * (enemies[i].x > playerSprite->spr.x);
-
-                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                         - 48 * (enemies[i].y > playerSprite->spr.y);
-                         playerSprite->invincCounter = 10;
-                    }
-
-                    sprite nextNode;
-                    //calculate where to go next
-                    initSprite(&nextNode, playerSprite->spr.x, playerSprite->spr.y, enemies[i].w, 0, 0, SDL_FLIP_NONE, type_na);
-
-                    if (enemies[i].x != nextNode.x)
-                        enemies[i].x += 2 - 4 * (nextNode.x < enemies[i].x);
-                    if (enemies[i].y != nextNode.y)
-                        enemies[i].y += 2 - 4 * (nextNode.y < enemies[i].y);
+                    if (enemies[i].x != playerSprite->spr.x)
+                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                    if (enemies[i].y != playerSprite->spr.y)
+                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
                 {
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                        && swordTimer > SDL_GetTicks() + 250)
-                        enemies[i].type = type_na;
-
-                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
-                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
-                    {
-                         playerSprite->HP -= 2;
-                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                         - 48 * (enemies[i].x > playerSprite->spr.x);
-
-                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                         - 48 * (enemies[i].y > playerSprite->spr.y);
-                         playerSprite->invincCounter = 10;
-                    }
-
                     if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
-
-                    //todo: Pathfinding!
                 }
             }
             if (playerSprite->invincCounter)
