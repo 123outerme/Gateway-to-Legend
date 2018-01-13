@@ -20,6 +20,8 @@
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
 
 #define MAX_MAPPACKS_PER_PAGE 11
+#define MAX_ENEMIES 6
+
 
 #define START_GAMECODE 0
 #define OPTIONS_GAMECODE 1
@@ -53,6 +55,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define ENEMY(x) tileIDArray[13 + x]
 
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
+bool enemyFlags[MAX_ENEMIES] = {true, true, true, true, true, true};
 script* allScripts;
 int sizeOfAllScripts;
 
@@ -174,23 +177,26 @@ int main(int argc, char* argv[])
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 2 || choice == 3)
                 gameState = SAVE_GAMECODE;
-            if (choice == 3)
-            {
-                for(int i = 0; i < 3; i++)
-                    doorFlags[i] = true;
-            }
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;
             for(int i = 0; i < 3; i++)
                 doorFlags[i] = true;
+            for(int i = 0; i < MAX_ENEMIES; i++)
+                enemyFlags[i] = true;
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
             if (choice == 2)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
+            {
+                for(int i = 0; i < 3; i++)
+                    doorFlags[i] = true;
+                for(int i = 0; i < MAX_ENEMIES; i++)
+                    enemyFlags[i] = true;
                 gameState = START_GAMECODE;
+            }
             break;
         }
     }
@@ -264,20 +270,14 @@ int mainLoop(player* playerSprite)
         if (new_ptr != NULL)
             theseScripts = new_ptr;
     }
-    sprite enemies[6];
+    sprite enemies[MAX_ENEMIES];
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {
         for(int x = 0; x < WIDTH_IN_TILES; x++)
         {
-            if(eventmap[y][x] == 12 && enemyCount < 6)
-                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(1), 0, SDL_FLIP_NONE, type_enemy);
-
-            if(eventmap[y][x] == 13 && enemyCount < 6)
-                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(2), 0, SDL_FLIP_NONE, type_enemy);
-
-            if(eventmap[y][x] == 14 && enemyCount < 6)
-                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(3), 0, SDL_FLIP_NONE, type_enemy);
+            if(eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
+                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 0, SDL_FLIP_NONE, enemyFlags[enemyCount] ? type_enemy : type_na);
         }
     }
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
@@ -470,7 +470,10 @@ int mainLoop(player* playerSprite)
             for(int i = 0; i < enemyCount; i++)
             {
                 if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250)  //sword collision
+                {
                     enemies[i].type = type_na;
+                    enemyFlags[i] = false;
+                }
 
                 if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !playerSprite->invincCounter)  //player collision
                 {
