@@ -284,7 +284,7 @@ int mainLoop(player* playerSprite)
     int exitCode = 2;
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
-        frame = 0, framerate = 0, sleepFor = 0, lastKeypressTime = SDL_GetTicks(),
+        frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks(),
         swordTimer = 0;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
@@ -315,147 +315,230 @@ int mainLoop(player* playerSprite)
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         if (!checkSKInteract)
                 textBoxOn = false;
-        if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || checkSKAttack || playerSprite->xVeloc || playerSprite->yVeloc) && SDL_GetTicks() - lastKeypressTime >= 32)
+
+        if (SDL_GetTicks() - lastUpdateTime >= 32)
         {
-            int lastY = playerSprite->spr.y;
-            int lastX = playerSprite->spr.x;
-
-            if (playerSprite->spr.y > 0 && checkSKUp)
-                playerSprite->spr.y -= PIXELS_MOVED;
-
-            if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
-                playerSprite->spr.y += PIXELS_MOVED;
-
-            if (playerSprite->spr.x > 0 && checkSKLeft)
-                playerSprite->spr.x -= PIXELS_MOVED;
-
-            if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
-                playerSprite->spr.x += PIXELS_MOVED;
-
-            if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
+            if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKInteract || checkSKAttack || playerSprite->xVeloc || playerSprite->yVeloc))
             {
-                initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
-                textBoxOn = true;
-            }
+                int lastY = playerSprite->spr.y;
+                int lastX = playerSprite->spr.x;
 
-            if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKInteract)
-                playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
+                if (playerSprite->spr.y > 0 && checkSKUp)
+                    playerSprite->spr.y -= PIXELS_MOVED;
 
-            if (playerSprite->lastDirection / 4 == 1)
-                playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
-            else
-                playerSprite->spr.flip = SDL_FLIP_NONE;
+                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
+                    playerSprite->spr.y += PIXELS_MOVED;
 
-            if (playerSprite->xVeloc)
-                playerSprite->spr.x += playerSprite->xVeloc;
+                if (playerSprite->spr.x > 0 && checkSKLeft)
+                    playerSprite->spr.x -= PIXELS_MOVED;
 
-            if (playerSprite->yVeloc)
-                playerSprite->spr.y += playerSprite->yVeloc;
+                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
+                    playerSprite->spr.x += PIXELS_MOVED;
 
-            checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
+                if (checkSKInteract && !textBoxOn && frame > targetTime / 2)
+                {
+                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
+                    textBoxOn = true;
+                }
 
-            if (checkSKAttack || swordTimer)
-            {
-                int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
-                int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
-                if ((xDir -= 1) != -1)
-                    xDir -= !xDir;  //turns 0 and 1 into -1 and 1
+                if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKInteract)
+                    playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
+
+                if (playerSprite->lastDirection / 4 == 1)
+                    playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
                 else
-                    xDir = 0;
+                    playerSprite->spr.flip = SDL_FLIP_NONE;
 
-                if (yDir != -1)
-                    yDir -= !yDir;
-                else
-                    yDir = 0;
-                yDir *= !xDir;  //x direction takes precedence over y direction
-                initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+                if (playerSprite->xVeloc)
+                    playerSprite->spr.x += playerSprite->xVeloc;
 
-                if (!swordTimer)
-                    swordTimer = SDL_GetTicks() + 750;
-            }
+                if (playerSprite->yVeloc)
+                    playerSprite->spr.y += playerSprite->yVeloc;
 
-            if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
-                playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
+                checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
-            if (playerSprite->yVeloc)
-                playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
-
-            if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
-            {
-                bool quitThis = false;
-                if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
+                if (checkSKAttack || swordTimer)
                 {
-                    playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
-                    playerSprite->mapScreen--;
-                    quitThis = true;
+                    int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
+                    int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
+                    if ((xDir -= 1) != -1)
+                        xDir -= !xDir;  //turns 0 and 1 into -1 and 1
+                    else
+                        xDir = 0;
+
+                    if (yDir != -1)
+                        yDir -= !yDir;
+                    else
+                        yDir = 0;
+                    yDir *= !xDir;  //x direction takes precedence over y direction
+                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+
+                    if (!swordTimer)
+                        swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
+                if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
+                    playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
+
+                if (playerSprite->yVeloc)
+                    playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
+
+                if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
-                    playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
-                    playerSprite->mapScreen -= 10;
-                    quitThis = true;
+                    bool quitThis = false;
+                    if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
+                    {
+                        playerSprite->spr.x = SCREEN_WIDTH - (2 * TILE_SIZE);
+                        playerSprite->mapScreen--;
+                        quitThis = true;
+                    }
+
+                    if (!playerSprite->spr.y && playerSprite->mapScreen / 10 > 0)
+                    {
+                        playerSprite->spr.y = SCREEN_HEIGHT - (2 * TILE_SIZE);
+                        playerSprite->mapScreen -= 10;
+                        quitThis = true;
+                    }
+
+                    if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
+                    {
+                        playerSprite->spr.x = TILE_SIZE;
+                        playerSprite->mapScreen++;
+                        quitThis = true;
+                    }
+
+                    if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
+                    {
+                        playerSprite->spr.y = TILE_SIZE;
+                        playerSprite->mapScreen += 10;
+                        quitThis = true;
+                    }
+
+                    if (quitThis)
+                    {
+                        quit = true;
+                        exitCode = 2;
+                    }
                 }
 
-                if (playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE && playerSprite->mapScreen % 10 < 9)
+                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
                 {
-                    playerSprite->spr.x = TILE_SIZE;
-                    playerSprite->mapScreen++;
-                    quitThis = true;
+                    playerSprite->spr.y = lastY;
+                    playerSprite->spr.x = lastX;
+                    //printf("%d\n", exitCode);
                 }
-
-                if (playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE && playerSprite->mapScreen / 10 < 9)
+                if (collisionData[1] || collisionData[2] || collisionData[3])
                 {
-                    playerSprite->spr.y = TILE_SIZE;
-                    playerSprite->mapScreen += 10;
-                    quitThis = true;
+                    for(int i = 0; i < 3; i++)
+                    {
+                        if (collisionData[i + 1])
+                            doorFlags[i] = false;
+                    }
                 }
-
-                if (quitThis)
+                if (collisionData[8])
                 {
-                    quit = true;
+                    playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
+                    playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
+                    playerSprite->HP -= 1;
+                    playerSprite->invincible = true;
+                    playerSprite->invincCounter = 60;
+                }
+                if (collisionData[9])
+                {
+                    bool found = false;
+                    for(int i = 0; i < maxTheseScripts; i++)
+                    {
+                        if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
+                            {
+                                thisScript = theseScripts[i];
+                                found = true;
+                                break;
+                            }
+                    }
+                    thisScript.active = found;
+                    //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
+                    playerSprite->extraData = mapFilePath;
                     exitCode = 2;
                 }
             }
+            for(int i = 0; i < enemyCount; i++)
+            {
+                if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
+                {
+                    //behavior: move quickly at player, with little HP
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                        && swordTimer > SDL_GetTicks() + 250)
+                        enemies[i].type = type_na;
 
-            if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
-            {
-                playerSprite->spr.y = lastY;
-                playerSprite->spr.x = lastX;
-                //printf("%d\n", exitCode);
-            }
-            if (collisionData[1] || collisionData[2] || collisionData[3])
-            {
-                for(int i = 0; i < 3; i++)
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
+                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
+                                            .h = enemies[i].h}))
+                    {
+                         playerSprite->HP--;
+                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
+                         - 48 * (enemies[i].x > playerSprite->spr.x);
+
+                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
+                         - 48 * (enemies[i].y > playerSprite->spr.y);
+                    }
+
+                    if (enemies[i].x != playerSprite->spr.x)
+                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
+                    if (enemies[i].y != playerSprite->spr.y)
+                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+                }
+
+                if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
                 {
-                    if (collisionData[i + 1])
-                        doorFlags[i] = false;
+                    //behavior: burst movement towards player?
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                        && swordTimer > SDL_GetTicks() + 250)
+                        enemies[i].type = type_na;
+
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
+                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
+                                            .h = enemies[i].h}))
+                    {
+                         playerSprite->HP--;
+                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
+                         - 48 * (enemies[i].x > playerSprite->spr.x);
+
+                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
+                         - 48 * (enemies[i].y > playerSprite->spr.y);
+                    }
+                    //todo: move, then check collision with environment
+                }
+
+                if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
+                {
+                    //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
+                                            &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
+                        && swordTimer > SDL_GetTicks() + 250)
+                        enemies[i].type = type_na;
+
+                    if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
+                                            .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
+                                            .h = enemies[i].h}))
+                    {
+                         playerSprite->HP -= 2;
+                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
+                         - 48 * (enemies[i].x > playerSprite->spr.x);
+
+                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
+                         - 48 * (enemies[i].y > playerSprite->spr.y);
+                    }
+
+                    if (enemies[i].x != playerSprite->spr.x)
+                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                    if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
+                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+                    //todo: move, then check collision with environment
                 }
             }
-            if (collisionData[8])
-            {
-                playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
-                playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
-                playerSprite->HP -= 1;
-            }
-            if (collisionData[9])
-            {
-                bool found = false;
-                for(int i = 0; i < maxTheseScripts; i++)
-                {
-                    if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))
-                        {
-                            thisScript = theseScripts[i];
-                            found = true;
-                            break;
-                        }
-                }
-                thisScript.active = found;
-                //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
-                playerSprite->extraData = mapFilePath;
-                exitCode = 2;
-            }
-            lastKeypressTime = SDL_GetTicks();
+            lastUpdateTime = SDL_GetTicks();
         }
         if (checkSKMenu)
         {
@@ -478,40 +561,6 @@ int mainLoop(player* playerSprite)
 
         for(int i = 0; i < enemyCount; i++)
         {
-            if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
-            {
-                //behavior: move quickly at player, with little HP
-                //todo: check collision with sword
-                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                    && swordTimer > SDL_GetTicks() + 250)
-                    enemies[i].type = type_na;
-
-                if (enemies[i].x != playerSprite->spr.x)
-                    enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
-                if (enemies[i].y != playerSprite->spr.y)
-                    enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
-            }
-
-            if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
-            {
-                //behavior: burst movement towards player
-                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                    && swordTimer > SDL_GetTicks() + 250)
-                    enemies[i].type = type_na;
-                //todo: move, then check collision with environment
-            }
-
-            if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
-            {
-                //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                if (SDL_HasIntersection(&(SDL_Rect) {.x = sword.x, .y = sword.y, .w = sword.w, .h = sword.h},
-                                        &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w, .h = enemies[i].h})
-                    && swordTimer > SDL_GetTicks() + 250)
-                    enemies[i].type = type_na;
-                //todo: move, then check collision with environment
-            }
             if (enemies[i].type == type_enemy)
                 drawASprite(tilesTexture, enemies[i]);
         }
