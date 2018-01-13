@@ -263,6 +263,7 @@ void createMapPack(mapPack* newPack)
     appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initMap, getString));
 
+    initSDL("Gateway to Legend Map-Pack Wizard", newPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 16, TILE_SIZE * 9, 24);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     char* temp = "";
