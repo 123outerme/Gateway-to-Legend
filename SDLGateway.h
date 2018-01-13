@@ -20,7 +20,6 @@ typedef struct {
     int yVeloc;  //
     int lastDirection;  //
     int invincCounter; //
-    bool invincible; // 1 bye
     bool movementLocked;  // 1 byte
     char* extraData;
 } player;

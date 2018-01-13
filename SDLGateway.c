@@ -15,7 +15,6 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle
     player->maxHP = 12;
     player->mapScreen = mapScreen;
     player->invincCounter = 0;
-    player->invincible = false;
 	player->movementLocked = false;
 	player->extraData = "";
 	player->xVeloc = 0;

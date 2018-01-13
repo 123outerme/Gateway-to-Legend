@@ -434,13 +434,12 @@ int mainLoop(player* playerSprite)
                             doorFlags[i] = false;
                     }
                 }
-                if (collisionData[8])
+                if (collisionData[8] && !playerSprite->invincCounter)
                 {
                     playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
                     playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
                     playerSprite->HP -= 1;
-                    playerSprite->invincible = true;
-                    playerSprite->invincCounter = 60;
+                    playerSprite->invincCounter = 24;
                 }
                 if (collisionData[9])
                 {
@@ -472,7 +471,7 @@ int mainLoop(player* playerSprite)
 
                     if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
                                             .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}))
+                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
                     {
                          playerSprite->HP--;
                          playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
@@ -480,12 +479,15 @@ int mainLoop(player* playerSprite)
 
                          playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
                          - 48 * (enemies[i].y > playerSprite->spr.y);
+                         playerSprite->invincCounter = 10;
                     }
 
                     if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+
+                    //todo:check collision with environment
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -498,7 +500,7 @@ int mainLoop(player* playerSprite)
 
                     if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
                                             .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}))
+                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
                     {
                          playerSprite->HP--;
                          playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
@@ -506,8 +508,9 @@ int mainLoop(player* playerSprite)
 
                          playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
                          - 48 * (enemies[i].y > playerSprite->spr.y);
+                         playerSprite->invincCounter = 10;
                     }
-                    //todo: move, then check collision with environment
+                    //todo: move. no collision
                 }
 
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
@@ -520,7 +523,7 @@ int mainLoop(player* playerSprite)
 
                     if (SDL_HasIntersection(&(SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w,
                                             .h = playerSprite->spr.h}, &(SDL_Rect) {.x = enemies[i].x, .y = enemies[i].y, .w = enemies[i].w,
-                                            .h = enemies[i].h}))
+                                            .h = enemies[i].h}) && !playerSprite->invincCounter)
                     {
                          playerSprite->HP -= 2;
                          playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
@@ -528,6 +531,7 @@ int mainLoop(player* playerSprite)
 
                          playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
                          - 48 * (enemies[i].y > playerSprite->spr.y);
+                         playerSprite->invincCounter = 10;
                     }
 
                     if (enemies[i].x != playerSprite->spr.x)
@@ -537,6 +541,8 @@ int mainLoop(player* playerSprite)
                     //todo: check collision with environment
                 }
             }
+            if (playerSprite->invincCounter)
+                playerSprite->invincCounter--;
             lastUpdateTime = SDL_GetTicks();
         }
         if (checkSKMenu)
