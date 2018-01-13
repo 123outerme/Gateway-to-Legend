@@ -55,7 +55,8 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define ENEMY(x) tileIDArray[13 + x]
 
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
-bool enemyFlags[MAX_ENEMIES] = {true, true, true, true, true, true};
+bool enemyFlags[MAX_ENEMIES + 1] = {true, true, true, true, true, true, true};  //last bool is reloadEnemies
+sprite enemies[MAX_ENEMIES];
 script* allScripts;
 int sizeOfAllScripts;
 
@@ -182,7 +183,7 @@ int main(int argc, char* argv[])
             gameState = MAINLOOP_GAMECODE;
             for(int i = 0; i < 3; i++)
                 doorFlags[i] = true;
-            for(int i = 0; i < MAX_ENEMIES; i++)
+            for(int i = 0; i < MAX_ENEMIES + 1; i++)
                 enemyFlags[i] = true;
             break;
         case SAVE_GAMECODE:
@@ -193,7 +194,7 @@ int main(int argc, char* argv[])
             {
                 for(int i = 0; i < 3; i++)
                     doorFlags[i] = true;
-                for(int i = 0; i < MAX_ENEMIES; i++)
+                for(int i = 0; i < MAX_ENEMIES + 1; i++)
                     enemyFlags[i] = true;
                 gameState = START_GAMECODE;
             }
@@ -201,7 +202,6 @@ int main(int argc, char* argv[])
         }
     }
     saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
-    //SDL_DestroyTexture(eventTexture);  //once we delete eventTexture, you can remove this.
     SDL_DestroyTexture(tilesTexture);
     free(allScripts);
     closeSDL();
@@ -270,16 +270,20 @@ int mainLoop(player* playerSprite)
         if (new_ptr != NULL)
             theseScripts = new_ptr;
     }
-    sprite enemies[MAX_ENEMIES];
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {
         for(int x = 0; x < WIDTH_IN_TILES; x++)
         {
             if(eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
-                initSprite(&enemies[enemyCount++], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 0, SDL_FLIP_NONE, enemyFlags[enemyCount] ? type_enemy : type_na);
+            {
+                enemyCount++;
+                if (enemyFlags[MAX_ENEMIES])
+                    initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
+            }
         }
     }
+    enemyFlags[MAX_ENEMIES] = false;
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int exitCode = 2;
@@ -357,10 +361,22 @@ int mainLoop(player* playerSprite)
                     playerSprite->yVeloc = 48 - 96 * (playerSprite->yVeloc < 0);
 
                 if (playerSprite->xVeloc)
+                {
                     playerSprite->spr.x += playerSprite->xVeloc;
+                    if (playerSprite->spr.x < 0)
+                        playerSprite->spr.x = 0;
+                    if (playerSprite->spr.x > SCREEN_WIDTH - TILE_SIZE)
+                        playerSprite->spr.x = SCREEN_WIDTH - TILE_SIZE;
+                }
 
                 if (playerSprite->yVeloc)
+                {
                     playerSprite->spr.y += playerSprite->yVeloc;
+                    if (playerSprite->spr.y < 0)
+                        playerSprite->spr.y = 0;
+                    if (playerSprite->spr.y > SCREEN_HEIGHT - TILE_SIZE)
+                        playerSprite->spr.y = SCREEN_HEIGHT - TILE_SIZE;
+                }
 
                 checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
