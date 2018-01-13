@@ -488,10 +488,14 @@ int mainLoop(player* playerSprite)
                          playerSprite->invincCounter = 10;
                     }
 
-                    if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
-                    if (enemies[i].y != playerSprite->spr.y)
-                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+                    sprite nextNode;
+                    //calculate where to go next
+                    initSprite(&nextNode, playerSprite->spr.x, playerSprite->spr.y, enemies[i].w, 0, 0, SDL_FLIP_NONE, type_na);
+
+                    if (enemies[i].x != nextNode.x)
+                        enemies[i].x += 3 - 6 * (nextNode->spr.x < enemies[i].x);
+                    if (enemies[i].y != nextNode.y)
+                        enemies[i].y += 3 - 6 * (nextNode.y < enemies[i].y);
 
                     //todo: Pathfinding!
                 }
@@ -516,10 +520,15 @@ int mainLoop(player* playerSprite)
                          - 48 * (enemies[i].y > playerSprite->spr.y);
                          playerSprite->invincCounter = 10;
                     }
-                    if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
-                    if (enemies[i].y != playerSprite->spr.y)
-                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+
+                    sprite nextNode;
+                    //calculate where to go next
+                    initSprite(&nextNode, playerSprite->spr.x, playerSprite->spr.y, enemies[i].w, 0, 0, SDL_FLIP_NONE, type_na);
+
+                    if (enemies[i].x != nextNode.x)
+                        enemies[i].x += 2 - 4 * (nextNode.x < enemies[i].x);
+                    if (enemies[i].y != nextNode.y)
+                        enemies[i].y += 2 - 4 * (nextNode.y < enemies[i].y);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
