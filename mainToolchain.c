@@ -874,19 +874,19 @@ void editFilePaths(mapPack* workingPack)
                 switch(choice)
                 {
                 case 1:
-                    printf("Title of map pack? ");
+                    printf("Title of map pack? (Was %s)\n", workingPack->name);
                     break;
                 case 2:
-                    printf("Path for maps file? maps/");
+                    printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);
                     break;
                 case 3:
-                    printf("Path for tileset file? tileset/");
+                    printf("Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
                     break;
                 case 4:
-                    printf("Path for savefile? saves/");
+                    printf("Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
                     break;
                 case 5:
-                    printf("Path for scripts? scripts/");
+                    printf("Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
                     break;
                 }
                 scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
@@ -937,13 +937,13 @@ void editInitSpawn(mapPack* workingPack)
             switch(choice)
             {
             case 1:
-                printf("Initial X spawn-coordinate? ");
+                printf("Initial X spawn-coordinate? (Was %d) ", workingPack->initX);
                 break;
             case 2:
-                printf("Initial Y spawn-coordinate? ");
+                printf("Initial Y spawn-coordinate? (Was %d) ", workingPack->initY);
                 break;
             case 3:
-                printf("Initial map spawn code? ");
+                printf("Initial map spawn code? (Was %d) ", workingPack->initMap);
                 break;
             }
             scanf("%259[^\n]%*c", getString);
