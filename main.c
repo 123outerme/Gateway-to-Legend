@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
-                loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten
+                loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten?
             else
                 createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
             gameState = MAINLOOP_GAMECODE;
@@ -482,12 +482,21 @@ int mainLoop(player* playerSprite)
                          playerSprite->invincCounter = 10;
                     }
 
+                    int lastEX = enemies[i].x;
+                    int lastEY = enemies[i].y;
                     if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
 
-                    //todo:check collision with environment
+                    int thisX = enemies[i].x, thisY = enemies[i].y;
+                    int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
+                    if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
+                    {
+                        enemies[i].x = lastEX;
+                        enemies[i].y = lastEY;
+                        //todo: slide enemies along axis without collision
+                    }
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -510,7 +519,10 @@ int mainLoop(player* playerSprite)
                          - 48 * (enemies[i].y > playerSprite->spr.y);
                          playerSprite->invincCounter = 10;
                     }
-                    //todo: move. no collision
+                    if (enemies[i].x != playerSprite->spr.x)
+                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                    if (enemies[i].y != playerSprite->spr.y)
+                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
@@ -535,10 +547,17 @@ int mainLoop(player* playerSprite)
                     }
 
                     if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
-                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
-                    //todo: check collision with environment
+                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+                    int thisX = enemies[i].x, thisY = enemies[i].y;
+                    int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
+                    if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
+                    {
+                        enemies[i].x = lastEX;
+                        enemies[i].y = lastEY;
+                        //todo: slide enemies along axis without collision
+                    }
                 }
             }
             if (playerSprite->invincCounter)

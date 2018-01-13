@@ -877,7 +877,7 @@ void editFilePaths(mapPack* workingPack)
                     printf("Title of map pack? (Was %s)\n", workingPack->name);
                     break;
                 case 2:
-                    printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);
+                    printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
                     break;
                 case 3:
                     printf("Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
