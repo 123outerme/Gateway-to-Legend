@@ -957,7 +957,6 @@ void editInitSpawn(mapPack* workingPack)
                 break;
             case 3:
                 sscanf(getString, "%d", &(workingPack->initMap));
-                quit = true;
                 break;
             }
             initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
