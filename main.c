@@ -348,6 +348,12 @@ int mainLoop(player* playerSprite)
                 else
                     playerSprite->spr.flip = SDL_FLIP_NONE;
 
+                if (abs(playerSprite->xVeloc) > 48)
+                    playerSprite->xVeloc = 48 - 96 * (playerSprite->xVeloc < 0);
+
+                if (abs(playerSprite->yVeloc) > 48)
+                    playerSprite->yVeloc = 48 - 96 * (playerSprite->yVeloc < 0);
+
                 if (playerSprite->xVeloc)
                     playerSprite->spr.x += playerSprite->xVeloc;
 
@@ -482,21 +488,12 @@ int mainLoop(player* playerSprite)
                          playerSprite->invincCounter = 10;
                     }
 
-                    int lastEX = enemies[i].x;
-                    int lastEY = enemies[i].y;
                     if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
 
-                    int thisX = enemies[i].x, thisY = enemies[i].y;
-                    int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
-                    if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
-                    {
-                        enemies[i].x = lastEX;
-                        enemies[i].y = lastEY;
-                        //todo: slide enemies along axis without collision
-                    }
+                    //todo: Pathfinding!
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -550,14 +547,8 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
-                    int thisX = enemies[i].x, thisY = enemies[i].y;
-                    int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
-                    if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
-                    {
-                        enemies[i].x = lastEX;
-                        enemies[i].y = lastEY;
-                        //todo: slide enemies along axis without collision
-                    }
+
+                    //todo: Pathfinding!
                 }
             }
             if (playerSprite->invincCounter)

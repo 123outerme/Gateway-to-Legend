@@ -35,7 +35,8 @@ typedef enum {
     script_animation,         //7 if player steps in coords, do animation
     script_boss_actions,      //8 if boss is still alive, execute boss actions
     script_gain_exp,          //9 gives player some EXP. Don't abuse please
-    script_placeholder,       //10 ???
+    script_gain_money,        //10 gives player some money. Please don't abuse also
+    script_placeholder,       //11 ???
 } scriptBehavior;
 
 typedef struct {
