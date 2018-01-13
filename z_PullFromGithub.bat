@@ -14,7 +14,7 @@ git pull origin master --allow-unrelated-histories
 	@cd /d "%folder%\Gateway-to-Legend"
 	@for /F "delims=" %%i in ('dir /b') do (rmdir "%%i" /s/q || del "%%i" /s/q)
 )
-@ROBOCOPY "C:\Program Files\Git\code\Gateway-to-Legend" %~dp0 *.c *.h *.txt *.ico *.rc *.png *.bat /MIR /XD dirs .git GtL GtL-bin documentation
+@ROBOCOPY "C:\Program Files\Git\code\Gateway-to-Legend" %~dp0 *.c *.h *.txt *.ico *.rc *.png *.bat /MIR /XD dirs .git GtL GtL-bin videos
 @cd "C:\Program Files\Git\code\Gateway-to-Legend"
 @git init
 @git add -A
