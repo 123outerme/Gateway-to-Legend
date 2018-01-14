@@ -509,6 +509,8 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+                    int length = 0;
+                    BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -527,6 +529,8 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
+                    int length = 0;
+                    BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
                 }
             }
             if (playerSprite->invincCounter)

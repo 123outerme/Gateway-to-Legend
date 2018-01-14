@@ -50,6 +50,14 @@ typedef struct {
     bool active;
 } script;
 
+typedef struct {
+    int x;
+    int y;
+    void* lastNode;
+    bool visited;
+    int distance;
+} node;
+
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
@@ -57,6 +65,7 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int s
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initConfig(char* filePath);  //resets config data
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
+void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance);  //initializes a new node
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file

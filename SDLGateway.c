@@ -37,18 +37,6 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 	saveGlobalPlayer(*playerSprite, filePath);
 }
 
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
-{
-	scriptPtr->action = action;
-	scriptPtr->mapNum = mapNum;
-	scriptPtr->x = x;
-	scriptPtr->y = y;
-	scriptPtr->w = w;
-	scriptPtr->h = h;
-	scriptPtr->data = data;
-	scriptPtr->active = true;
-}
-
 void initConfig(char* filePath)
 {
     SC_UP = SDL_SCANCODE_W;
@@ -61,6 +49,36 @@ void initConfig(char* filePath)
     FPS = 60;
     targetTime = calcWaitTime(FPS);
     saveConfig(filePath);
+}
+
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
+{
+	scriptPtr->action = action;
+	scriptPtr->mapNum = mapNum;
+	scriptPtr->x = x;
+	scriptPtr->y = y;
+	scriptPtr->w = w;
+	scriptPtr->h = h;
+	scriptPtr->data = data;
+	scriptPtr->active = true;
+}
+
+void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance)
+{
+    nodePtr->x = x;
+    nodePtr->y = y;
+    nodePtr->lastNode = lastNode;
+    nodePtr->visited = visited;
+    nodePtr->distance = distance;
+}
+
+void nodeCopy(node* nodeDst, node* nodeSrc)
+{
+    nodeSrc->x = nodeDst->x;
+    nodeSrc->y = nodeDst->y;
+    nodeSrc->lastNode = nodeDst->lastNode;
+    nodeSrc->visited = nodeDst->visited;
+    nodeSrc->distance = nodeDst->distance;
 }
 
 void loadConfig(char* filePath)
@@ -363,6 +381,80 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
                                                   .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
     drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, redraw);
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
+}
+
+node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath)
+{
+    node* path = calloc(300, sizeof(node));
+    node** queue = calloc(40, sizeof(node));
+    if (!queue)
+    {
+        *lengthOfPath = 0;
+        return NULL;
+    }
+    node* curNode;
+    node searchList[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+    int queueCount = 0;
+    for(int y = 0; y < HEIGHT_IN_TILES; y++)
+    {
+        for(int x = 0; x < WIDTH_IN_TILES; x++)
+            initNode(&(searchList[y][x]), x * TILE_SIZE, y * TILE_SIZE, NULL, false, 0);
+    }
+    curNode = &(searchList[endY / TILE_SIZE][endX / TILE_SIZE]);
+    bool quit = false;
+    while(!quit)
+    {
+        if (curNode->x / TILE_SIZE == startX / TILE_SIZE && curNode->y / TILE_SIZE == startY / TILE_SIZE)
+            quit = true;
+        //check if node is at endX, endY. Stop if is, continue if not
+
+        curNode->visited = true;
+        {
+            for(int i = 0; i < 4; i++)
+            {
+
+                int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
+                int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
+                if (x >= 0 && y >= 0 && x <= WIDTH_IN_TILES && y <= HEIGHT_IN_TILES && eventmap[y][x] != 1 && searchList[y][x].visited == false)
+                {
+                    queue[queueCount++] = &(searchList[y][x]);
+                    searchList[y][x].visited = true;
+                    searchList[y][x].lastNode = (void*) curNode;
+                    //SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                    //SDL_RenderPresent(mainRenderer);
+                    //printf("%p\n", searchList[y][x].lastNode);
+                    //waitForKey();
+                }
+            }
+        }
+        //enqueue valid adjacent nodes to selected node
+
+        curNode = queue[0];
+        //printf("t>>(%d, %d) ... %d\n", curNode->x / TILE_SIZE, curNode->y / TILE_SIZE, queueCount);
+        //printf("n>>(%d, %d)\n", queue[1].x / TILE_SIZE, queue[1].y / TILE_SIZE);
+
+        for(int i = 0; i < queueCount - 1; i++)
+            queue[i] = queue[i + 1];
+
+        queueCount--;
+        //select a new adjacent node and delete the last enqueued item
+    }
+    free(queue);
+    quit = false;
+    int pathCount = 1;
+    path[0] = searchList[startY / TILE_SIZE][startX / TILE_SIZE];
+    while(!quit)
+    {
+        //printf("%d = pathCount\n", pathCount);
+        path[pathCount] = *((node*) (path[pathCount - 1].lastNode));
+        //printf("%p\n", (void*) path[pathCount].lastNode);
+        if (path[pathCount].lastNode == NULL || path[pathCount].x == TILE_SIZE * endX / TILE_SIZE && path[pathCount].y == TILE_SIZE * endY / TILE_SIZE)
+            quit = true;
+        else
+            pathCount++;
+    }
+    *lengthOfPath = pathCount;
+    return path;
 }
 
 bool executeScriptAction(script* scriptData, player* player)
