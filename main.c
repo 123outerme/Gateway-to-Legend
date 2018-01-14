@@ -505,12 +505,16 @@ int mainLoop(player* playerSprite)
                 if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
                 {
                     //behavior: move quickly at player, with little HP
-                    if (enemies[i].x != playerSprite->spr.x)
+                    int length = 0;
+                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                    /*if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
-                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
-                    int length = 0;
-                    BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
+                    if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
+                        enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
+                    if (enemies[i].y != nodeArray[1].y)
+                        enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -525,12 +529,12 @@ int mainLoop(player* playerSprite)
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
                 {
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                    if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
-                    if (enemies[i].y != playerSprite->spr.y && enemies[i].x == playerSprite->spr.x)
-                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);
                     int length = 0;
-                    BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                    if (enemies[i].x != nodeArray[1].x)
+                        enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
+                    if (enemies[i].y != nodeArray[1].y && enemies[i].x == nodeArray[1].x)
+                        enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
                 }
             }
             if (playerSprite->invincCounter)
