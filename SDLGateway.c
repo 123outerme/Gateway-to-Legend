@@ -387,7 +387,7 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
 {
     node* path = calloc(300, sizeof(node));
     node** queue = calloc(40, sizeof(node));
-    if (!queue)
+    if (!queue || (startX / TILE_SIZE == endX / TILE_SIZE && startY / TILE_SIZE == endY / TILE_SIZE))
     {
         *lengthOfPath = 0;
         return NULL;
@@ -406,7 +406,7 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
     {
         if (curNode->x / TILE_SIZE == startX / TILE_SIZE && curNode->y / TILE_SIZE == startY / TILE_SIZE)
             quit = true;
-        //check if node is at endX, endY. Stop if is, continue if not
+        //check if node is at startX, startY. Stop if is, continue if not
 
         curNode->visited = true;
         {
@@ -428,6 +428,13 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
             }
         }
         //enqueue valid adjacent nodes to selected node
+
+        if (queueCount == 0)
+        {
+            *lengthOfPath = 0;
+            return NULL;
+        }
+        //check if no items are enqueued i.e. no path, quits with a NULL path if this is true
 
         curNode = queue[0];
         //printf("t>>(%d, %d) ... %d\n", curNode->x / TILE_SIZE, curNode->y / TILE_SIZE, queueCount);
@@ -453,6 +460,7 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
         else
             pathCount++;
     }
+    //backtrack through the path found, starting at the start node and following lastNode to the end
     *lengthOfPath = pathCount;
     return path;
 }

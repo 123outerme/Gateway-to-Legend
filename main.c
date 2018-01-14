@@ -354,14 +354,10 @@ int mainLoop(player* playerSprite)
                 else
                     playerSprite->spr.flip = SDL_FLIP_NONE;
 
-                if (abs(playerSprite->xVeloc) > 48)
-                    playerSprite->xVeloc = 48 - 96 * (playerSprite->xVeloc < 0);
-
-                if (abs(playerSprite->yVeloc) > 48)
-                    playerSprite->yVeloc = 48 - 96 * (playerSprite->yVeloc < 0);
-
                 if (playerSprite->xVeloc)
                 {
+                    if (abs(playerSprite->xVeloc) > 48)
+                        playerSprite->xVeloc = 48 - 96 * (playerSprite->xVeloc < 0);
                     playerSprite->spr.x += playerSprite->xVeloc;
                     if (playerSprite->spr.x < 0)
                         playerSprite->spr.x = 0;
@@ -371,6 +367,8 @@ int mainLoop(player* playerSprite)
 
                 if (playerSprite->yVeloc)
                 {
+                    if (abs(playerSprite->yVeloc) > 48)
+                        playerSprite->yVeloc = 48 - 96 * (playerSprite->yVeloc < 0);
                     playerSprite->spr.y += playerSprite->yVeloc;
                     if (playerSprite->spr.y < 0)
                         playerSprite->spr.y = 0;
@@ -491,7 +489,7 @@ int mainLoop(player* playerSprite)
                     enemyFlags[i] = false;
                 }
 
-                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !playerSprite->invincCounter)  //player collision
+                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
                 {
                      playerSprite->HP -= 2;
                      playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
@@ -511,10 +509,13 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
-                    if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
-                        enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
-                    if (enemies[i].y != nodeArray[1].y)
-                        enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                    if (length)
+                    {
+                        if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
+                            enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
+                        if (enemies[i].y != nodeArray[1].y)
+                            enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                    }
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -531,10 +532,13 @@ int mainLoop(player* playerSprite)
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
                     int length = 0;
                     node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
-                    if (enemies[i].x != nodeArray[1].x)
-                        enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
-                    if (enemies[i].y != nodeArray[1].y && enemies[i].x == nodeArray[1].x)
-                        enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                    if (length)
+                    {
+                        if (enemies[i].x != nodeArray[1].x)
+                            enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
+                        if (enemies[i].y != nodeArray[1].y && enemies[i].x == nodeArray[1].x)
+                            enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                    }
                 }
             }
             if (playerSprite->invincCounter)
