@@ -455,7 +455,7 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
         //printf("%d = pathCount\n", pathCount);
         path[pathCount] = *((node*) (path[pathCount - 1].lastNode));
         //printf("%p\n", (void*) path[pathCount].lastNode);
-        if (path[pathCount].lastNode == NULL || path[pathCount].x == TILE_SIZE * endX / TILE_SIZE && path[pathCount].y == TILE_SIZE * endY / TILE_SIZE)
+        if (path[pathCount].lastNode == NULL || (path[pathCount].x == TILE_SIZE * endX / TILE_SIZE && path[pathCount].y == TILE_SIZE * endY / TILE_SIZE))
             quit = true;
         else
             pathCount++;

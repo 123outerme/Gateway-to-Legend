@@ -71,6 +71,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_MAPPACKS_PER_PAGE 11
+#define MAX_ENEMIES 6
 int subMain(mapPack* workingPack);
 
 void editFilePaths(mapPack* workingPack);
@@ -527,7 +528,6 @@ int mainMapCreator(mapPack* workingPack)
 	scanf("%s", loadCheck);
 	if (loadCheck[0] == 'y')
     {
-        printf("%s\n", workingPack->mainFilePath);
         strncpy(mainFilePath, workingPack->mainFilePath, MAX_PATH);
         if (!checkFile(mainFilePath, 0))
         {
@@ -653,6 +653,17 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
         viewMap("maps/MainMaps.txt", i);*/
     bool quit = false, editingTiles = true;
     int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks(), lastTile = -1;
+    int enemyCount = 0;
+    for(int y = 0; y < HEIGHT_IN_TILES; y++)
+    {
+        for(int x = 0; x < WIDTH_IN_TILES; x++)
+        {
+            if (eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
+                enemyCount++;
+            if (eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount > MAX_ENEMIES)
+                eventmap[y][x] = 0;
+        }
+    }
     SDL_Event e;
     while(!quit)
     {
@@ -709,7 +720,28 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
                 tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
 
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
-                eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+            {
+                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)
+                {
+                    int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
+                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(curTile > 11 && curTile < 15) && enemyCount < MAX_ENEMIES)
+                    {
+                        enemyCount++;
+                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+                        printf("%d (+)\n", enemyCount);
+                    }
+
+                    if (curTile > 11 && curTile < 15)
+                    {
+                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
+                            enemyCount--;
+                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+                        printf("%d (-)\n", enemyCount);
+                    }
+                }
+                else
+                    eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+            }
 
             if (keyStates[SDL_SCANCODE_LSHIFT])
             {
