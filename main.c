@@ -520,6 +520,7 @@ int mainLoop(player* playerSprite)
                         if (enemies[i].y != nodeArray[1].y)
                             enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
                     }
+                    free(nodeArray);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
@@ -543,6 +544,7 @@ int mainLoop(player* playerSprite)
                         if (enemies[i].y != nodeArray[1].y && enemies[i].x == nodeArray[1].x)
                             enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
                     }
+                    free(nodeArray);
                 }
             }
             if (playerSprite->invincCounter)
