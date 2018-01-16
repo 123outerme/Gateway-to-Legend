@@ -70,7 +70,7 @@ void loadConfig(char* filePath);  //loads config data into the public variables
 void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
-int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt2, char* opt3, char* opt4, char* opt5, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 SDL_Keycode getKey();  //like waitForKey but without waiting.
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
