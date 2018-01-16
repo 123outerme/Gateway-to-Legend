@@ -1,12 +1,12 @@
 @ROBOCOPY %cd% "%cd%\GtL-bin\build" *.c *.h *.ico *.rc
-@ROBOCOPY %cd% "%cd%\GtL-bin\execute" *.txt *.png *.ttf /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj"
+@ROBOCOPY %cd% "%cd%\GtL-bin\execute" *.txt *.png *.ttf /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj" "%cd%\media"
 @ROBOCOPY %cd% "%cd%\GtL-bin" *.txt
 @ROBOCOPY %cd% "%cd%\GtL-bin\stuff" *.ico *.rc
 @del %cd%\builds\binaries\GatewayToLegendbin.zip
 @del %cd%\GtL-bin\execute\GatewayToLegend.exe
 @del %cd%\GtL-bin\execute\GatewayToLegendToolchain.exe
 @del %cd%\GtL-bin\execute\GatewayToLegend.cfg
-@ROBOCOPY %cd% "%cd%\GtL\execute" *.txt *.png /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj"
+@ROBOCOPY %cd% "%cd%\GtL\execute" *.txt *.png /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj" "%cd%\media"
 @cd GtL-bin
 @rem zip it up...
 @%cd%\..\7za.exe a -y -tzip "%cd%\..\builds\binaries\GatewayToLegendbin.zip" "%cd%" -mx5

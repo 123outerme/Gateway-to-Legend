@@ -175,11 +175,12 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char* opt1, char* opt
     //While application is running
     while(!quit)
     {
-        SDL_RenderClear(mainRenderer);
         if (border)
             SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
         else
             SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+
+        SDL_RenderClear(mainRenderer);
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
@@ -383,7 +384,7 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
-node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath)
+node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath)
 {
     node* path = calloc(300, sizeof(node));
     node** queue = calloc(40, sizeof(node));
@@ -450,15 +451,18 @@ node* BreadthFirst(int startX, int startY, int endX, int endY, int* lengthOfPath
     quit = false;
     int pathCount = 1;
     path[0] = searchList[startY / TILE_SIZE][startX / TILE_SIZE];
+    path[1] = path[0];
     while(!quit)
     {
-        //printf("%d = pathCount\n", pathCount);
-        path[pathCount] = *((node*) (path[pathCount - 1].lastNode));
-        //printf("%p\n", (void*) path[pathCount].lastNode);
         if (path[pathCount].lastNode == NULL || (path[pathCount].x == TILE_SIZE * endX / TILE_SIZE && path[pathCount].y == TILE_SIZE * endY / TILE_SIZE))
             quit = true;
         else
+        {
+            //printf("%d = pathCount\n", pathCount);
+            path[pathCount] = *((node*) (path[pathCount - 1].lastNode));
+            //printf("%p\n", (void*) path[pathCount].lastNode);
             pathCount++;
+        }
     }
     //backtrack through the path found, starting at the start node and following lastNode to the end
     *lengthOfPath = pathCount;

@@ -31,7 +31,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         mainFont = NULL;
         canDrawText = true;
         canDrawTiles = true;
-        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN);
+        mainWindow = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
         if (!mainWindow)
         {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());

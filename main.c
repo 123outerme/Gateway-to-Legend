@@ -299,7 +299,7 @@ int mainLoop(player* playerSprite)
         drawATilemap(tilesTexture, tilemap, 0, 0, 20, 15, -1, false);
         drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
         {  //drawing HUD
-            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0x21, 0x7F);
+            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0x7F);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 0, .y = 0, .w = playerSprite->maxHP / 4 * TILE_SIZE, .h = TILE_SIZE}));
             for(int i = 0; i < playerSprite->HP; i += 4)  //draw HP
                 drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -461,7 +461,7 @@ int mainLoop(player* playerSprite)
                     playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
                     playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
                     playerSprite->HP -= 1;
-                    playerSprite->invincCounter = 24;
+                    playerSprite->invincCounter = 14;
                 }
                 if (collisionData[9])
                 {
@@ -483,6 +483,10 @@ int mainLoop(player* playerSprite)
             }
             for(int i = 0; i < enemyCount; i++)
             {
+                /* Two issues with collision:
+                   *Enemy 3 will sometimes walk through collision due to its nature to move x-then-y (change movement rules?)
+                   *Both enemies with collision will walk towards the left edge of the screen when the player is more than 9 tiles away (to the right)
+                */
                 if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250)  //sword collision
                 {
                     enemies[i].type = type_na;
