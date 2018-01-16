@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", (char**) {"New Map-Pack", "Load Map-Pack", resumeStr, "Quit"}, 4, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", (char*[4]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Quit"}, 4, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
         {
             closeSDL();
@@ -406,7 +406,7 @@ int subMain(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", (char**) {"Map Creator", "Map-Pack Wizard", " ", " ", "Back"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", (char*[5]) {"Map Creator", "Map-Pack Wizard", " ", " ", "Back"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         closeSDL();
         if (code == 1)
             mainMapCreator(workingPack);
@@ -418,14 +418,13 @@ int subMain(mapPack* workingPack)
     return 0;
 }
 
-int aMenu(SDL_Texture* texture, int cursorID, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
 {
+    const int MAX_ITEMS = 9;
     if (curSelect < 1)
         curSelect = 1;
     if (options < 0)
-	    return QUIT_ANYWHERE;
-    if (options > 6)
-	    options = 6;
+        return ANYWHERE_QUIT;
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
@@ -447,9 +446,9 @@ int aMenu(SDL_Texture* texture, int cursorID, char** optionsArray, const int opt
         drawText(title, 1 * TILE_SIZE + (5 - 2 * !isMain) * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
         //foreground text
         drawText(title, 1 * TILE_SIZE + TILE_SIZE / (2 + 2 * !isMain) , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
-	for(int i = 0; i < options; i++)
-	        drawText(optionsArray[i], 2 * TILE_SIZE + TILE_SIZE / 4, (5 + i) * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - (5 + i)) * TILE_SIZE, textColor, false);
 
+        for(int i = 0; ((options <= MAX_ITEMS) ? i < options : i < MAX_ITEMS); i++)
+	        drawText(optionsArray[i], 2 * TILE_SIZE + TILE_SIZE / 4, (5 + i) * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - (5 + i)) * TILE_SIZE, textColor, false);
         /*if (isMain)
         {
             char version[12];
@@ -856,7 +855,7 @@ int mainMapPackWizard(mapPack* workingPack)
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char**) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back"}, 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back"}, 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
 
         if (choice == 1)
             editFilePaths(workingPack);
@@ -887,62 +886,57 @@ void editFilePaths(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char**) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Next Menu >", "Back"}, 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-        if (choice < 0 || choice == 5)
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[6]) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", "Back"}, 6, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        if (choice < 0 || choice == 6)
             quit = true;
         else
         {
-            if (choice == 4)
-                choice = 3 + aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char**) {"Edit Save Path", "Edit Script Path", "< Last Menu"}, 3, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-            if (choice < 6)
+            closeSDL();
+            char getString[MAX_PATH];
+            getString[0] = '\0';
+            switch(choice)
             {
-                closeSDL();
-                char getString[MAX_PATH];
-                getString[0] = '\0';
-                switch(choice)
-                {
-                case 1:
-                    printf("Title of map pack? (Was %s)\n", workingPack->name);
-                    break;
-                case 2:
-                    printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
-                    break;
-                case 3:
-                    printf("Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
-                    break;
-                case 4:
-                    printf("Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
-                    break;
-                case 5:
-                    printf("Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
-                    break;
-                }
-                scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
-                switch(choice)
-                {
-
-                case 1:
-                    strcpy(workingPack->name, getString);
-                    break;
-                case 2:
-                    strPrepend((char*) getString, "maps/");
-                    strcpy(workingPack->mapFilePath, getString);
-                    break;
-                case 3:
-                    strPrepend((char*) getString, "tileset/");
-                    strcpy(workingPack->tilesetFilePath, getString);
-                    break;
-                case 4:
-                    strPrepend((char*) getString, "saves/");
-                    strcpy(workingPack->saveFilePath, getString);
-                    break;
-                case 5:
-                    strPrepend((char*) getString, "scripts/");
-                    strcpy(workingPack->scriptFilePath, getString);
-                    break;
-                }
-                initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            case 1:
+                printf("Title of map pack? (Was %s)\n", workingPack->name);
+                break;
+            case 2:
+                printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
+                break;
+            case 3:
+                printf("Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
+                break;
+            case 4:
+                printf("Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
+                break;
+            case 5:
+                printf("Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
+                break;
             }
+            scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+            switch(choice)
+            {
+
+            case 1:
+                strcpy(workingPack->name, getString);
+                break;
+            case 2:
+                strPrepend((char*) getString, "maps/");
+                strcpy(workingPack->mapFilePath, getString);
+                break;
+            case 3:
+                strPrepend((char*) getString, "tileset/");
+                strcpy(workingPack->tilesetFilePath, getString);
+                break;
+            case 4:
+                strPrepend((char*) getString, "saves/");
+                strcpy(workingPack->saveFilePath, getString);
+                break;
+            case 5:
+                strPrepend((char*) getString, "scripts/");
+                strcpy(workingPack->scriptFilePath, getString);
+                break;
+            }
+            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
     }
     saveMapPack(workingPack);
@@ -954,7 +948,7 @@ void editInitSpawn(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char**) {"Initial X", "Initial Y", "Initial Map", "Back"}, 4, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[4]) {"Initial X", "Initial Y", "Initial Map", "Back"}, 4, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (choice < 0 || choice == 4)
             quit = true;
         else
