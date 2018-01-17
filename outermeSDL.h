@@ -1,9 +1,10 @@
 #ifndef OUTERMESDL_H_INCLUDED
 #define OUTERMESDL_H_INCLUDED
 
-/* ++ outermeSDL version 1.2 - last update 1/1/2018 ++
+/* ++ outermeSDL version 1.3 - last update 1/1/2018 ++
 
- error code -3; TTFs failed to load
+ error code -4: MIXER failed to load
+ error code -3: TTFs failed to load
  error code -2: SDL_ttf failed to initialize
  error code -1: SDL_img failed to initialize
   error code 0: No error
@@ -19,6 +20,7 @@
 #include "SDL/SDL.h"       //This is included because it's an SDL2 program... duh
 #include "SDL/SDL_image.h" //This is included so we can use PNGs.
 #include "SDL/SDL_ttf.h"   //This is included for text stuff
+#include "SDL/SDL_mixer.h" //This is included for audio
 #include <stdio.h>         //This is included because it's fundamental always. Even if it ain't needed
 #include <string.h>        //This is included for strncat and other string functions
 #include <stdlib.h>        //This is included for calloc, rand(), and a lot of other stuff

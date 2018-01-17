@@ -25,6 +25,10 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
             return -2;
         }
+        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+        {
+            printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", SDL_GetError());
+        }
         mainScreen = NULL;
         tilesetTexture = NULL;
         mainRenderer = NULL;
@@ -228,6 +232,7 @@ void closeSDL()
     SDL_DestroyRenderer(mainRenderer);
     TTF_Quit();
     IMG_Quit();
+    Mix_CloseAudio();
     SDL_Quit();
 }
 
