@@ -110,6 +110,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
     playerSprite->lastDirection = 8;
+    playerSprite->invincCounter = 0;
     //loads: map, x, y, current HP
 }
 

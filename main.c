@@ -31,7 +31,7 @@
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
 
-#define MAX_TILE_ID_ARRAY 17
+#define MAX_TILE_ID_ARRAY 18
 #define MAX_COLLISIONDATA_ARRAY 10
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
@@ -49,10 +49,13 @@ SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, 
 
 int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
-#define CURSOR_ID tileIDArray[1]
-#define HP_ID tileIDArray[2]
-#define SWORD_ID tileIDArray[13]
-#define ENEMY(x) tileIDArray[13 + x]
+#define PLAYERWALK_ID tileIDArray[1]
+#define CURSOR_ID tileIDArray[2]
+#define HP_ID tileIDArray[3]
+#define SWORD_ID tileIDArray[14]
+#define ENEMY(x) tileIDArray[14 + x]
+
+#define MAIN_ARROW_ID 34
 
 bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
 bool enemyFlags[MAX_ENEMIES + 1] = {true, true, true, true, true, true, true};  //last bool is reloadEnemies
@@ -101,7 +104,7 @@ int main(int argc, char* argv[])
         {
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, 17, "Gateway to Legend", (char*[5]) {"Play", "Options", "Quit", " ", "(Not final menu)"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, true);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Options", "Quit", " ", "(Not final menu)"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, true);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -185,6 +188,7 @@ int main(int argc, char* argv[])
                 doorFlags[i] = true;
             for(int i = 0; i < MAX_ENEMIES + 1; i++)
                 enemyFlags[i] = true;
+            person.invincCounter = 0;
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
@@ -234,7 +238,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
-        drawTile(17, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        drawTile(MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
@@ -644,9 +648,9 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            searchIndex = eventmap[y][x] + 3 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 7 || searchIndex == 8 || searchIndex == 9) && drawDoors[searchIndex < 10 ? searchIndex - 7 : 0] == false) || (searchIndex == 14 || searchIndex == 15 || searchIndex == 16))  //7,8,9 are the door indexes
-                searchIndex = 3;  //3 is index for invis tile
+            searchIndex = eventmap[y][x] + 4 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
+            if (((searchIndex == 8 || searchIndex == 9 || searchIndex == 10) && drawDoors[searchIndex < 12 ? searchIndex - 8 : 0] == false) || (searchIndex == 15 || searchIndex == 16 || searchIndex == 17))  //8,9,10 are the door indexes
+                searchIndex = 4;  //3 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }
     if (rerender)

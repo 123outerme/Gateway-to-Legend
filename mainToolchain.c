@@ -46,8 +46,8 @@ typedef struct {
 
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character tile.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
-#define MAX_SPRITE_MAPPINGS 17  //sprite defines and other map-pack data? I'm really not sure where this data comes from
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
+#define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this data comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
 
@@ -64,6 +64,8 @@ typedef struct {
     int initMap;
     int tilesetMaps[MAX_SPRITE_MAPPINGS];
 } mapPack;
+
+
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
 
@@ -121,7 +123,7 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, 17, "Gateway to Legend Toolchain", (char*[4]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Quit"}, 4, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(tilesetTexture, 34, "Gateway to Legend Toolchain", (char*[4]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Quit"}, 4, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (code == 1)
         {
             closeSDL();
@@ -403,10 +405,11 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
     bool quit = false;
     while(!quit)
     {
-        int code = aMenu(tilesetTexture, 17, "Map-Pack Tools", (char*[5]) {"Map Creator", "Map-Pack Wizard", " ", " ", "Back"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[5]) {"Map Creator", "Map-Pack Wizard", " ", " ", "Back"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         closeSDL();
         if (code == 1)
             mainMapCreator(workingPack);
@@ -855,7 +858,7 @@ int mainMapPackWizard(mapPack* workingPack)
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back"}, 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back"}, 5, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
 
         if (choice == 1)
             editFilePaths(workingPack);
@@ -886,7 +889,7 @@ void editFilePaths(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[6]) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", "Back"}, 6, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[6]) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", "Back"}, 6, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (choice < 0 || choice == 6)
             quit = true;
         else
@@ -948,7 +951,7 @@ void editInitSpawn(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[1], workingPack->mainFilePath + 10, (char*[4]) {"Initial X", "Initial Y", "Initial Map", "Back"}, 4, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[4]) {"Initial X", "Initial Y", "Initial Map", "Back"}, 4, 0, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
         if (choice < 0 || choice == 4)
             quit = true;
         else
