@@ -4,6 +4,54 @@
 
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
+int initSounds()
+{
+    /*MUSIC(0) = Mix_LoadWAV();
+    if (!MUSIC(0))
+        return -5;*/
+
+    /*MUSIC(1) = Mix_LoadWAV();
+    if (!MUSIC(1))
+        return -5;*/
+
+    UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
+    if (!UNSHEATH_SOUND)
+        return -5;
+
+    OPTION_SOUND = Mix_LoadWAV(OPTION_FILE);
+    if (!OPTION_SOUND)
+        return -5;
+    {
+        char* buffer = "";
+
+        for(int i = 1; i < 4; i++)
+        {
+            char filepath[15] = STEP_FILE;
+            strcat(filepath, intToString(i, buffer));
+            STEP_SOUND(i) = Mix_LoadWAV(strcat(filepath, ".ogg\0"));
+            if (!STEP_SOUND(i))
+                return -5;
+        }
+    }
+    SWING_SOUND = Mix_LoadWAV(SWING_FILE);
+    if (!SWING_SOUND)
+        return -5;
+
+    GATEWAYSTART_SOUND = Mix_LoadWAV(GATEWAYSTART_FILE);
+    if (!GATEWAYSTART_SOUND)
+        return -5;
+
+    GATEWAYEND_SOUND = Mix_LoadWAV(GATEWAYEND_FILE);
+    if (!GATEWAYEND_SOUND)
+        return -5;
+
+    DOOROPEN_SOUND = Mix_LoadWAV(DOOROPEN_FILE);
+    if (!DOOROPEN_SOUND)
+        return -5;
+
+    return 0;
+}
+
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
     initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, type_player);
@@ -242,6 +290,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                 {
                     selection = cursor.y / TILE_SIZE - 4;
                     quit = true;
+                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
                 }
                 /*if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
                 {
@@ -258,6 +307,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
         drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
+    Mix_PlayChannel(-1, UNSHEATH_SOUND, 0);
     return selection;
 }
 
@@ -484,6 +534,7 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_use_warp_gate)
     {
+        GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
         for(int i = 120; i > -1; i--)
         {
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
@@ -492,6 +543,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_Delay(9);
         }
         SDL_Delay(90);
+        Mix_HaltChannel(GATEWAY_CHANNEL);
         char* data = calloc(99, sizeof(char));
         //printf("%s\n", data);
         player->mapScreen = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
@@ -502,6 +554,7 @@ bool executeScriptAction(script* scriptData, player* player)
         //printf("%d\n", player->spr.y);
         //switch maps
         //loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
+        GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYEND_SOUND, 0);
         for(int i = 0; i < 120; i++)
         {
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
@@ -512,6 +565,7 @@ bool executeScriptAction(script* scriptData, player* player)
         SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
         free(data);
         returnThis = true;
+        Mix_HaltChannel(GATEWAY_CHANNEL);
     }
     if (scriptData->action == script_gain_exp)
     {

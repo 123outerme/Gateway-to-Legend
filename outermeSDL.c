@@ -25,10 +25,13 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
             return -2;
         }
-        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 6, 4096) == -1)
         {
             printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", SDL_GetError());
+            return -3;
         }
+        else
+            Mix_Init(MIX_INIT_OGG);
         mainScreen = NULL;
         tilesetTexture = NULL;
         mainRenderer = NULL;
@@ -62,7 +65,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                 {
                     printf("%s could not be created! SDL Error: %s\n", !mainFont ? "mainFont" : "Nothing", TTF_GetError());
                     canDrawText = false;
-                    done = -3;
+                    done = -4;
                 }
                 loadIMG(tilesetFilePath, &tilesetTexture);
                 if (!tilesetTexture)
@@ -71,16 +74,16 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
                     canDrawTiles = false;
                     done = 6;
                 }
-                /*else
+                else
                 {
                     srand((unsigned int) time(NULL));
-                    if (checkFile(CONFIG_FILE_NAME, SIZE_OF_SCANCODE_ARRAY))
+                    /*if (checkFile(CONFIG_FILE_NAME, SIZE_OF_SCANCODE_ARRAY))
                     {
                         loadConfig(CONFIG_FILE_NAME);
                     }
                     else
-                        initConfig(CONFIG_FILE_NAME);
-                }*/
+                        initConfig(CONFIG_FILE_NAME);*/
+                }
             }
         }
     }

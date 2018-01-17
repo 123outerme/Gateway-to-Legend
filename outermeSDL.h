@@ -3,8 +3,9 @@
 
 /* ++ outermeSDL version 1.3 - last update 1/1/2018 ++
 
- error code -4: MIXER failed to load
- error code -3: TTFs failed to load
+ error code -5: Sounds failed to load
+ error code -4: TTFs failed to load
+ error code -3: SDL_mixer failed to load
  error code -2: SDL_ttf failed to initialize
  error code -1: SDL_img failed to initialize
   error code 0: No error
@@ -27,6 +28,7 @@
 #include <math.h>          //This is included for log10
 #include <time.h>          //This is included for time() as the seed for rand()
 
+
 #define bool char
 #define false 0
 #define true 1
@@ -45,6 +47,8 @@
 #define HEIGHT_IN_TILES SCREEN_HEIGHT / TILE_SIZE
 
 #define ANYWHERE_QUIT -1
+
+#define MAX_SOUNDS 11
 
 typedef enum
 {
@@ -99,6 +103,8 @@ SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+Mix_Chunk* audioArray[MAX_SOUNDS];
+int channelArray[MAX_SOUNDS];
 bool canDrawTiles;
 bool canDrawText;
 

@@ -61,6 +61,7 @@ typedef struct {
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
+int initSounds();  //inits all sounds used. Returns -5 if one can't load
 void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
 void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
@@ -97,6 +98,45 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_MENU CUSTOM_SCANCODES[5]
 #define SC_ATTACK CUSTOM_SCANCODES[6]
 
+#define MUSIC(x) audioArray[x > 2 ? 1 : x - 1]
+#define UNSHEATH_SOUND audioArray[2]
+#define OPTION_SOUND audioArray[3]
+#define STEP_SOUND(x) audioArray[x < 3 || x > 5 ? 5 : x + 3]
+#define SWING_SOUND audioArray[7]
+#define GATEWAYSTART_SOUND audioArray[8]
+#define GATEWAYEND_SOUND audioArray[9]
+#define DOOROPEN_SOUND audioArray[10]
+
+#define UNSHEATH_FILE "audio/unsheath.ogg"
+#define OPTION_FILE "audio/unsheath_bass.ogg"
+#define SWING_FILE "audio/swing.ogg"
+#define STEP_FILE "audio/step"  //this is like this on purpose, for some strcat() stuff
+#define GATEWAYSTART_FILE "audio/gateway1.ogg"
+#define GATEWAYEND_FILE "audio/gateway2.ogg"
+#define DOOROPEN_FILE "audio/doorOpen.ogg"
+
+#define MUSIC_CHANNEL(x) channelArray[x > 2 ? 1 : x - 1]
+#define UNSHEATH_CHANNEL channelArray[2]
+#define OPTION_CHANNEL channelArray[3]
+#define STEP_CHANNEL(x) channelArray[x < 3 || x > 5 ? 5 : x + 3]
+#define SWING_CHANNEL channelArray[7]
+#define GATEWAY_CHANNEL channelArray[8]
+#define DOOROPEN_CHANNEL channelArray[9]
+
+
+
+/*
+Sound effects should play upon walking
+killing enemies
+swinging the sword
+pausing
+moving menu cursors
+selecting options
+going through the portals
+etc.
+*/
+
 int FPS, targetTime;
+
 
 #endif // SDLSEEKERS_H_INCLUDED

@@ -71,6 +71,9 @@ int main(int argc, char* argv[])
         int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
+        initCode = initSounds();
+        if (initCode != 0)
+            return initCode;
     }
     //loading in map pack header files
     char mainFilePath[MAX_CHAR_IN_FILEPATH], mapFilePath[MAX_CHAR_IN_FILEPATH - 9], tileFilePath[MAX_CHAR_IN_FILEPATH - 9],
@@ -168,6 +171,7 @@ int main(int argc, char* argv[])
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             person.extraData = mapFilePath;
             choice = mainLoop(&person);
+            Mix_HaltChannel(-1);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
@@ -248,6 +252,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
             else
                 *backFlag = true;
                 quitMenu = true;
+            Mix_PlayChannel(-1, OPTION_SOUND, 0);
         }
     }
     //loading map pack stuff
@@ -321,12 +326,13 @@ int mainLoop(player* playerSprite)
             /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
                 doDebugDraw = !doDebugDraw;*/
         }
-        const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-        if (!checkSKAttack)
-                textBoxOn = false;
 
         if (SDL_GetTicks() - lastUpdateTime >= 32)
         {
+            const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+
+            if (!checkSKAttack)
+                textBoxOn = false;
 
             playerSprite->animationCounter--;
 
@@ -383,13 +389,26 @@ int mainLoop(player* playerSprite)
                         playerSprite->spr.y = SCREEN_HEIGHT - TILE_SIZE;
                 }
 
-                if ((playerSprite->spr.x != lastX || playerSprite->spr.y != lastY) && playerSprite->animationCounter < -12)
-                    playerSprite->animationCounter = 12;
+                if ((playerSprite->spr.x != lastX || playerSprite->spr.y != lastY))
+                {
+                    if (playerSprite->animationCounter < -12)
+                    {
+                        playerSprite->animationCounter = 12;
+                        Mix_PlayChannel(-1, STEP_SOUND(1 + (rand() % 3)), 0);
+                    }
+                    if (playerSprite->animationCounter == 0)
+                        Mix_PlayChannel(-1, STEP_SOUND(1 + (rand() % 3)), 0);
+                }
 
                 checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
                 if (checkSKInteract || swordTimer)
                 {
+                    if (checkSKInteract && !swordTimer)
+                    {
+                        Mix_HaltChannel(SWING_CHANNEL);
+                        SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
+                    }
                     int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
                     int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
                     if ((xDir -= 1) != -1)
@@ -460,11 +479,18 @@ int mainLoop(player* playerSprite)
                 }
                 if (collisionData[1] || collisionData[2] || collisionData[3])
                 {
+                    bool playSound = false;
                     for(int i = 0; i < 3; i++)
                     {
                         if (collisionData[i + 1])
+                        {
+                            if (doorFlags[i])
+                                playSound = true;
                             doorFlags[i] = false;
+                        }
                     }
+                    if (playSound)
+                        Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
                 }
                 if (collisionData[8] && !playerSprite->invincCounter)
                 {
@@ -560,11 +586,16 @@ int mainLoop(player* playerSprite)
             if (playerSprite->invincCounter)
                 playerSprite->invincCounter--;
             lastUpdateTime = SDL_GetTicks();
-        }
-        if (checkSKMenu)
-        {
-            quit = true;
-            exitCode = 1;
+
+            if (checkSKMenu)
+            {
+                quit = true;
+                exitCode = 1;
+            }
+            //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
+            if(keyStates[SDL_SCANCODE_F12])
+                drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+            //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
 
         if (swordTimer && SDL_GetTicks() >= swordTimer)
@@ -573,10 +604,7 @@ int mainLoop(player* playerSprite)
         frame++;
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
             framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
-        //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
-        if(keyStates[SDL_SCANCODE_F12])
-            drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
-        //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
+
 
         drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 
