@@ -1,4 +1,4 @@
->> Legal Stuff <<
+﻿>> Legal Stuff <<
 
 The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.
 I did not write or modify the graphics library, SDL2, any of its extensions or previous versions, or any
@@ -44,6 +44,11 @@ If you distribute your own adaptations, do so under a compatible license
 No warranties are given - whatever you do, I will not be held liable
 
 (and yes, I stole the TL;DR version from the font pack readme)
+
+> Sounds <
+All sounds used are royalty-free. Some sounds have different licenses, so I added the specific author and
+license information into the metadata of each sound file. They all have links to the type of license, or
+no license, in the case of those that are in Public Domain.
 
 > SDL2 <
 This software, SDL2.0, is provided 'as-is', without any express or implied warranty. In no event will the

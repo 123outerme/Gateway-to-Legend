@@ -299,7 +299,7 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks(),
-        swordTimer = 0;
+        swordTimer = SDL_GetTicks() + 250;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
@@ -405,10 +405,7 @@ int mainLoop(player* playerSprite)
                 if (checkSKInteract || swordTimer)
                 {
                     if (checkSKInteract && !swordTimer)
-                    {
-                        Mix_HaltChannel(SWING_CHANNEL);
                         SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
-                    }
                     int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
                     int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
                     if ((xDir -= 1) != -1)
