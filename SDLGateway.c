@@ -15,6 +15,7 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle
     player->maxHP = 12;
     player->mapScreen = mapScreen;
     player->invincCounter = 0;
+    player->animationCounter = 0;
 	player->movementLocked = false;
 	player->extraData = "";
 	player->xVeloc = 0;
@@ -111,6 +112,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->yVeloc = 0;
     playerSprite->lastDirection = 8;
     playerSprite->invincCounter = 0;
+    playerSprite->animationCounter = 0;
     //loads: map, x, y, current HP
 }
 
@@ -126,6 +128,9 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->movementLocked = false;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
+    playerSprite->lastDirection = 8;
+    playerSprite->invincCounter = 0;
+    playerSprite->animationCounter = 0;
     //loads: name, max HP, level, exp, money
 }
 

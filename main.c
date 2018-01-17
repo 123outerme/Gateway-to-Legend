@@ -327,6 +327,9 @@ int mainLoop(player* playerSprite)
 
         if (SDL_GetTicks() - lastUpdateTime >= 32)
         {
+
+            playerSprite->animationCounter--;
+
             if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKAttack || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
             {
                 int lastY = playerSprite->spr.y;
@@ -379,6 +382,9 @@ int mainLoop(player* playerSprite)
                     if (playerSprite->spr.y > SCREEN_HEIGHT - TILE_SIZE)
                         playerSprite->spr.y = SCREEN_HEIGHT - TILE_SIZE;
                 }
+
+                if ((playerSprite->spr.x != lastX || playerSprite->spr.y != lastY) && playerSprite->animationCounter < -12)
+                    playerSprite->animationCounter = 12;
 
                 checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
 
@@ -572,7 +578,7 @@ int mainLoop(player* playerSprite)
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
         //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
 
-        drawASprite(tilesTexture, playerSprite->spr);
+        drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 
         for(int i = 0; i < enemyCount; i++)
         {
