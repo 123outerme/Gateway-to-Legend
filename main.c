@@ -270,10 +270,10 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-    bool quit = false;
-    static bool textBoxOn = false;
-    char mapFilePath[MAX_CHAR_IN_FILEPATH];
-    strcpy(mapFilePath, playerSprite->extraData);
+	bool quit = false;
+	//static bool textBoxOn = false;
+	char mapFilePath[MAX_CHAR_IN_FILEPATH];
+	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
     thisScript.active = false;
