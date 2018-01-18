@@ -588,6 +588,11 @@ bool executeScriptAction(script* scriptData, player* player)
         player->experience += strtol(scriptData->data, NULL, 10);
         //play animation (?) and sound
     }
+    if (scriptData->action == script_gain_money)
+    {
+        player->money += strtol(scriptData->data, NULL, 10);
+        //play animation (?) and sound
+    }
     if (scriptData->action == script_player_hurt)
     {
         player->HP -= strtol(scriptData->data, NULL, 10);
