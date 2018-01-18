@@ -39,7 +39,7 @@
 #define checkRectCol(x1, y1, x2, y2) ((abs(abs(x1) - abs(x2)) < TILE_SIZE) && (abs(abs(y1) - abs(y2)) < TILE_SIZE))
 
 int mainLoop(player* playerSprite);
-void checkCollision(player* player, int* outputData, int moveX, int moveY);
+void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
 
@@ -411,7 +411,7 @@ int mainLoop(player* playerSprite)
                         Mix_PlayChannel(-1, STEP_SOUND(1 + (rand() % 3)), 0);
                 }
 
-                checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) - (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) - (checkSKUp || playerSprite->yVeloc < 0));
+                checkCollision(playerSprite, collisionData, (2 * checkSKRight + playerSprite->xVeloc > 0) - (2 * checkSKLeft + playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) - (checkSKUp || playerSprite->yVeloc < 0), lastX, lastY);
 
                 if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
                     playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
@@ -628,7 +628,7 @@ int mainLoop(player* playerSprite)
                             if (!length)
                             {
                                 initNode(&curNode, enemies[i].x, enemies[i].y, NULL, true, 0);
-                                enemies[i].angle == 1;  //bit of trickery to force enemies without a path to stop moving
+                                enemies[i].angle = 1;  //bit of trickery to force enemies without a path to stop moving
                             }
                         }
                     }
@@ -699,7 +699,7 @@ int mainLoop(player* playerSprite)
     return exitCode;
 }
 
-void checkCollision(player* player, int* outputData, int moveX, int moveY)
+void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY)
 {
     for(int i = 0; i < MAX_COLLISIONDATA_ARRAY; i++)
     {
@@ -714,13 +714,13 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY)
         if ((((outputData[0] == 1 || outputData[0] == 5) && moveX < 0 && moveY > 0) || ((outputData[0] == 2 || outputData[0] == 10) && moveX > 0 && moveY > 0) || ((outputData[0] == 4 || outputData[0] == 5) && moveX < 0 && moveY < 0) || ((outputData[0] == 8 || outputData[0] == 10) && moveX > 0 && moveY < 0)))
         {  //manually adding y sliding
             outputData[0] = false;
-            player->spr.x -= moveX * PIXELS_MOVED;
+            player->spr.x = lastX;
             player->xVeloc = 0;
         }
         if ((((outputData[0] == 1 || outputData[0] == 3) && moveX > 0 && moveY < 0) || ((outputData[0] == 2 || outputData[0] == 3) && moveX < 0 && moveY < 0) || ((outputData[0] == 4 || outputData[0] == 12) && moveX > 0 && moveY > 0) || ((outputData[0] == 8 || outputData[0] == 12) && moveX < 0 && moveY > 0)))
         {  //manually adding x sliding
             outputData[0] = false;
-            player->spr.y -= moveY * PIXELS_MOVED;
+            player->spr.y = lastY;
             player->yVeloc = 0;
         }
 
