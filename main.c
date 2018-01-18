@@ -171,7 +171,6 @@ int main(int argc, char* argv[])
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             person.extraData = mapFilePath;
             choice = mainLoop(&person);
-            Mix_HaltChannel(-1);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
             if (choice == 1)
@@ -180,6 +179,7 @@ int main(int argc, char* argv[])
                 gameState = RELOAD_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
+            Mix_HaltChannel(-1);
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
@@ -211,6 +211,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
+    Mix_HaltChannel(-1);
     saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
     SDL_DestroyTexture(tilesTexture);
     free(allScripts);
@@ -341,8 +342,8 @@ int mainLoop(player* playerSprite)
         {
             const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 
-            if (!checkSKAttack)
-                textBoxOn = false;
+            /*if (!checkSKAttack)
+                textBoxOn = false;*/
 
             playerSprite->animationCounter--;
 
@@ -363,11 +364,11 @@ int mainLoop(player* playerSprite)
                 if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
                     playerSprite->spr.x += PIXELS_MOVED;
 
-                if (checkSKAttack && !textBoxOn && frame > targetTime / 2)
+                /*if (checkSKAttack && !textBoxOn && frame > targetTime / 2)
                 {
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                     textBoxOn = true;
-                }
+                }*/
 
                 if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKAttack)
                     playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
@@ -440,6 +441,13 @@ int mainLoop(player* playerSprite)
                 if (playerSprite->yVeloc)
                     playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
 
+                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
+                {  //unwalkable tile or closed door
+                    playerSprite->spr.y = lastY;
+                    playerSprite->spr.x = lastX;
+                    //printf("%d\n", exitCode);
+                }
+
                 if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
                 {
                     bool quitThis = false;
@@ -478,12 +486,6 @@ int mainLoop(player* playerSprite)
                     }
                 }
 
-                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
-                {  //unwalkable tile or closed door
-                    playerSprite->spr.y = lastY;
-                    playerSprite->spr.x = lastX;
-                    //printf("%d\n", exitCode);
-                }
                 if (collisionData[1] || collisionData[2] || collisionData[3])   //door button
                 {
                     bool playSound = false;
@@ -640,7 +642,7 @@ int mainLoop(player* playerSprite)
 
         frame++;
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
-            framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
+        framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
 
 
         drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
