@@ -1,7 +1,7 @@
 #ifndef OUTERMESDL_H_INCLUDED
 #define OUTERMESDL_H_INCLUDED
 
-/* ++ outermeSDL version 1.3 - last update 1/1/2018 ++
+/* ++ outermeSDL version 1.4 - last update 1/1/2018 ++
 
  error code -5: Sounds failed to load
  error code -4: TTFs failed to load

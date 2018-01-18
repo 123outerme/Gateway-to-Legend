@@ -353,16 +353,16 @@ int mainLoop(player* playerSprite)
                 int lastX = playerSprite->spr.x;
 
                 if (playerSprite->spr.y > 0 && checkSKUp)
-                    playerSprite->spr.y -= PIXELS_MOVED;
+                    playerSprite->yVeloc -= PIXELS_MOVED;
 
                 if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
-                    playerSprite->spr.y += PIXELS_MOVED;
+                    playerSprite->yVeloc += PIXELS_MOVED;
 
                 if (playerSprite->spr.x > 0 && checkSKLeft)
-                    playerSprite->spr.x -= PIXELS_MOVED;
+                    playerSprite->xVeloc -= PIXELS_MOVED;
 
                 if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
-                    playerSprite->spr.x += PIXELS_MOVED;
+                    playerSprite->xVeloc += PIXELS_MOVED;
 
                 /*if (checkSKAttack && !textBoxOn && frame > targetTime / 2)
                 {
@@ -370,7 +370,7 @@ int mainLoop(player* playerSprite)
                     textBoxOn = true;
                 }*/
 
-                if ((lastX != playerSprite->spr.x || lastY != playerSprite->spr.y) && !checkSKAttack)
+                if ((checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && !checkSKAttack)
                     playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
 
                 if (playerSprite->lastDirection / 4 == 1)
@@ -411,7 +411,13 @@ int mainLoop(player* playerSprite)
                         Mix_PlayChannel(-1, STEP_SOUND(1 + (rand() % 3)), 0);
                 }
 
-                checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) + -1 * (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) + -1 * (checkSKUp || playerSprite->yVeloc < 0));
+                checkCollision(playerSprite, collisionData, (checkSKRight || playerSprite->xVeloc > 0) - (checkSKLeft || playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) - (checkSKUp || playerSprite->yVeloc < 0));
+
+                if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
+                    playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
+
+                if (playerSprite->yVeloc)
+                    playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
 
                 if (checkSKInteract || swordTimer)
                 {
@@ -435,16 +441,12 @@ int mainLoop(player* playerSprite)
                         swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
-                    playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
-
-                if (playerSprite->yVeloc)
-                    playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
-
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
                 {  //unwalkable tile or closed door
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
+                    playerSprite->xVeloc = 0;
+                    playerSprite->yVeloc = 0;
                     //printf("%d\n", exitCode);
                 }
 
@@ -483,6 +485,8 @@ int mainLoop(player* playerSprite)
                     {
                         quit = true;
                         exitCode = 2;
+                        playerSprite->xVeloc = 0;
+                        playerSprite->yVeloc = 0;
                     }
                 }
 
@@ -544,9 +548,8 @@ int mainLoop(player* playerSprite)
             }
             for(int i = 0; i < enemyCount; i++)
             {
-                /* Issues with collision:
-                   *Enemy 3 will sometimes walk through collision due to its nature to move x-then-y (change movement rules?)
-                */
+                bool collidedOnce = false;
+
                 if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
                 {
                     if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
@@ -562,17 +565,18 @@ int mainLoop(player* playerSprite)
                     }
                 }
 
-                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
+                if (!collidedOnce && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
                 {
                      script hurtPlayer;
                      initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
                      playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                     - 48 * (enemies[i].x > playerSprite->spr.x);
+                     - 48 * (enemies[i].x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y)));
 
                      playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                     - 48 * (enemies[i].y > playerSprite->spr.y);
+                     - 48 * (enemies[i].y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x)));
                      playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
                      executeScriptAction(&hurtPlayer, playerSprite);
+                     collidedOnce = true;
                 }
 
                 if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
@@ -650,6 +654,11 @@ int mainLoop(player* playerSprite)
             if (keyStates[SDL_SCANCODE_F12])
                 drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
             debugDrawPath = keyStates[SDL_SCANCODE_RSHIFT];
+
+            if (keyStates[SDL_SCANCODE_Z])
+            {
+                initScript(&thisScript, script_use_teleporter, 0, 0, 0, 0, 0, "[96/96]\0");
+            }
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
 
@@ -702,15 +711,17 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY)
         int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];
         if (-1 != checkArrayForIVal(1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
             outputData[0] = topLeft + 2 * topRight + 4 * bottomLeft + 8 * bottomRight;
-        if (((outputData[0] == 1 || outputData[0] == 5) && moveX < 0 && moveY > 0) || ((outputData[0] == 2 || outputData[0] == 10) && moveX > 0 && moveY > 0) || ((outputData[0] == 4 || outputData[0] == 5) && moveX < 0 && moveY < 0) || ((outputData[0] == 8 || outputData[0] == 10) && moveX > 0 && moveY < 0))
+        if ((((outputData[0] == 1 || outputData[0] == 5) && moveX < 0 && moveY > 0) || ((outputData[0] == 2 || outputData[0] == 10) && moveX > 0 && moveY > 0) || ((outputData[0] == 4 || outputData[0] == 5) && moveX < 0 && moveY < 0) || ((outputData[0] == 8 || outputData[0] == 10) && moveX > 0 && moveY < 0)))
         {  //manually adding y sliding
             outputData[0] = false;
             player->spr.x -= moveX * PIXELS_MOVED;
+            player->xVeloc = 0;
         }
-        if (((outputData[0] == 1 || outputData[0] == 3) && moveX > 0 && moveY < 0) || ((outputData[0] == 2 || outputData[0] == 3) && moveX < 0 && moveY < 0) || ((outputData[0] == 4 || outputData[0] == 12) && moveX > 0 && moveY > 0) || ((outputData[0] == 8 || outputData[0] == 12) && moveX < 0 && moveY > 0))
+        if ((((outputData[0] == 1 || outputData[0] == 3) && moveX > 0 && moveY < 0) || ((outputData[0] == 2 || outputData[0] == 3) && moveX < 0 && moveY < 0) || ((outputData[0] == 4 || outputData[0] == 12) && moveX > 0 && moveY > 0) || ((outputData[0] == 8 || outputData[0] == 12) && moveX < 0 && moveY > 0)))
         {  //manually adding x sliding
             outputData[0] = false;
             player->spr.y -= moveY * PIXELS_MOVED;
+            player->yVeloc = 0;
         }
 
         /*if (collideID && debug && doDebugDraw)

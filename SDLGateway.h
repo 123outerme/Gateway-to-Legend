@@ -1,7 +1,7 @@
 #ifndef SDLSEEKERS_H_INCLUDED
 #define SDLSEEKERS_H_INCLUDED
 
-#include "outermeSDL.h"  //uses outermeSDL v1.2 as of right now. Future versions of the header may not be compatible
+#include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
 #define SAVE_FILE_LINES 0
