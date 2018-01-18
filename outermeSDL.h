@@ -48,7 +48,7 @@
 
 #define ANYWHERE_QUIT -1
 
-#define MAX_SOUNDS 12
+#define MAX_SOUNDS 13
 
 typedef enum
 {

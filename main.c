@@ -295,7 +295,10 @@ int mainLoop(player* playerSprite)
             {
                 enemyCount++;
                 if (enemyFlags[MAX_ENEMIES])
+                {
                     initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
+                    enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 14);
+                }
             }
         }
     }
@@ -545,8 +548,17 @@ int mainLoop(player* playerSprite)
                 */
                 if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250)  //sword collision
                 {
-                    enemies[i].type = type_na;
-                    enemyFlags[i] = false;
+                    if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                    {
+                        enemies[i].h--;
+                        Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+                        if (enemies[i].h < 1 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        {
+                            enemies[i].type = type_na;
+                            enemyFlags[i] = false;
+                        }
+                        enemies[i].angle = swordTimer;
+                    }
                 }
 
                 if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
@@ -571,7 +583,7 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
-                    if (length)
+                    if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
                         if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
                             enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
@@ -584,10 +596,13 @@ int mainLoop(player* playerSprite)
                 if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
                 {
                     //behavior: burst movement towards player?
-                    if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
-                    if (enemies[i].y != playerSprite->spr.y)
-                        enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+                    if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                    {
+                        if (enemies[i].x != playerSprite->spr.x)
+                            enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                        if (enemies[i].y != playerSprite->spr.y)
+                            enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+                    }
                 }
 
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
@@ -595,7 +610,7 @@ int mainLoop(player* playerSprite)
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
                     int length = 0;
                     node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
-                    if (length)
+                    if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
                         if (enemies[i].x != nodeArray[1].x)
                             enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
@@ -633,7 +648,7 @@ int mainLoop(player* playerSprite)
         for(int i = 0; i < enemyCount; i++)
         {
             if (enemies[i].type == type_enemy)
-                drawASprite(tilesTexture, enemies[i]);
+                drawATile(tilesTexture, enemies[i].tileIndex, enemies[i].x, enemies[i].y, enemies[i].w, enemies[i].w, 0, enemies[i].flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)

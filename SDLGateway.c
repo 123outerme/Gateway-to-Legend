@@ -53,6 +53,10 @@ int initSounds()
     if (!PLAYERHURT_SOUND)
         return -5;
 
+    ENEMYHURT_SOUND = Mix_LoadWAV(ENEMYHURT_FILE);
+    if (!ENEMYHURT_SOUND)
+        return -5;
+
     return 0;
 }
 

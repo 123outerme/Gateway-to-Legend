@@ -108,6 +108,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GATEWAYEND_SOUND audioArray[9]
 #define DOOROPEN_SOUND audioArray[10]
 #define PLAYERHURT_SOUND audioArray[11]
+#define ENEMYHURT_SOUND audioArray[12]
 
 #define UNSHEATH_FILE "audio/unsheath.ogg"
 #define OPTION_FILE "audio/unsheath_bass.ogg"
@@ -116,7 +117,8 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GATEWAYSTART_FILE "audio/gateway1.ogg"
 #define GATEWAYEND_FILE "audio/gateway2.ogg"
 #define DOOROPEN_FILE "audio/doorOpen.ogg"
-#define PLAYERHURT_FILE "audio/oof.ogg"
+#define PLAYERHURT_FILE "audio/playerHurt.ogg"
+#define ENEMYHURT_FILE "audio/enemyHurt.ogg"
 
 #define MUSIC_CHANNEL(x) channelArray[x > 2 ? 1 : x - 1]
 #define UNSHEATH_CHANNEL channelArray[2]
@@ -126,17 +128,22 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GATEWAY_CHANNEL channelArray[8]
 #define DOOROPEN_CHANNEL channelArray[9]
 #define PLAYERHURT_CHANNEL channelArray[10]
+#define ENEMYHURT_CHANNEL channelArray[11]
 
 
 
 /*
 Sound effects should play upon walking
-killing enemies
-swinging the sword
-pausing
-moving menu cursors
-selecting options
-going through the portals
+killing enemies [ ]
+swinging the sword [x]
+pausing [ ]
+moving menu cursors [ ]
+selecting options [ ]
+going through the portals [x]
+walking [x]
+opening doors [x]
+teleporting [ ]
+getting hurt [x]
 etc.
 */
 
