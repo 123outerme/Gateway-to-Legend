@@ -452,7 +452,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
     node** queue = calloc(40, sizeof(node));
     if (!queue || (startX / TILE_SIZE == endX / TILE_SIZE && startY / TILE_SIZE == endY / TILE_SIZE))
     {
-        *lengthOfPath = 0;
+        *lengthOfPath = -1;
         return NULL;
     }
     node* curNode;
@@ -465,6 +465,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
     }
     curNode = &(searchList[endY / TILE_SIZE][endX / TILE_SIZE]);
     curNode->lastNode = 1;
+    curNode->visited = true;
     bool quit = false;
     while(!quit)
     {
@@ -493,7 +494,6 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
             }
         }
         //enqueue valid adjacent nodes to selected node
-
         if (queueCount == 0)
         {
             *lengthOfPath = 0;

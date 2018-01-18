@@ -584,7 +584,7 @@ int mainLoop(player* playerSprite)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
                         enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
-                    if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                    if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
                         if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
                             enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
@@ -609,17 +609,26 @@ int mainLoop(player* playerSprite)
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
                 {
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                    static int length = 0;
+                    int length = 0;
                     static node curNode;
-                    static bool nodeInit = false;
-                    if (!nodeInit || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
+                    if (!length || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
                     {
                         node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
-                        curNode = nodeArray[1];
-                        free(nodeArray);
-                        nodeInit = true;
+                        if (length > 0)
+                        {
+                            curNode = nodeArray[1];
+                            free(nodeArray);
+                        }
+                        else
+                        {
+                            if (!length)
+                            {
+                                initNode(&curNode, enemies[i].x, enemies[i].y, NULL, true, 0);
+                                enemies[i].angle == 1;  //bit of trickery to force enemies without a path to stop moving
+                            }
+                        }
                     }
-                    if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                    if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
                         if (enemies[i].x != curNode.x)
                             enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
