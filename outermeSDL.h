@@ -48,7 +48,7 @@
 
 #define ANYWHERE_QUIT -1
 
-#define MAX_SOUNDS 11
+#define MAX_SOUNDS 12
 
 typedef enum
 {
@@ -104,7 +104,7 @@ SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 Mix_Chunk* audioArray[MAX_SOUNDS];
-int channelArray[MAX_SOUNDS];
+int channelArray[MAX_SOUNDS - 1];
 bool canDrawTiles;
 bool canDrawText;
 

@@ -49,6 +49,10 @@ int initSounds()
     if (!DOOROPEN_SOUND)
         return -5;
 
+    PLAYERHURT_SOUND = Mix_LoadWAV(PLAYERHURT_FILE);
+    if (!PLAYERHURT_SOUND)
+        return -5;
+
     return 0;
 }
 
@@ -567,10 +571,25 @@ bool executeScriptAction(script* scriptData, player* player)
         returnThis = true;
         Mix_HaltChannel(GATEWAY_CHANNEL);
     }
+    if (scriptData->action == script_use_teleporter)
+    {
+        char* data = calloc(99, sizeof(char));
+        //printf("%s\n", data);
+        player->spr.x = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        //printf("%d/", player->spr.x);
+        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
+        //printf("%d\n", player->spr.y);
+    }
     if (scriptData->action == script_gain_exp)
     {
         player->experience += strtol(scriptData->data, NULL, 10);
-        //play animation?
+        //play animation (?) and sound
+    }
+    if (scriptData->action == script_player_hurt)
+    {
+        player->HP -= strtol(scriptData->data, NULL, 10);
+        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+        //play animation (?) and sound
     }
     scriptData->active = false;
     return returnThis;  //returns whether or not it wants to exit the loop

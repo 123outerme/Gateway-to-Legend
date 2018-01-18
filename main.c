@@ -469,12 +469,12 @@ int mainLoop(player* playerSprite)
                 }
 
                 if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
-                {
+                {  //unwalkable tile or closed door
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
                     //printf("%d\n", exitCode);
                 }
-                if (collisionData[1] || collisionData[2] || collisionData[3])
+                if (collisionData[1] || collisionData[2] || collisionData[3])   //door button
                 {
                     bool playSound = false;
                     for(int i = 0; i < 3; i++)
@@ -489,14 +489,30 @@ int mainLoop(player* playerSprite)
                     if (playSound)
                         Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
                 }
+                if (collisionData[7])  //teleporter
+                {
+                    bool found = false;
+                    for(int i = 0; i < maxTheseScripts; i++)
+                    {
+                        if (theseScripts[i].action == script_use_teleporter && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
+                            {
+                                thisScript = theseScripts[i];
+                                found = true;
+                                break;
+                            }
+                    }
+                    thisScript.active = found;
+                }
                 if (collisionData[8] && !playerSprite->invincCounter)
                 {
                     playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
                     playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
-                    playerSprite->HP -= 1;
+                    script hurtPlayer;
+                    initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
+                    executeScriptAction(&hurtPlayer, playerSprite);
                     playerSprite->invincCounter = 14;
                 }
-                if (collisionData[9])
+                if (collisionData[9])  //gateway
                 {
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
@@ -528,13 +544,15 @@ int mainLoop(player* playerSprite)
 
                 if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
                 {
-                     playerSprite->HP -= 2;
+                     script hurtPlayer;
+                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
                      playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
                      - 48 * (enemies[i].x > playerSprite->spr.x);
 
                      playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
                      - 48 * (enemies[i].y > playerSprite->spr.y);
                      playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
+                     executeScriptAction(&hurtPlayer, playerSprite);
                 }
 
                 if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
