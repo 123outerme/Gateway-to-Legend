@@ -79,7 +79,7 @@ void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
 void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to global player save file
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
-node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath);  //finds the path between (startX, startY) and (endX, endY) using the data in eventmap
+node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath, const bool drawDebug);  //finds the path between (startX, startY) and (endX, endY) using the data in eventmap
 int readScript(script* scriptPtr, char* input);  //inits a script from a string input
 char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 

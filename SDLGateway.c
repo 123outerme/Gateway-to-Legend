@@ -446,7 +446,7 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
-node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath)
+node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath, const bool drawDebug)
 {
     node* path = calloc(300, sizeof(node));
     node** queue = calloc(40, sizeof(node));
@@ -464,7 +464,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
             initNode(&(searchList[y][x]), x * TILE_SIZE, y * TILE_SIZE, NULL, false, 0);
     }
     curNode = &(searchList[endY / TILE_SIZE][endX / TILE_SIZE]);
-    curNode->lastNode = -1;
+    curNode->lastNode = 1;
     bool quit = false;
     while(!quit)
     {
@@ -479,15 +479,18 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
 
                 int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
                 int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
-                if (x >= 0 && y >= 0 && x <= WIDTH_IN_TILES && y <= HEIGHT_IN_TILES && eventmap[y][x] != 1 && searchList[y][x].visited == false)
+                if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && eventmap[y][x] != 1 && searchList[y][x].visited == false)
                 {
                     queue[queueCount++] = &(searchList[y][x]);
                     searchList[y][x].visited = true;
                     searchList[y][x].lastNode = (void*) curNode;
-                    //SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
-                    //SDL_RenderPresent(mainRenderer);
-                    //printf("%p\n", searchList[y][x].lastNode);
-                    //waitForKey();
+                    if (drawDebug)
+                    {
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        SDL_RenderPresent(mainRenderer);
+                        //printf("%p\n", searchList[y][x].lastNode);
+                        waitForKey();
+                    }
                 }
             }
         }
@@ -517,7 +520,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
     path[1] = path[0];
     while(!quit)
     {
-        if (path[pathCount].lastNode == -1 || (path[pathCount].x / TILE_SIZE == endX / TILE_SIZE && path[pathCount].y / TILE_SIZE == endY / TILE_SIZE))
+        if (path[pathCount - 1].lastNode == (void*) 1)
             quit = true;
         else
         {

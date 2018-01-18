@@ -270,7 +270,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-	bool quit = false;
+	bool quit = false, debugDrawPath = false;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_CHAR_IN_FILEPATH];
 	strcpy(mapFilePath, playerSprite->extraData);
@@ -580,7 +580,7 @@ int mainLoop(player* playerSprite)
                 {
                     //behavior: move quickly at player, with little HP
                     int length = 0;
-                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
                     /*if (enemies[i].x != playerSprite->spr.x)
                         enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
                     if (enemies[i].y != playerSprite->spr.y)
@@ -611,7 +611,7 @@ int mainLoop(player* playerSprite)
                 {
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
                     int length = 0;
-                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length);
+                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
                     if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
                         if (enemies[i].x != nodeArray[1].x)
@@ -632,8 +632,9 @@ int mainLoop(player* playerSprite)
                 exitCode = 1;
             }
             //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
-            if(keyStates[SDL_SCANCODE_F12])
+            if (keyStates[SDL_SCANCODE_F12])
                 drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+            debugDrawPath = keyStates[SDL_SCANCODE_RSHIFT];
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
 
