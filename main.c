@@ -609,16 +609,23 @@ int mainLoop(player* playerSprite)
                 if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
                 {
                     //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                    int length = 0;
-                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                    static int length = 0;
+                    static node curNode;
+                    static bool nodeInit = false;
+                    if (!nodeInit || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
+                    {
+                        node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                        curNode = nodeArray[1];
+                        free(nodeArray);
+                        nodeInit = true;
+                    }
                     if (length && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                     {
-                        if (enemies[i].x != nodeArray[1].x)
-                            enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
-                        if (enemies[i].y != nodeArray[1].y && enemies[i].x == nodeArray[1].x)
-                            enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                        if (enemies[i].x != curNode.x)
+                            enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
+                        if (enemies[i].y != curNode.y && enemies[i].x == curNode.x)
+                            enemies[i].y += 3 - 6 * (curNode.y < enemies[i].y);
                     }
-                    free(nodeArray);
                 }
             }
             if (playerSprite->invincCounter)
