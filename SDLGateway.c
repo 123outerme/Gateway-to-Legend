@@ -464,10 +464,11 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
             initNode(&(searchList[y][x]), x * TILE_SIZE, y * TILE_SIZE, NULL, false, 0);
     }
     curNode = &(searchList[endY / TILE_SIZE][endX / TILE_SIZE]);
+    curNode->lastNode = -1;
     bool quit = false;
     while(!quit)
     {
-        if (curNode->x / TILE_SIZE == startX / TILE_SIZE && curNode->y / TILE_SIZE == startY / TILE_SIZE)
+        if ((curNode->x / TILE_SIZE == startX / TILE_SIZE) && (curNode->y / TILE_SIZE == startY / TILE_SIZE))
             quit = true;
         //check if node is at startX, startY. Stop if is, continue if not
 
@@ -516,7 +517,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
     path[1] = path[0];
     while(!quit)
     {
-        if (path[pathCount].lastNode == NULL || (path[pathCount].x == TILE_SIZE * endX / TILE_SIZE && path[pathCount].y == TILE_SIZE * endY / TILE_SIZE))
+        if (path[pathCount].lastNode == -1 || (path[pathCount].x / TILE_SIZE == endX / TILE_SIZE && path[pathCount].y / TILE_SIZE == endY / TILE_SIZE))
             quit = true;
         else
         {
