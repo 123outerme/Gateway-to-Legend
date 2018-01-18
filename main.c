@@ -544,9 +544,8 @@ int mainLoop(player* playerSprite)
             }
             for(int i = 0; i < enemyCount; i++)
             {
-                /* Two issues with collision:
+                /* Issues with collision:
                    *Enemy 3 will sometimes walk through collision due to its nature to move x-then-y (change movement rules?)
-                   *Both enemies with collision will walk towards the left edge of the screen when the player is more than 9 tiles away (to the right)
                 */
                 if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
                 {

@@ -468,29 +468,27 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
     bool quit = false;
     while(!quit)
     {
-        if ((curNode->x / TILE_SIZE == startX / TILE_SIZE) && (curNode->y / TILE_SIZE == startY / TILE_SIZE))
-            quit = true;
-        //check if node is at startX, startY. Stop if is, continue if not
-
         curNode->visited = true;
+        for(int i = 0; i < 4; i++)
         {
-            for(int i = 0; i < 4; i++)
+            int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
+            int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
+            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && eventmap[y][x] != 1 && searchList[y][x].visited == false)
             {
-
-                int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
-                int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
-                if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && eventmap[y][x] != 1 && searchList[y][x].visited == false)
+                queue[queueCount++] = &(searchList[y][x]);
+                searchList[y][x].visited = true;
+                searchList[y][x].lastNode = (void*) curNode;
+                if ((x == startX / TILE_SIZE) && (y == startY / TILE_SIZE))
+                {  //check if node is at startX, startY. Stop if is, continue if not
+                    quit = true;
+                    break;
+                }
+                if (drawDebug)
                 {
-                    queue[queueCount++] = &(searchList[y][x]);
-                    searchList[y][x].visited = true;
-                    searchList[y][x].lastNode = (void*) curNode;
-                    if (drawDebug)
-                    {
-                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
-                        SDL_RenderPresent(mainRenderer);
-                        //printf("%p\n", searchList[y][x].lastNode);
-                        waitForKey();
-                    }
+                    SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
+                    SDL_RenderPresent(mainRenderer);
+                    //printf("%p\n", searchList[y][x].lastNode);
+                    waitForKey();
                 }
             }
         }

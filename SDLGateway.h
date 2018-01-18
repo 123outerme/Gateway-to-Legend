@@ -102,7 +102,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define MUSIC(x) audioArray[x > 2 ? 1 : x - 1]
 #define UNSHEATH_SOUND audioArray[2]
 #define OPTION_SOUND audioArray[3]
-#define STEP_SOUND(x) audioArray[x < 3 || x > 5 ? 5 : x + 3]
+#define STEP_SOUND(x) audioArray[x < 1 || x > 3 ? 5 : x + 3]
 #define SWING_SOUND audioArray[7]
 #define GATEWAYSTART_SOUND audioArray[8]
 #define GATEWAYEND_SOUND audioArray[9]
