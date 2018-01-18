@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
                 gameState = OPTIONS_GAMECODE;
-            if (choice == 3)
+            if (choice == 3 || choice == -1)
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
@@ -120,10 +120,10 @@ int main(int argc, char* argv[])
             break;
         case PLAY_GAMECODE:  //main menu
             mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &quitGame);
-            if (quitGame)  //yes I do need this, this is gonna tell me if we
+            if (quitGame)  //yes I do need this, this is gonna tell me if we quit
             {
                 gameState = START_GAMECODE;
-                quitGame = false;
+                quitGame = (quitGame == -1);  //will quit if we signal it
                 break;
             }
             //loading map pack stuff
@@ -150,9 +150,9 @@ int main(int argc, char* argv[])
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
             quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
-            if (quitGame == 3)
+            if (quitGame == 3 || quitGame == -1)
             {
-                quitGame = false;
+                quitGame = (quitGame == -1);
                 break;
             }
             if (checkFile(saveFilePath, 0) && quitGame == 2)
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
-            if (choice == 2 || choice == 3)
+            if (choice == 2 || choice == 3 || choice == -1)
                 gameState = SAVE_GAMECODE;
             break;
         case RELOAD_GAMECODE:
@@ -206,6 +206,8 @@ int main(int argc, char* argv[])
                     enemyFlags[i] = true;
                 gameState = START_GAMECODE;
             }
+            if (choice == -1)
+                quitGame = true;
             break;
         }
     }
@@ -242,6 +244,11 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
+        if (menuKeycode == -1)
+        {
+            *backFlag = -1;
+            quitMenu = true;
+        }
         drawTile(MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 

@@ -311,7 +311,6 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
         drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
-    Mix_PlayChannel(-1, UNSHEATH_SOUND, 0);
     return selection;
 }
 
