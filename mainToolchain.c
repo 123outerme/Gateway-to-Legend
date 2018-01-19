@@ -94,7 +94,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack);
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum);
 int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
-void drawMaps(mapPack workingPack, int tilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
+void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
 //^map creator functions.
@@ -106,7 +106,7 @@ void strPrepend(char* input, const char* prepend);
 
 //this is to match the tilemap array in outermeSDL.h
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
-
+SDL_Texture* mainTilesetTexture;
 const int targetTime = 1000 / FRAMERATE;
 
 int main(int argc, char* argv[])
@@ -114,6 +114,7 @@ int main(int argc, char* argv[])
     mapPack workingPack;
     strcpy(workingPack.mainFilePath, "/\0");
     initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+    loadIMG(MAIN_TILESET, &mainTilesetTexture);
     bool quit = false;
     char* resumeStr = "\0";
     while(!quit)
@@ -551,7 +552,8 @@ int mainMapCreator(mapPack* workingPack)
         }
     }
     initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
+    loadIMG(MAIN_TILESET, &mainTilesetTexture);
     if (loadCheck[0] == 'y')
         loadMapFile(workingPack->mapFilePath, tilemap, eventmap, chooseMap(*workingPack), HEIGHT_IN_TILES, WIDTH_IN_TILES);
     player creator;
@@ -674,7 +676,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
             SDL_RenderFillRect(mainRenderer, NULL);
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false, true, false);
-            drawATile(playerSprite->spr.tileIndex < 2 ? tilesetTexture : workingPack.mapPackTexture, playerSprite->spr.tileIndex < 2 ? 127 - playerSprite->spr.tileIndex : workingPack.tilesetMaps[playerSprite->spr.tileIndex + 2], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
+            drawATile(playerSprite->spr.tileIndex < 2 ? mainTilesetTexture : workingPack.mapPackTexture, playerSprite->spr.tileIndex < 2 ? 127 - playerSprite->spr.tileIndex : workingPack.tilesetMaps[playerSprite->spr.tileIndex + 3], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         }
         else
         {
@@ -801,7 +803,7 @@ void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererF
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
-void drawMaps(mapPack workingPack, int tilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen)
+void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen)
 {
     if (isEvent)
     {
@@ -809,17 +811,17 @@ void drawMaps(mapPack workingPack, int tilemap[][WIDTH_IN_TILES], int startX, in
         for(int dy = startY; dy < endY; dy++)
             for(int dx = startX; dx < endX; dx++)
             {
-                tile = workingPack.tilesetMaps[tilemap[dy][dx] + 2];  //add 2 to start at buttons
-                if (tilemap[dy][dx] < 2)
-                    tile = 127 - (tilemap[dy][dx] == 1 && !hideCollision);
-                drawATile(tilemap[dy][dx] < 2 ? tilesetTexture : workingPack.mapPackTexture, tile, dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                tile = workingPack.tilesetMaps[thisTilemap[dy][dx] + 3];  //add 3 to start at buttons
+                if (thisTilemap[dy][dx] < 2)
+                    tile = 127 - (thisTilemap[dy][dx] == 1 && !hideCollision);
+                drawATile(thisTilemap[dy][dx] < 2 ? mainTilesetTexture : workingPack.mapPackTexture, tile, dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
             }
     }
     else
     {
         for(int dy = startY; dy < endY; dy++)
             for(int dx = startX; dx < endX; dx++)
-                drawATile(workingPack.mapPackTexture, tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                drawATile(workingPack.mapPackTexture, thisTilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     }
 
     if (updateScreen)
