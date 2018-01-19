@@ -668,13 +668,13 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
     SDL_Event e;
     while(!quit)
     {
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(mainRenderer);
         drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
         if (!editingTiles)
         {
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
-            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false, true, false);
             drawATile(playerSprite->spr.tileIndex < 2 ? mainTilesetTexture : workingPack.mapPackTexture, playerSprite->spr.tileIndex < 2 ? 127 - playerSprite->spr.tileIndex : workingPack.tilesetMaps[playerSprite->spr.tileIndex + 3], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         }
@@ -683,7 +683,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
             drawATile(workingPack.mapPackTexture, playerSprite->spr.tileIndex, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
             drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
         }
-
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}));
         SDL_RenderPresent(mainRenderer);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
