@@ -7,7 +7,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
 {
     int done = 0;
     mainWindow = NULL;
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) < 0)
     {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
@@ -25,13 +25,14 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
             return -2;
         }
-        if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 6, 4096) == -1)
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
         {
             printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", SDL_GetError());
             return -3;
         }
         else
-            Mix_Init(MIX_INIT_OGG);
+        //Mix_Init(MIX_INIT_OGG);  //deprecated?
+        Mix_AllocateChannels(32);
         mainScreen = NULL;
         tilesetTexture = NULL;
         mainRenderer = NULL;
