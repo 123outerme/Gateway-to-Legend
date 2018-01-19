@@ -464,7 +464,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
             initNode(&(searchList[y][x]), x * TILE_SIZE, y * TILE_SIZE, NULL, false, 0);
     }
     curNode = &(searchList[endY / TILE_SIZE][endX / TILE_SIZE]);
-    curNode->lastNode = 1;
+    curNode->lastNode = (void*) 1;
     curNode->visited = true;
     bool quit = false;
     while(!quit)

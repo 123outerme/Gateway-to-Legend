@@ -434,7 +434,7 @@ int mainLoop(player* playerSprite)
                         yDir -= !yDir;
                     else
                         yDir = 0;
-                    yDir *= !xDir;  //x direction takes precedence over y direction
+                    yDir *= !xDir;  //x direction takes precedence over the y direction
                     initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
 
                     if (!swordTimer)
