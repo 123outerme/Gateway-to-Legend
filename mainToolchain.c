@@ -592,6 +592,7 @@ int chooseMap(mapPack workingPack)
     bool quit = false;
     int mapNum = 0, maxMapNum = checkFile(workingPack.mapFilePath, -1);
     SDL_Keycode keycode;
+    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     while(!quit)
     {
         viewMap(workingPack, mapNum, true);
