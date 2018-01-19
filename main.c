@@ -370,8 +370,8 @@ int mainLoop(player* playerSprite)
                     textBoxOn = true;
                 }*/
 
-                if ((checkSKUp || checkSKDown || checkSKLeft || checkSKRight) && !checkSKAttack)
-                    playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
+                if (((checkSKUp && !checkSKDown) || (!checkSKUp && checkSKDown) || (checkSKLeft && !checkSKRight) || (!checkSKLeft && checkSKRight)) && !checkSKAttack)
+                    playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft+ 8 * checkSKRight;
 
                 if (playerSprite->lastDirection / 4 == 1)
                     playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;

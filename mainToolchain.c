@@ -576,6 +576,7 @@ int mainMapCreator(mapPack* workingPack)
 
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum)
 {
+    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(mainRenderer);
     int newTilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
     int newEventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
