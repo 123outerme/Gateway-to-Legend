@@ -48,7 +48,7 @@ typedef struct {
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
-#define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this data comes from
+#define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this number comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
 
@@ -1025,16 +1025,20 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
 {
     int numArrayTracker = 0, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
     char* text[] = PICK_MESSAGES_ARRAY;
-    bool quit = false;
+    bool quit = false, whiteBG = true;
     SDL_Event e;
     while(numArrayTracker < MAX_SPRITE_MAPPINGS && !quit)
     {
+        if (whiteBG)
+            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        else
+            SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
         SDL_RenderClear(mainRenderer);
         SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->x, .y= playerSprite->y, .w = playerSprite->w, .h = playerSprite->h}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0x00, 0x0, 0x00}, true);
+        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG)}, true);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -1057,12 +1061,12 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
                 playerSprite->x += PIXELS_MOVED;
             if (checkSKInteract)
                 numArray[numArrayTracker++] = 8 * (playerSprite->x / TILE_SIZE) + playerSprite->y / TILE_SIZE - 1;  //-1 because we don't start at y=0
+            if (keyStates[SDL_SCANCODE_LSHIFT])
+                whiteBG = !whiteBG;
             lastKeypressTime = SDL_GetTicks();
         }
-
         if (checkSKMenu || keyStates[SDL_SCANCODE_RETURN])
                 quit = true;
-
         sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         if (sleepFor > 0)
             SDL_Delay(sleepFor);

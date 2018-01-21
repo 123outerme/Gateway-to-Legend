@@ -1,6 +1,6 @@
 Main Adventure
 maps/MainMaps.txt
-tileset/mainTileset8x6.png
+tileset/mainTileset48.png
 saves/MainAdventure.txt
 scripts/MainAdventure.txt
 456

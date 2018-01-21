@@ -30,7 +30,6 @@
 #define OVERWORLDMENU_GAMECODE 4
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
-
 #define MAX_TILE_ID_ARRAY 18
 #define MAX_COLLISIONDATA_ARRAY 10
 
@@ -546,100 +545,105 @@ int mainLoop(player* playerSprite)
                     exitCode = 2;
                 }
             }
-            for(int i = 0; i < enemyCount; i++)
             {
-                bool collidedOnce = false;
-
-                if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
+                bool playHitSound = false;
+                for(int i = 0; i < enemyCount; i++)
                 {
-                    if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                    bool collidedOnce = false;
+
+                    if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
                     {
-                        enemies[i].h--;
-                        Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
-                        if (enemies[i].h < 1 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
                         {
-                            enemies[i].type = type_na;
-                            enemyFlags[i] = false;
-                        }
-                        enemies[i].angle = swordTimer;
-                    }
-                }
-
-                if (!collidedOnce && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
-                {
-                     script hurtPlayer;
-                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
-                     playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                     - 48 * (enemies[i].x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y)));
-
-                     playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                     - 48 * (enemies[i].y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x)));
-                     playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
-                     executeScriptAction(&hurtPlayer, playerSprite);
-                     collidedOnce = true;
-                }
-
-                if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
-                {
-                    //behavior: move quickly at player, with little HP
-                    int length = 0;
-                    node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
-                    /*if (enemies[i].x != playerSprite->spr.x)
-                        enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
-                    if (enemies[i].y != playerSprite->spr.y)
-                        enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
-                    if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
-                    {
-                        if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
-                            enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
-                        if (enemies[i].y != nodeArray[1].y)
-                            enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
-                    }
-                    free(nodeArray);
-                }
-
-                if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
-                {
-                    //behavior: burst movement towards player?
-                    if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
-                    {
-                        if (enemies[i].x != playerSprite->spr.x)
-                            enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
-                        if (enemies[i].y != playerSprite->spr.y)
-                            enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
-                    }
-                }
-
-                if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
-                {
-                    //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                    int length = 0;
-                    static node curNode;
-                    if (!length || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
-                    {
-                        node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
-                        if (length > 0)
-                        {
-                            curNode = nodeArray[1];
-                            free(nodeArray);
-                        }
-                        else
-                        {
-                            if (!length)
+                            enemies[i].h--;
+                            playHitSound = true;
+                            if (enemies[i].h < 1 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                             {
-                                initNode(&curNode, enemies[i].x, enemies[i].y, NULL, true, 0);
-                                enemies[i].angle = 1;  //bit of trickery to force enemies without a path to stop moving
+                                enemies[i].type = type_na;
+                                enemyFlags[i] = false;
+                            }
+                            enemies[i].angle = swordTimer;
+                        }
+                    }
+
+                    if (!collidedOnce && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
+                    {
+                         script hurtPlayer;
+                         initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
+                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
+                         - 48 * (enemies[i].x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y)));
+
+                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
+                         - 48 * (enemies[i].y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x)));
+                         playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
+                         executeScriptAction(&hurtPlayer, playerSprite);
+                         collidedOnce = true;
+                    }
+
+                    if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
+                    {
+                        //behavior: move quickly at player, with little HP
+                        int length = 0;
+                        node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                        /*if (enemies[i].x != playerSprite->spr.x)
+                            enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
+                        if (enemies[i].y != playerSprite->spr.y)
+                            enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
+                        if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        {
+                            if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
+                                enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
+                            if (enemies[i].y != nodeArray[1].y)
+                                enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                        }
+                        free(nodeArray);
+                    }
+
+                    if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
+                    {
+                        //behavior: burst movement towards player?
+                        if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                        {
+                            if (enemies[i].x != playerSprite->spr.x)
+                                enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
+                            if (enemies[i].y != playerSprite->spr.y)
+                                enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+                        }
+                    }
+
+                    if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
+                    {
+                        //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
+                        int length = 0;
+                        static node curNode;
+                        if (!length || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
+                        {
+                            node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                            if (length > 0)
+                            {
+                                curNode = nodeArray[1];
+                                free(nodeArray);
+                            }
+                            else
+                            {
+                                if (!length)
+                                {
+                                    initNode(&curNode, enemies[i].x, enemies[i].y, NULL, true, 0);
+                                    enemies[i].angle = 1;  //bit of trickery to force enemies without a path to stop moving
+                                }
                             }
                         }
-                    }
-                    if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
-                    {
-                        if (enemies[i].x != curNode.x)
-                            enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
-                        if (enemies[i].y != curNode.y && enemies[i].x == curNode.x)
-                            enemies[i].y += 3 - 6 * (curNode.y < enemies[i].y);
+                        if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        {
+                            if (enemies[i].x != curNode.x)
+                                enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
+                            if (enemies[i].y != curNode.y && enemies[i].x == curNode.x)
+                                enemies[i].y += 3 - 6 * (curNode.y < enemies[i].y);
+                        }
                     }
                 }
+                if (playHitSound)
+                    Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
             if (playerSprite->invincCounter)
                 playerSprite->invincCounter--;
