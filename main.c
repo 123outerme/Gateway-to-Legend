@@ -591,10 +591,16 @@ int mainLoop(player* playerSprite)
                             enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
                         if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                         {
+                            if (nodeArray[1].x > enemies[i].x)
+                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            else
+                                enemies[i].flip = SDL_FLIP_NONE;
+
                             if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
                                 enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
                             if (enemies[i].y != nodeArray[1].y)
                                 enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+
                         }
                         free(nodeArray);
                     }
@@ -604,6 +610,11 @@ int mainLoop(player* playerSprite)
                         //behavior: burst movement towards player?
                         if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
                         {
+                            if (playerSprite->spr.x < enemies[i].x)
+                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            else
+                                enemies[i].flip = SDL_FLIP_NONE;
+
                             if (enemies[i].x != playerSprite->spr.x)
                                 enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
                             if (enemies[i].y != playerSprite->spr.y)
@@ -635,6 +646,11 @@ int mainLoop(player* playerSprite)
                         }
                         if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                         {
+                            if (curNode.x < enemies[i].x)
+                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            else
+                                enemies[i].flip = SDL_FLIP_NONE;
+
                             if (enemies[i].x != curNode.x)
                                 enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
                             if (enemies[i].y != curNode.y)
