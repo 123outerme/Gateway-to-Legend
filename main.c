@@ -434,7 +434,7 @@ int mainLoop(player* playerSprite)
                     else
                         yDir = 0;
                     yDir *= !xDir;  //x direction takes precedence over the y direction
-                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + TILE_SIZE * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
 
                     if (!swordTimer)
                         swordTimer = SDL_GetTicks() + 750;
@@ -637,7 +637,7 @@ int mainLoop(player* playerSprite)
                         {
                             if (enemies[i].x != curNode.x)
                                 enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
-                            if (enemies[i].y != curNode.y && enemies[i].x == curNode.x)
+                            if (enemies[i].y != curNode.y)
                                 enemies[i].y += 3 - 6 * (curNode.y < enemies[i].y);
                         }
                     }
