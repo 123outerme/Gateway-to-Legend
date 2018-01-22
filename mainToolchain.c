@@ -42,7 +42,7 @@ typedef struct {
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"
-#define MAIN_TILESET "tileset/mainTileset8x6.png"
+#define MAIN_TILESET "tileset/mainTileset48.png"
 
 #define MAINARROW_ID 34
 //^map creator defines. v map-pack wizard defines

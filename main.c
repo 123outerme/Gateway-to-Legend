@@ -13,7 +13,7 @@
 
 #define WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
-#define GLOBALTILES_FILEPATH "tileset/mainTileset8x6.png"
+#define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
@@ -591,7 +591,7 @@ int mainLoop(player* playerSprite)
                             enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
                         if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                         {
-                            if (nodeArray[1].x > enemies[i].x)
+                            if (nodeArray[1].x < enemies[i].x)
                                 enemies[i].flip = SDL_FLIP_HORIZONTAL;
                             else
                                 enemies[i].flip = SDL_FLIP_NONE;
