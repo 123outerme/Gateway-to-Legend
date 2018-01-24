@@ -46,18 +46,23 @@ typedef struct {
     bool active;
 } script;
 
-#define checkSKUp keyStates[26]
-#define checkSKDown keyStates[22]
-#define checkSKLeft keyStates[4]
-#define checkSKRight keyStates[7]
-#define checkSKInteract keyStates[44]
-#define checkSKMenu keyStates[41]
-#define SC_UP SDL_SCANCODE_W
-#define SC_DOWN SDL_SCANCODE_S
-#define SC_LEFT SDL_SCANCODE_A
-#define SC_RIGHT SDL_SCANCODE_D
-#define SC_INTERACT SDL_SCANCODE_SPACE
-#define SC_MENU SDL_SCANCODE_ESCAPE
+#define SIZE_OF_SCANCODE_ARRAY 7
+int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+#define SC_UP CUSTOM_SCANCODES[0]
+#define SC_DOWN CUSTOM_SCANCODES[1]
+#define SC_LEFT CUSTOM_SCANCODES[2]
+#define SC_RIGHT CUSTOM_SCANCODES[3]
+#define SC_INTERACT CUSTOM_SCANCODES[4]
+#define SC_MENU CUSTOM_SCANCODES[5]
+#define SC_ATTACK CUSTOM_SCANCODES[6]
+
+#define checkSKUp keyStates[SC_UP]
+#define checkSKDown keyStates[SC_DOWN]
+#define checkSKLeft keyStates[SC_LEFT]
+#define checkSKRight keyStates[SC_RIGHT]
+#define checkSKInteract keyStates[SC_INTERACT]
+#define checkSKMenu keyStates[SC_MENU]
+#define checkSKAttack keyStates[SC_ATTACK]
 //SDL_SCANCODE_W
 //SDL_SCANCODE_S
 //SDL_SCANCODE_A
@@ -66,6 +71,7 @@ typedef struct {
 //SDL_SCANCODE_ESCAPE
 
 #define CACHE_NAME "GtLToolchainCache.cfg"
+#define CONFIG_FILEPATH "GatewayToLegend.cfg"
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"
@@ -103,6 +109,9 @@ typedef struct {
 
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
 // ^ whatever
+
+void initConfig();
+void loadConfig(char* filePath);
 
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
@@ -149,6 +158,12 @@ int main(int argc, char* argv[])
     strcpy(workingPack.mainFilePath, "/\0");
     initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
+
+    if (checkFile(CONFIG_FILEPATH, 0))
+        loadConfig(CONFIG_FILEPATH);
+    else
+        initConfig();
+
     bool quit = false, proceed = false;
     char* resumeStr = "\0";
     while(!quit)
@@ -347,6 +362,27 @@ void loadMapPackData(mapPack* loadPack, char* location)
     loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture));
 }
 
+void initConfig()
+{
+    SC_UP = SDL_SCANCODE_W;
+    SC_DOWN = SDL_SCANCODE_S;
+    SC_LEFT = SDL_SCANCODE_A;
+    SC_RIGHT = SDL_SCANCODE_D;
+    SC_INTERACT = SDL_SCANCODE_SPACE;
+    SC_MENU = SDL_SCANCODE_ESCAPE;
+    SC_ATTACK = SDL_SCANCODE_LSHIFT;
+}
+
+void loadConfig(char* filePath)
+{
+    char* buffer = "";
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        readLine(filePath, i, &buffer);
+        CUSTOM_SCANCODES[i] = strtol(buffer, NULL, 10);
+    }
+}
+
 void saveMapPack(mapPack* writePack)
 {
     char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
@@ -470,7 +506,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
-    bool quit = false;
+    bool quit = false, settingsReset = false;
     int selection = -1;
     //While application is running
     while(!quit)

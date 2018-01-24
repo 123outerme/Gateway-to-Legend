@@ -388,6 +388,23 @@ void saveGlobalPlayer(const player playerSprite, char* filePath)
     //saves: name, max HP, level, exp, money
 }
 
+void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection)
+{
+    SDL_RenderClear(mainRenderer);
+    SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+    SDL_RenderFillRect(mainRenderer, NULL);
+    drawText(titleText, .5 * TILE_SIZE, 5 * SCREEN_HEIGHT / 64, (WIDTH_IN_TILES - .5) * TILE_SIZE, (HEIGHT_IN_TILES - 4) * TILE_SIZE, textColor, true);
+    SDL_Keycode kc = waitForKey();
+    bool conflict = false;
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        if (CUSTOM_SCANCODES[i] == SDL_GetScancodeFromKey(kc))
+            conflict = true;
+    }
+    if (!conflict)
+        CUSTOM_SCANCODES[selection] = SDL_GetScancodeFromKey(kc);
+}
+
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
 {
     char* dummy = "";

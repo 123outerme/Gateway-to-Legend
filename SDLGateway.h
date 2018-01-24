@@ -86,6 +86,7 @@ SDL_Keycode getKey();  //like waitForKey but without waiting.
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
 void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to global player save file
+void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection);  //changes a key to another key if it can
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath, const bool drawDebug);  //finds the path between (startX, startY) and (endX, endY) using the data in eventmap
 int readScript(script* scriptPtr, char* input);  //inits a script from a string input

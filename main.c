@@ -31,7 +31,7 @@
 
 
 void changeVolumes();
-void changeControls();
+int changeControls();
 void changeName();
 void clearData(player* playerSprite);
 
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
         {
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Options", "Quit", " ", "(Not final menu)"}, 5, 1, AMENU_MAIN_THEME, true, true);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[3]) {"Play", "Settings", "Quit"}, 3, 1, AMENU_MAIN_THEME, true, true);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 changeVolumes();
             if (choice == 2)
-                changeControls();
+                choice = changeControls();
             if (choice == 3)
                 changeName();
             if (choice == 4)
@@ -327,9 +327,100 @@ void changeVolumes()
     Mix_VolumeMusic(musicVolume);
 }
 
-void changeControls()
+int changeControls()
 {
-    //
+    sprite cursor;
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
+    initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    int selection = -1;
+    bool superQuit = false;
+    while(!superQuit)
+    {
+        SDL_Event e;
+        bool quit = false;
+        //While application is running
+        while(!quit)
+        {
+            SDL_RenderClear(mainRenderer);
+            SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+            SDL_RenderFillRect(mainRenderer, NULL);
+            //foreground text
+            drawText("Configure Keys", 2 * TILE_SIZE + TILE_SIZE / 4, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, textColor, false);
+
+            char keyText[99];
+            strcpy(keyText, "Up: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_UP))), 2 * TILE_SIZE + TILE_SIZE / 4, 4 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, textColor, false);
+            //we don't use SDL_GetScancodeName() because the SDL documentation warns that it isn't a stable way to get key names
+
+            strcpy(keyText, "Down: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_DOWN))), 2 * TILE_SIZE + TILE_SIZE / 4, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+
+            strcpy(keyText, "Left: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_LEFT))), 2 * TILE_SIZE + TILE_SIZE / 4, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+
+            strcpy(keyText, "Right: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_RIGHT))), 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+
+            strcpy(keyText, "Confirm: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_INTERACT))), 2 * TILE_SIZE + TILE_SIZE / 4, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 9) * TILE_SIZE, textColor, false);
+
+            strcpy(keyText, "Menu: ");
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+
+            strcpy(keyText, "Attack: ");  //note to self: change the key name later
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_ATTACK))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+
+            drawText("Back", 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
+            drawText("Default is W/S/A/D, Space, LShift, Esc", .75 * TILE_SIZE, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, false);
+            drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+            SDL_RenderPresent(mainRenderer);
+            while(SDL_PollEvent(&e) != 0)
+            {
+                //User requests quit
+                if(e.type == SDL_QUIT)
+                {
+                    quit = true;
+                    selection = ANYWHERE_QUIT;
+                }
+                //User presses a key
+                else if(e.type == SDL_KEYDOWN)
+                {
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                    {
+                        if (cursor.y > 4 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                    {
+                        if (cursor.y < 11 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                    {
+                        selection = cursor.y / TILE_SIZE - 3;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        quit = true;
+                    }
+                }
+            }
+        }
+        if (selection > 0 && selection != 8)
+        {
+            char* keyName[7] = {"Up", "Down", "Left", "Right", "Confirm", "Menu", "Attack"};
+            char titleText[] = "Press a key for\n";
+            strcat(titleText, keyName[selection - 1]);
+            getNewKey(titleText, bgColor, textColor, selection - 1);
+        }
+        else
+        {
+            saveConfig(CONFIG_FILEPATH);
+            superQuit = true;
+        }
+    }
+    return -1 * (selection == -1);
 }
 
 void changeName()
