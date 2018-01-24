@@ -500,7 +500,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-	bool quit = false, debugDrawPath = false;
+	bool quit = false, debugDrawPath = false, drawFPS = false;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_CHAR_IN_FILEPATH];
 	strcpy(mapFilePath, playerSprite->extraData);
@@ -902,8 +902,7 @@ int mainLoop(player* playerSprite)
                 exitCode = 1;
             }
             //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
-            if (keyStates[SDL_SCANCODE_F12])
-                drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+            drawFPS = keyStates[SDL_SCANCODE_F12]
             debugDrawPath = keyStates[SDL_SCANCODE_RSHIFT];
 
             if (keyStates[SDL_SCANCODE_Z])
@@ -920,7 +919,9 @@ int mainLoop(player* playerSprite)
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
         framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
 
-
+	if (drawFPS)
+	    drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+	
         drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 
         for(int i = 0; i < enemyCount; i++)
