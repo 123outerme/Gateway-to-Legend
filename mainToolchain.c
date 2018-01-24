@@ -133,18 +133,20 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
-void mainMapCreatorLoop(player* playerSprite, mapPack workingPack);
+script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack workingPack);
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum);
 int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
+void writeScriptData(script* mapScripts, int count);
 //^map creator functions.
 
 //V map-pack wizard functions
 int mainMapPackWizard();
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void strPrepend(char* input, const char* prepend);
 
 //this is to match the tilemap array in outermeSDL.h
@@ -628,19 +630,29 @@ int mainMapCreator(mapPack* workingPack)
     initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
-    if (loadCheck[0] == 'y')
-        loadMapFile(workingPack->mapFilePath, tilemap, eventmap, chooseMap(*workingPack), HEIGHT_IN_TILES, WIDTH_IN_TILES);
     player creator;
     initPlayer(&creator, 0, 0, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
+    creator.mapScreen = -1;
+    if (loadCheck[0] == 'y')
+    {
+        creator.mapScreen = chooseMap(*workingPack);
+        loadMapFile(workingPack->mapFilePath, tilemap, eventmap, creator.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+    }
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    mainMapCreatorLoop(&creator, *workingPack);
+    int scriptCount = 0;
+    script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
     closeSDL();
     char saveCheck[2];
     printf("Save? (y/n) ");
 	scanf("%s", saveCheck);
 	if (saveCheck[0] == 'y')
+    {
         writeTileData();
+        printf("%p\n", mapScripts);
+        writeScriptData(mapScripts, scriptCount);
+    }
+    free(mapScripts);
     //waitForKey();
     //SDL_Delay(1000);
     initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
@@ -724,11 +736,11 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
     }*/
 }
 
-void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
+script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack workingPack)
 {
     /*for(int i = 0; i < 4; i++)
         viewMap("maps/MainMaps.txt", i);*/
-    int scriptCount = 0;
+    *scriptCount = 0;
     int scriptMaxCount = 5;
     script* mapScripts = calloc(scriptMaxCount, sizeof(script));
     bool quit = false, editingTiles = true;
@@ -744,6 +756,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
                 eventmap[y][x] = 0;
         }
     }
+    SDL_Delay(500);  //gives time for keypresses to unregister
     SDL_Event e;
     while(!quit)
     {
@@ -755,7 +768,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0x58);
             SDL_RenderFillRect(mainRenderer, NULL);
             drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, false, true, false);
-            drawATile(playerSprite->spr.tileIndex < 2 ? mainTilesetTexture : workingPack.mapPackTexture, playerSprite->spr.tileIndex < 2 ? 127 - playerSprite->spr.tileIndex : workingPack.tilesetMaps[playerSprite->spr.tileIndex + 3], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
+            drawATile(playerSprite->spr.tileIndex < 2 ? mainTilesetTexture : workingPack.mapPackTexture, playerSprite->spr.tileIndex < 2 ? 127 - playerSprite->spr.tileIndex : workingPack.tilesetMaps[playerSprite->spr.tileIndex + 4], playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         }
         else
         {
@@ -801,9 +814,85 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
 
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
             {
-                if (playerSprite->spr.tileIndex == 10)
+                if (playerSprite->spr.tileIndex == 10)  //warp gate
                 {
-
+                    script gateScript;
+                    int map = 0, x = 0, y = 0;
+                    SDL_Keycode key = 0;
+                    map = chooseMap(workingPack);
+                    bool inQuit = false;
+                    while(!inQuit)
+                    {
+                        SDL_RenderClear(mainRenderer);
+                        viewMap(workingPack, map, false);
+                        key = getKey();
+                        if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
+                            y -= TILE_SIZE;
+                        if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
+                            y += TILE_SIZE;
+                        if (SC_LEFT == SDL_GetScancodeFromKey(key) && x > 0)
+                            x -= TILE_SIZE;
+                        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
+                            x += TILE_SIZE;
+                        if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+                            inQuit = true;
+                        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        SDL_RenderPresent(mainRenderer);
+                    }
+                    char* data = calloc(99, sizeof(char));
+                    snprintf(data, 99, "[%d/%d/%d]", map, x, y);
+                    initScript(&gateScript, script_use_warp_gate, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
+                    mapScripts[(*scriptCount)++] = gateScript;
+                    if (*scriptCount >= scriptMaxCount)
+                    {
+                        scriptMaxCount += 5;
+                        script* temp = realloc(mapScripts, scriptMaxCount);
+                        if (temp)
+                            mapScripts = temp;
+                    }
+                    free(data);
+                    SDL_Delay(500);  //gives time for keypresses to unregister
+                }
+                if (playerSprite->spr.tileIndex == 8)  //teleporter
+                {
+                    script teleportScript;
+                    int x = 0, y = 0;
+                    SDL_Keycode key = 0;
+                    bool inQuit = false;
+                    while(!inQuit)
+                    {
+                        SDL_RenderClear(mainRenderer);
+                        drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
+                        drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
+                        key = getKey();
+                        if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
+                            y -= TILE_SIZE;
+                        if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
+                            y += TILE_SIZE;
+                        if (SC_LEFT == SDL_GetScancodeFromKey(key) && x > 0)
+                            x -= TILE_SIZE;
+                        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
+                            x += TILE_SIZE;
+                        if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+                            inQuit = true;
+                        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                        SDL_RenderPresent(mainRenderer);
+                    }
+                    char* data = calloc(99, sizeof(char));
+                    snprintf(data, 99, "[%d/%d]", x, y);
+                    initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
+                    mapScripts[(*scriptCount)++] = teleportScript;
+                    if (*scriptCount >= scriptMaxCount)
+                    {
+                        scriptMaxCount += 5;
+                        script* temp = realloc(mapScripts, scriptMaxCount);
+                        if (temp)
+                            mapScripts = temp;
+                    }
+                    //printf("%s\n", data);
+                    //printf("%s\n", mapScripts[*scriptCount - 1].data);
+                    free(data);
+                    SDL_Delay(500);  //gives time for keypresses to unregister
                 }
 
                 if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
@@ -813,7 +902,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
                     {
                         enemyCount++;
                         eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        printf("%d (+)\n", enemyCount);
+                        //printf("%d (+)\n", enemyCount);
                     }
 
                     if (curTile > 11 && curTile < 15)
@@ -821,7 +910,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
                         if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
                             enemyCount--;
                         eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        printf("%d (-)\n", enemyCount);
+                        //printf("%d (-)\n", enemyCount);
                     }
                 }
                 else
@@ -851,6 +940,7 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
         lastFrame = SDL_GetTicks();
 	frame++;
     }
+    return mapScripts;
 }
 
 SDL_Keycode getKey()
@@ -895,7 +985,7 @@ void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX
         for(int dy = startY; dy < endY; dy++)
             for(int dx = startX; dx < endX; dx++)
             {
-                tile = workingPack.tilesetMaps[thisTilemap[dy][dx] + 3];  //add 3 to start at buttons
+                tile = workingPack.tilesetMaps[thisTilemap[dy][dx] + 4];  //add 4 to start at buttons
                 if (thisTilemap[dy][dx] < 2)
                     tile = 127 - (thisTilemap[dy][dx] == 1 && !hideCollision);
                 drawATile(thisTilemap[dy][dx] < 2 ? mainTilesetTexture : workingPack.mapPackTexture, tile, dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -935,6 +1025,22 @@ void writeTileData()
     appendLine("output/map.txt", output);
     printf("%s\n", output);
     printf("outputted to output/map.txt\n");
+}
+
+
+void writeScriptData(script* mapScripts, int count)
+{
+    if (count < 1)
+        return;
+    char* outputFile = "output/script.txt";
+    char scriptText[160];
+    createFile(outputFile);
+    for(int i = 0; i < count; i++)
+    {
+        snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s}", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data);
+        printf("%s\n", scriptText);
+    }
+    printf("outputted to output/script.txt. NOTE: If the second argument is -1, change to (line number of new map) - 1\n");
 }
 //end map creator code.
 
@@ -1161,6 +1267,19 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     //waitForKey();
     if (numArrayTracker < MAX_SPRITE_MAPPINGS)
         numArray[0] = -1;
+}
+
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
+{
+	scriptPtr->action = action;
+	scriptPtr->mapNum = mapNum;
+	scriptPtr->x = x;
+	scriptPtr->y = y;
+	scriptPtr->w = w;
+	scriptPtr->h = h;
+	scriptPtr->data = calloc(99, sizeof(char));
+	strncpy(scriptPtr->data, data, 99);
+	scriptPtr->active = true;
 }
 
 void strPrepend(char* input, const char* prepend)

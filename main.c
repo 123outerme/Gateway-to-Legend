@@ -423,7 +423,7 @@ int changeControls()
             superQuit = true;
         }
     }
-    return -1 * (selection == -1);
+    return 0 - (selection == -1);  //returns -1 if selection == -1 else 0.
 }
 
 void changeName()
