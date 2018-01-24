@@ -33,6 +33,7 @@
 void changeVolumes();
 int changeControls();
 void changeName();
+void changeFPS();
 void clearData(player* playerSprite);
 
 int mainLoop(player* playerSprite);
@@ -121,7 +122,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[5]) {"Sounds", "Controls", "Change Name", "Reset Data", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[6]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Back"}, 6, 0, AMENU_MAIN_THEME, true, false);
             if (choice == 1)
                 changeVolumes();
             if (choice == 2)
@@ -129,8 +130,10 @@ int main(int argc, char* argv[])
             if (choice == 3)
                 changeName();
             if (choice == 4)
-                clearData(&person);
+                changeFPS();
             if (choice == 5)
+                clearData(&person);
+            if (choice == 6)
                 gameState = START_GAMECODE;
             if (choice == -1)
                 quitGame = true;
@@ -424,6 +427,11 @@ int changeControls()
 }
 
 void changeName()
+{
+    //
+}
+
+void changeFPS()
 {
     //
 }
