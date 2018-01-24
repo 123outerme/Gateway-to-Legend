@@ -11,14 +11,6 @@
 #define TILE_ID_PLAYER 16
 #define PIXELS_MOVED 6
 
-#define WINDOW_NAME "Gateway to Legend"
-#define CONFIG_FILEPATH "GatewayToLegend.cfg"
-#define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
-#define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
-#define MAP_PACKS_SUBFOLDER "map-packs/"
-#define MAX_LIST_OF_MAPS 30
-#define MAX_CHAR_IN_FILEPATH MAX_PATH
-
 #define MAX_MAPPACKS_PER_PAGE 11
 #define MAX_ENEMIES 6
 
@@ -37,10 +29,24 @@
 
 #define checkRectCol(x1, y1, x2, y2) ((abs(abs(x1) - abs(x2)) < TILE_SIZE) && (abs(abs(y1) - abs(y2)) < TILE_SIZE))
 
+
+void changeVolumes();
+void changeControls();
+void changeName();
+void clearData(player* playerSprite);
+
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
+
+#define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
+#define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
+#define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
+#define AMENU_MAIN_TITLECOLOR2 0x00, 0xAC, 0xE6
+
+#define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
+
 
 /*bool debug;
 bool doDebugDraw;
@@ -106,7 +112,7 @@ int main(int argc, char* argv[])
         {
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Options", "Quit", " ", "(Not final menu)"}, 5, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, true);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Options", "Quit", " ", "(Not final menu)"}, 5, 1, AMENU_MAIN_THEME, true, true);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -115,7 +121,19 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
-            gameState = START_GAMECODE;
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[5]) {"Sounds", "Controls", "Change Name", "Reset Data", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false);
+            if (choice == 1)
+                changeVolumes();
+            if (choice == 2)
+                changeControls();
+            if (choice == 3)
+                changeName();
+            if (choice == 4)
+                clearData(&person);
+            if (choice == 5)
+                gameState = START_GAMECODE;
+            if (choice == -1)
+                quitGame = true;
             break;
         case PLAY_GAMECODE:  //main menu
             mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &quitGame);
@@ -148,7 +166,7 @@ int main(int argc, char* argv[])
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
-            quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, AMENU_MAIN_THEME, true, false);
             if (quitGame == 3 || quitGame == -1)
             {
                 quitGame = (quitGame == -1);
@@ -179,7 +197,7 @@ int main(int argc, char* argv[])
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             Mix_HaltChannel(-1);
-            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, (SDL_Color) {0xA5, 0xA5, 0xA5, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, (SDL_Color) {0x00, 0x00, 0x00, 0xFF}, true, false);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 2 || choice == 3 || choice == -1)
@@ -218,6 +236,120 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void changeVolumes()
+{
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
+    sprite cursor;
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        //background text (drawn first)
+        drawText("Sound Volumes", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
+        //foreground text
+        drawText("Sound Volumes", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
+
+        SDL_SetRenderDrawColor(mainRenderer, titleOverColor.r, titleOverColor.g, titleOverColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 4.75 * TILE_SIZE, .w = musicVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 5.75 * TILE_SIZE, .w = soundVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
+
+        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = musicVolume * 4, .h = TILE_SIZE / 2}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 6 * TILE_SIZE, .w = soundVolume * 4, .h = TILE_SIZE / 2}));
+
+        drawText("Music", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        drawText("Sounds", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+        drawText("Back", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+                quit = true;
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                {
+                    if (cursor.y > 5 * TILE_SIZE)
+                        cursor.y -= TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (cursor.y < 7 * TILE_SIZE)
+                        cursor.y += TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT)  && cursor.y != TILE_SIZE * 7)
+                {
+                    if (cursor.y == TILE_SIZE * 5 && musicVolume > 0)
+                    {
+                        musicVolume -= 16;
+                    }
+                    else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
+                    {
+                        soundVolume -= 16;
+                    }
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT)  && cursor.y != TILE_SIZE * 7)
+                {
+                    if (cursor.y == TILE_SIZE * 5 && musicVolume < MIX_MAX_VOLUME)
+                    {
+                        musicVolume += 16;
+                    }
+                    else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
+                    {
+                        soundVolume += 16;
+                    }
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT) && cursor.y == TILE_SIZE * 7)
+                {
+                    quit = true;
+                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                }
+            }
+        }
+        drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+    }
+    saveConfig(CONFIG_FILEPATH);
+    Mix_Volume(-1, soundVolume);
+    Mix_VolumeMusic(musicVolume);
+}
+
+void changeControls()
+{
+    //
+}
+
+void changeName()
+{
+    //
+}
+
+void clearData(player* playerSprite)
+{
+    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Clear All Data:\nAre You Sure?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false);
+    if (choice == 1)
+    {
+        createFile(CONFIG_FILEPATH);
+        initConfig(CONFIG_FILEPATH);
+        createFile(GLOBALSAVE_FILEPATH);
+        createGlobalPlayer(playerSprite, GLOBALSAVE_FILEPATH);
+        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+    }
+}
+
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
 {
     bool quitMenu = false;
@@ -226,14 +358,14 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
     int menuPage = 0, selectItem = 0;
     while(!quitMenu)
     {
-        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
         SDL_RenderClear(mainRenderer);
-        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0, 0, 0}, false);
-        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0, 0, 0}, false);
+                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {

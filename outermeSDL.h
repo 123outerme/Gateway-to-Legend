@@ -105,7 +105,7 @@ TTF_Font* mainFont;
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 Mix_Chunk* audioArray[MAX_SOUNDS];
 int channelArray[MAX_SOUNDS - 1];
-int soundVolume;
+int soundVolume, musicVolume;
 bool canDrawTiles;
 bool canDrawText;
 

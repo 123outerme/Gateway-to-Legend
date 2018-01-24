@@ -105,6 +105,8 @@ void initConfig(char* filePath)
     SC_ATTACK = SDL_SCANCODE_LSHIFT;
     FPS = 60;
     targetTime = calcWaitTime(FPS);
+    soundVolume = MIX_MAX_VOLUME;
+    musicVolume = MIX_MAX_VOLUME;
     saveConfig(filePath);
 }
 
@@ -149,6 +151,12 @@ void loadConfig(char* filePath)
     readLine(filePath, SIZE_OF_SCANCODE_ARRAY, &buffer);
     FPS = strtol(strtok(buffer, "FPS="), NULL, 10);
     targetTime = calcWaitTime(FPS);
+    readLine(filePath, SIZE_OF_SCANCODE_ARRAY + 1, &buffer);
+    soundVolume = strtol(buffer, NULL, 10);
+    Mix_Volume(-1, soundVolume);
+    readLine(filePath, SIZE_OF_SCANCODE_ARRAY + 2, &buffer);
+    musicVolume = strtol(buffer, NULL, 10);
+    Mix_VolumeMusic(musicVolume);
 }
 
 void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
@@ -235,7 +243,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
-    bool quit = false;
+    bool quit = false, settingsReset = false;
     int selection = -1;
     //While application is running
     while(!quit)
@@ -281,7 +289,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                //const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+                const Uint8* keyStates = SDL_GetKeyboardState(NULL);
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                 {
                     if (cursor.y > 5 * TILE_SIZE)
@@ -300,16 +308,19 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                     quit = true;
                     Mix_PlayChannel(-1, OPTION_SOUND, 0);
                 }
-                /*if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R])
+                if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R] && !settingsReset)
                 {
                     SC_UP = SDL_SCANCODE_W;
                     SC_DOWN = SDL_SCANCODE_S;
                     SC_LEFT = SDL_SCANCODE_A;
                     SC_RIGHT = SDL_SCANCODE_D;
+                    SC_ATTACK = SDL_SCANCODE_LSHIFT;
                     SC_INTERACT = SDL_SCANCODE_SPACE;
                     SC_MENU = SDL_SCANCODE_ESCAPE;
-                    saveConfig(CONFIG_FILE_NAME);
-                }*/
+                    saveConfig(CONFIG_FILEPATH);
+                    Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+                    settingsReset = true;
+                }
             }
         }
         drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -349,6 +360,8 @@ void saveConfig(char* filePath)
     char newBuffer[8];
     strcpy(newBuffer, "FPS=");
     appendLine(filePath, strcat(newBuffer, intToString(FPS, buffer)));
+    appendLine(filePath, intToString(soundVolume, buffer));
+    appendLine(filePath, intToString(musicVolume, buffer));
     //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
 }
 

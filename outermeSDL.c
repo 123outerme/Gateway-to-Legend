@@ -34,6 +34,9 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
         //Mix_Init(MIX_INIT_OGG);  //deprecated?
         soundVolume = MIX_MAX_VOLUME;
         Mix_AllocateChannels(32);
+        Mix_Volume(-1, soundVolume);  //sets all channels to the sound level soundVolume
+        musicVolume = MIX_MAX_VOLUME;
+        Mix_VolumeMusic(musicVolume);
         mainScreen = NULL;
         tilesetTexture = NULL;
         mainRenderer = NULL;

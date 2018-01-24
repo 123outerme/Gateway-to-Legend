@@ -7,6 +7,14 @@
 #define SAVE_FILE_LINES 0
 #define PLAYER_NAME_LIMIT 8
 
+#define WINDOW_NAME "Gateway to Legend"
+#define CONFIG_FILEPATH "GatewayToLegend.cfg"
+#define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
+#define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
+#define MAP_PACKS_SUBFOLDER "map-packs/"
+#define MAX_LIST_OF_MAPS 30
+#define MAX_CHAR_IN_FILEPATH MAX_PATH
+
 typedef struct {
     sprite spr;  //?
     char name[PLAYER_NAME_LIMIT + 1];  //9 bytes
