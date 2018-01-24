@@ -571,7 +571,7 @@ bool executeScriptAction(script* scriptData, player* player)
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
         waitForKey();
     }
-    if (scriptData->action == script_use_warp_gate)
+    if (scriptData->action == script_use_gateway)
     {
         GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
         for(int i = 120; i > -1; i--)

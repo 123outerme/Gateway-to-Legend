@@ -763,7 +763,7 @@ int mainLoop(player* playerSprite)
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
-                        if (theseScripts[i].action == script_use_warp_gate && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
+                        if (theseScripts[i].action == script_use_gateway && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
                             {
                                 thisScript = theseScripts[i];
                                 found = true;

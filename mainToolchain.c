@@ -24,7 +24,7 @@ typedef enum {
     script_trigger_dialogue,  //1 if player steps in coords, trigger a dialogue/text box
     script_trigger_boss,      //2 if player steps in coords, spawn boss
     script_switch_rooms,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile
-    script_use_warp_gate,     //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
+    script_use_gateway,       //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
     script_use_teleporter,    //5 teleports to a specified matching teleporter
     script_open_door,         //6 if player steps in coords or other action occurs, open a door
     script_animation,         //7 if player steps in coords, do animation
@@ -649,7 +649,6 @@ int mainMapCreator(mapPack* workingPack)
 	if (saveCheck[0] == 'y')
     {
         writeTileData();
-        printf("%p\n", mapScripts);
         writeScriptData(mapScripts, scriptCount);
     }
     free(mapScripts);
@@ -814,7 +813,29 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
             {
-                if (playerSprite->spr.tileIndex == 10)  //warp gate
+
+                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
+                {
+                    int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
+                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(curTile > 11 && curTile < 15) && enemyCount < MAX_ENEMIES)
+                    {
+                        enemyCount++;
+                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+                        //printf("%d (+)\n", enemyCount);
+                    }
+
+                    if (curTile > 11 && curTile < 15)
+                    {
+                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
+                            enemyCount--;
+                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+                        //printf("%d (-)\n", enemyCount);
+                    }
+                }
+                else
+                    eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+
+            if (playerSprite->spr.tileIndex == 10)  //warp gate
                 {
                     script gateScript;
                     int map = 0, x = 0, y = 0;
@@ -841,7 +862,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     }
                     char* data = calloc(99, sizeof(char));
                     snprintf(data, 99, "[%d/%d/%d]", map, x, y);
-                    initScript(&gateScript, script_use_warp_gate, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
+                    initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
                     mapScripts[(*scriptCount)++] = gateScript;
                     if (*scriptCount >= scriptMaxCount)
                     {
@@ -894,27 +915,6 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     free(data);
                     SDL_Delay(500);  //gives time for keypresses to unregister
                 }
-
-                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
-                {
-                    int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(curTile > 11 && curTile < 15) && enemyCount < MAX_ENEMIES)
-                    {
-                        enemyCount++;
-                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        //printf("%d (+)\n", enemyCount);
-                    }
-
-                    if (curTile > 11 && curTile < 15)
-                    {
-                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
-                            enemyCount--;
-                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        //printf("%d (-)\n", enemyCount);
-                    }
-                }
-                else
-                    eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
             }
 
             if (keyStates[SDL_SCANCODE_LSHIFT])
@@ -1039,6 +1039,7 @@ void writeScriptData(script* mapScripts, int count)
     {
         snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s}", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data);
         printf("%s\n", scriptText);
+        appendLine(outputFile, scriptText);
     }
     printf("outputted to output/script.txt. NOTE: If the second argument is -1, change to (line number of new map) - 1\n");
 }
