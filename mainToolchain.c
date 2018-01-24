@@ -87,7 +87,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the player sword.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
 #define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this number comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
@@ -728,8 +728,9 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
 {
     /*for(int i = 0; i < 4; i++)
         viewMap("maps/MainMaps.txt", i);*/
-    int scriptCount = 5;
-    script* mapScripts = calloc(scriptCount, sizeof(script));
+    int scriptCount = 0;
+    int scriptMaxCount = 5;
+    script* mapScripts = calloc(scriptMaxCount, sizeof(script));
     bool quit = false, editingTiles = true;
     int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks(), lastTile = -1;
     int enemyCount = 0;
@@ -800,6 +801,11 @@ void mainMapCreatorLoop(player* playerSprite, mapPack workingPack)
 
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
             {
+                if (playerSprite->spr.tileIndex == 10)
+                {
+
+                }
+
                 if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
                 {
                     int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
