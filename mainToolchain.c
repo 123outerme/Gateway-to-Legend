@@ -23,7 +23,7 @@ typedef enum {
     script_none,              //0 default, do nothing
     script_trigger_dialogue,  //1 if player steps in coords, trigger a dialogue/text box
     script_trigger_boss,      //2 if player steps in coords, spawn boss
-    script_switch_rooms,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile
+    script_switch_maps,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
     script_use_gateway,       //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
     script_use_teleporter,    //5 teleports to a specified matching teleporter
     script_open_door,         //6 if player steps in coords or other action occurs, open a door
@@ -140,13 +140,17 @@ SDL_Keycode getKey();
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
-void writeScriptData(script* mapScripts, int count);
 //^map creator functions.
+
+//V script editor functions
+void mainScriptEdtior(mapPack* workingPack);
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
+void writeScriptData(script* mapScripts, int count);
 
 //V map-pack wizard functions
 int mainMapPackWizard();
 void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
+
 void strPrepend(char* input, const char* prepend);
 
 //this is to match the tilemap array in outermeSDL.h
@@ -486,13 +490,15 @@ int subMain(mapPack* workingPack)
     while(!quit)
     {
         loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
-        int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[5]) {"Map Creator", "Map-Pack Wizard", " ", " ", "Back"}, 5, 1, AMENU_MAIN_THEME, true, false);
+        int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[4]) {"Map Creator", "Script Editor", "Map-Pack Wizard", "Back"}, 4, 1, AMENU_MAIN_THEME, true, false);
         closeSDL();
         if (code == 1)
             mainMapCreator(workingPack);
         if (code == 2)
+            mainScriptEdtior(workingPack);
+        if (code == 3)
             mainMapPackWizard(workingPack);
-        if (code == 5)
+        if (code == 4)
             quit = true;
     }
     return 0;
@@ -846,6 +852,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     {
                         SDL_RenderClear(mainRenderer);
                         viewMap(workingPack, map, false);
+                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
                         key = getKey();
                         if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
                             y -= TILE_SIZE;
@@ -885,6 +892,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                         SDL_RenderClear(mainRenderer);
                         drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
                         drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
+                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
                         key = getKey();
                         if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
                             y -= TILE_SIZE;
@@ -1044,6 +1052,33 @@ void writeScriptData(script* mapScripts, int count)
     printf("outputted to output/script.txt. NOTE: If the second argument is -1, change to (line number of new map) - 1\n");
 }
 //end map creator code.
+
+//start script editor code
+void mainScriptEdtior(mapPack* workingPack)
+{
+    bool quit = false;
+    int choice = 0;
+    while(!quit)
+    {
+        quit = true;
+        //choice = aMenu();
+    }
+}
+
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
+{
+	scriptPtr->action = action;
+	scriptPtr->mapNum = mapNum;
+	scriptPtr->x = x;
+	scriptPtr->y = y;
+	scriptPtr->w = w;
+	scriptPtr->h = h;
+	scriptPtr->data = calloc(99, sizeof(char));
+	strncpy(scriptPtr->data, data, 99);
+	scriptPtr->active = true;
+}
+//end script editor code.
+
 
 //start map-pack wizard code
 int mainMapPackWizard(mapPack* workingPack)
@@ -1268,19 +1303,6 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
     //waitForKey();
     if (numArrayTracker < MAX_SPRITE_MAPPINGS)
         numArray[0] = -1;
-}
-
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
-{
-	scriptPtr->action = action;
-	scriptPtr->mapNum = mapNum;
-	scriptPtr->x = x;
-	scriptPtr->y = y;
-	scriptPtr->w = w;
-	scriptPtr->h = h;
-	scriptPtr->data = calloc(99, sizeof(char));
-	strncpy(scriptPtr->data, data, 99);
-	scriptPtr->active = true;
 }
 
 void strPrepend(char* input, const char* prepend)
