@@ -614,6 +614,7 @@ bool executeScriptAction(script* scriptData, player* player)
         //printf("%d/", player->spr.x);
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
+        //play animation at old & new coords?
     }
     if (scriptData->action == script_gain_exp)
     {
@@ -625,9 +626,10 @@ bool executeScriptAction(script* scriptData, player* player)
         player->money += strtol(scriptData->data, NULL, 10);
         //play animation (?) and sound
     }
-    if (scriptData->action == script_player_hurt)
+    if (scriptData->action == script_player_hurt && player->invincCounter <= 0)
     {
         player->HP -= strtol(scriptData->data, NULL, 10);
+        player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
         Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
         //play animation (?) and sound
     }

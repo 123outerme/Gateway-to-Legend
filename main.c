@@ -23,7 +23,7 @@
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
 #define MAX_TILE_ID_ARRAY 18
-#define MAX_COLLISIONDATA_ARRAY 10
+#define MAX_COLLISIONDATA_ARRAY 13
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
@@ -572,9 +572,6 @@ int mainLoop(player* playerSprite)
         {
             const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 
-            /*if (!checkSKAttack)
-                textBoxOn = false;*/
-
             playerSprite->animationCounter--;
 
             if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKAttack || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
@@ -605,7 +602,7 @@ int mainLoop(player* playerSprite)
 
                 if (playerSprite->lastDirection / 4 == 1)
                     playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
-                else
+                else if (playerSprite->lastDirection > 7)
                     playerSprite->spr.flip = SDL_FLIP_NONE;
 
                 if (playerSprite->xVeloc)
@@ -641,7 +638,7 @@ int mainLoop(player* playerSprite)
                         Mix_PlayChannel(-1, STEP_SOUND(1 + (rand() % 3)), 0);
                 }
 
-                checkCollision(playerSprite, collisionData, (2 * checkSKRight + playerSprite->xVeloc > 0) - (2 * checkSKLeft + playerSprite->xVeloc < 0), (checkSKDown || playerSprite->yVeloc > 0) - (checkSKUp || playerSprite->yVeloc < 0), lastX, lastY);
+                checkCollision(playerSprite, collisionData, (playerSprite->xVeloc > 0) - (playerSprite->xVeloc < 0), (playerSprite->yVeloc > 0) - (playerSprite->yVeloc < 0), lastX, lastY);
 
                 if (playerSprite->xVeloc)  //this is done so that the last frame of velocity input is still collision-checked
                     playerSprite->xVeloc -= 6 - 12 * (playerSprite->xVeloc < 0);
@@ -751,12 +748,12 @@ int mainLoop(player* playerSprite)
                 }
                 if (collisionData[8] && !playerSprite->invincCounter)
                 {
-                    playerSprite->xVeloc -= 24 * (checkSKRight + -1 * checkSKLeft);
-                    playerSprite->yVeloc -= 24 * (checkSKDown + -1 * checkSKUp);
+                    playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
+                    playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
                     script hurtPlayer;
                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
                     executeScriptAction(&hurtPlayer, playerSprite);
-                    playerSprite->invincCounter = 14;
+                    playerSprite->invincCounter = 5;  //10 frames of invincibility at 60fps, or approx. .167 of a second
                 }
                 if (collisionData[9])  //gateway
                 {
@@ -806,8 +803,8 @@ int mainLoop(player* playerSprite)
 
                          playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
                          - 48 * (enemies[i].y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x)));
-                         playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps
                          executeScriptAction(&hurtPlayer, playerSprite);
+                         playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
                          collidedOnce = true;
                     }
 
@@ -891,6 +888,17 @@ int mainLoop(player* playerSprite)
                 }
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+            }
+            {
+                for(int i = 0; i < maxTheseScripts; i++)
+                {
+                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && (theseScripts[i].action != script_use_gateway || theseScripts[i].action != script_use_teleporter))
+                    {
+                        thisScript = theseScripts[i];
+                        thisScript.active = true;
+                        break;
+                    }
+                }
             }
             if (playerSprite->invincCounter)
                 playerSprite->invincCounter--;
