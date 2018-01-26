@@ -571,6 +571,16 @@ bool executeScriptAction(script* scriptData, player* player)
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
         waitForKey();
     }
+    if (scriptData->action == script_switch_maps)
+    {
+        char* data = calloc(99, sizeof(char));
+        player->mapScreen = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        //printf("%d/", mapNum);
+        player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
+        //printf("%d/", player->spr.x);
+        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
+        free(data);
+    }
     if (scriptData->action == script_use_gateway)
     {
         GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
@@ -615,6 +625,21 @@ bool executeScriptAction(script* scriptData, player* player)
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
         //play animation at old & new coords?
+        free(data);
+    }
+    if (scriptData->action == script_open_door)
+    {
+        char* data = calloc(99, sizeof(char));
+        bool newDoorFlags[3] = {false, false, false};
+        newDoorFlags[0] = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);
+        for(int i = 0; i < 3; i++)
+        {
+            if (i > 0)
+                newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
+            if (newDoorFlags[i])
+                doorFlags[i] = false;
+        }
+        free(data);
     }
     if (scriptData->action == script_gain_exp)
     {

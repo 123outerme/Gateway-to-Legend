@@ -157,6 +157,6 @@ etc.
 */
 
 int FPS, targetTime;
-
+bool doorFlags[3];
 
 #endif // SDLSEEKERS_H_INCLUDED

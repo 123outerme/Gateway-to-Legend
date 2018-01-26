@@ -63,8 +63,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 
 #define MAIN_ARROW_ID 34
 
-bool doorFlags[3] = {true, true, true};  //this works; however it persists through map packs as well
-bool enemyFlags[MAX_ENEMIES + 1] = {true, true, true, true, true, true, true};  //last bool is reloadEnemies
+bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 sprite enemies[MAX_ENEMIES];
 script* allScripts;
 int sizeOfAllScripts;
@@ -99,14 +98,14 @@ int main(int argc, char* argv[])
         initConfig(CONFIG_FILEPATH);
     /*if (debug)
         loadIMG("tileset/eventTile48.png", &eventTexture);*/
+    char* buffer = "";  //actually needed
+    allScripts = NULL;
+    int choice = 0;
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
     int gameState = 0;
-    char* buffer = "";  //actually needed
     bool quitGame = false;
-    allScripts = NULL;
-    int choice = 0;
     while(!quitGame)
     {
         switch(gameState)
@@ -185,7 +184,7 @@ int main(int argc, char* argv[])
                 loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten?
             else
                 createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
-            gameState = MAINLOOP_GAMECODE;
+            gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
