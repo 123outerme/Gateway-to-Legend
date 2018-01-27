@@ -716,20 +716,28 @@ int mainLoop(player* playerSprite)
                     }
                 }
 
-                if (collisionData[1] || collisionData[2] || collisionData[3])   //door button
+                if (collisionData[1] || collisionData[2] || collisionData[3])   //door buttons
                 {
-                    bool playSound = false;
+                    bool exec = false;
+                    bool newDoorFlags[3] = {-1, -1, -1};
                     for(int i = 0; i < 3; i++)
                     {
                         if (collisionData[i + 1])
                         {
                             if (doorFlags[i])
-                                playSound = true;
-                            doorFlags[i] = false;
+                                exec = true;
+                            newDoorFlags[i] = false;
                         }
                     }
-                    if (playSound)
-                        Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
+                    if (exec)
+                    {
+                    script openDoorScript;
+                    char* data = calloc(99, sizeof(char));
+                    snprintf(data, 99, "[%d/%d/%d]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
+                    initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data);
+                    executeScriptAction(&openDoorScript, playerSprite);
+                    free(data);
+                    }
                 }
                 if (collisionData[7])  //teleporter
                 {
@@ -782,14 +790,14 @@ int mainLoop(player* playerSprite)
                     {
                         if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
                         {
-                            enemies[i].h--;
+                            enemies[i].h--;  //.h == health
                             playHitSound = true;
                             if (enemies[i].h < 1 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
                             {
                                 enemies[i].type = type_na;
                                 enemyFlags[i] = false;
                             }
-                            enemies[i].angle = swordTimer;
+                            enemies[i].angle = swordTimer;  //angle == hit detection cooldown timer
                         }
                     }
 
@@ -861,14 +869,6 @@ int mainLoop(player* playerSprite)
                             {
                                 curNode = nodeArray[1];
                                 free(nodeArray);
-                            }
-                            else
-                            {
-                                if (!length)
-                                {
-                                    initNode(&curNode, enemies[i].x, enemies[i].y, NULL, true, 0);
-                                    enemies[i].angle = 1;  //bit of trickery to force enemies without a path to stop moving
-                                }
                             }
                         }
                         if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))

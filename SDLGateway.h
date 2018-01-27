@@ -40,7 +40,7 @@ typedef enum {
     script_switch_maps,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
     script_use_gateway,       //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
     script_use_teleporter,    //5 teleports to a specified matching teleporter
-    script_open_door,         //6 if player steps in coords or other action occurs, open a door
+    script_toggle_door,         //6 if player steps in coords or other action occurs, open a door
     script_animation,         //7 if player steps in coords, do animation
     script_boss_actions,      //8 if boss is still alive, execute boss actions
     script_gain_exp,          //9 gives player some EXP. Don't abuse please

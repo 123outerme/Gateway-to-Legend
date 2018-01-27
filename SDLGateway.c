@@ -131,15 +131,6 @@ void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int dis
     nodePtr->distance = distance;
 }
 
-void nodeCopy(node* nodeDst, node* nodeSrc)
-{
-    nodeSrc->x = nodeDst->x;
-    nodeSrc->y = nodeDst->y;
-    nodeSrc->lastNode = nodeDst->lastNode;
-    nodeSrc->visited = nodeDst->visited;
-    nodeSrc->distance = nodeDst->distance;
-}
-
 void loadConfig(char* filePath)
 {
     char* buffer = "";
@@ -627,18 +618,19 @@ bool executeScriptAction(script* scriptData, player* player)
         //play animation at old & new coords?
         free(data);
     }
-    if (scriptData->action == script_open_door)
+    if (scriptData->action == script_toggle_door)
     {
         char* data = calloc(99, sizeof(char));
-        bool newDoorFlags[3] = {false, false, false};
+        bool newDoorFlags[3] = {-1, -1, -1};
         newDoorFlags[0] = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);
         for(int i = 0; i < 3; i++)
         {
             if (i > 0)
                 newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
-            if (newDoorFlags[i])
-                doorFlags[i] = false;
+            if (newDoorFlags[i] > -1)
+                doorFlags[i] = newDoorFlags[i];
         }
+        Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }
     if (scriptData->action == script_gain_exp)
