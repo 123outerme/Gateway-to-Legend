@@ -144,6 +144,8 @@ void writeTileData();
 
 //V script editor functions
 void mainScriptEdtior(mapPack* workingPack);
+int scriptSelectLoop(mapPack workingPack);
+script mainScripLoop(mapPack workingPack);
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void writeScriptData(script* mapScripts, int count);
 
@@ -1056,13 +1058,137 @@ void writeScriptData(script* mapScripts, int count)
 //start script editor code
 void mainScriptEdtior(mapPack* workingPack)
 {
+    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
     bool quit = false;
     int choice = 0;
+    int mapPackNum = 0;
     while(!quit)
     {
-        quit = true;
-        //choice = aMenu();
+        choice = aMenu(tilesetTexture, MAINARROW_ID, "Script Editor", (char*[2]) {"Start Editing", "Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
+        if (choice == 1)
+        {
+            loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
+            mapPackNum = scriptSelectLoop(*workingPack);
+            if (mapPackNum > 0)
+            {
+                //do things
+            }
+        }
+
+        if (choice == 2)
+            quit = true;
     }
+}
+
+int scriptSelectLoop(mapPack workingPack)
+{
+    sprite cursor;
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
+    char* optionsArray[13] = {"None", "TriggerDialogue", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
+    int scriptType = 0, selection = -1;
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        drawText("Script Type?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+        //foreground text
+        drawText("Script Type?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
+
+        drawText(optionsArray[scriptType], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+
+        drawText("Start", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                scriptType = ANYWHERE_QUIT;
+            }
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                {
+                    if (cursor.y > 5 * TILE_SIZE)
+                        cursor.y -= TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (cursor.y < 7 * TILE_SIZE)
+                        cursor.y += TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE)
+                {
+                    if (scriptType > 0)
+                    {
+                        if (scriptType == 5)
+                            scriptType -= 3;
+                        else
+                            scriptType--;
+                    }
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE)
+                {
+                    if (scriptType < 12)
+                    {
+                        if (scriptType == 2)
+                            scriptType += 3;
+                        else
+                            scriptType++;
+                    }
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                {
+                    selection = cursor.y / TILE_SIZE - 4;
+                    if (selection != 1)
+                        quit = true;
+                }
+            }
+        }
+        drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+    }
+    if (selection == 3)
+        scriptType = -1;
+    return scriptType;
+}
+
+script mainScriptLoop(mapPack workingPack, scriptBehavior action)
+{
+    script outputScript;
+    int map = chooseMap(workingPack), x = 0, y = 0, w = 0, h = 0;
+    char* data = calloc(99, sizeof(char));
+    bool quit = false;
+    SDL_Keycode key;
+    while(!quit)
+    {
+        viewMap(workingPack, map, false);
+        key = getKey();
+        if (key == ANYWHERE_QUIT)
+            quit = true;
+    }
+    if (key == ANYWHERE_QUIT)
+        initScript(&outputScript, script_none, map, x, y, w, h, "");
+    else
+        initScript(&outputScript, action, map, x, y, w, h, data);
+    free(data);
+    return outputScript;
 }
 
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
