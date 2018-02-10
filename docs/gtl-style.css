@@ -1,9 +1,22 @@
+body {
+  background-color: rgb(215, 223, 239);
+}
 h1 {
-  color: rgb(0,172,230);
+  color: rgb(0, 156, 209);
 }
 p {
-  color: rgb(0,176,218);
+  color: rgb(0,172,230);
 }
-body {
-  background-color: rgb(228,233,243);
+a:link {
+  color: rgb(4, 120, 149);
+}
+a:visited {
+  color: rgb(4, 165, 204);
+}
+a:hover {
+  color: rgb(215, 223, 239);
+  background-color: rgb(4, 120, 149);
+}
+strong {
+  color: rgb(3, 148, 183);
 }
