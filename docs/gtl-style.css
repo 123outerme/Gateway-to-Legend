@@ -36,3 +36,17 @@ th, td {
   margin-right: auto;
   text-align: center;
 }
+.align_right {
+  text-align: right;
+}
+
+.error {
+  border-radius: 15px;
+  max-width: 500px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  color: red;
+  background-color: darkred;
+}
