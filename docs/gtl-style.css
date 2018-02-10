@@ -2,11 +2,12 @@ body {
   background-color: rgb(215, 223, 239);
   font-family: "Courier New", "Lucida Console", Times, serif;
 }
-h1 {
-  color: rgb(0, 156, 209);
+h1, th {
+  color: rgb(0, 134, 179);
+  text-align: center;
 }
-p {
-  color: rgb(0,172,230);
+p, td {
+  color: rgb(0, 153, 204);
 }
 a:link {
   color: rgb(4, 120, 149);
@@ -20,4 +21,14 @@ a:hover {
 }
 strong {
   color: rgb(3, 148, 183);
+}
+table, th, td {
+  border-collapse: collapse;
+  border: 2px solid rgb(0, 96, 128);
+  padding: 10px;
+}
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
