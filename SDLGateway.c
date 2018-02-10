@@ -556,11 +556,13 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
 
 bool executeScriptAction(script* scriptData, player* player)
 {
-    bool returnThis = false;
-    if (scriptData->action == script_trigger_dialogue)
+    bool exitGameLoop = false;
+    if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once) && scriptData->data[0] != '\0')
     {
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
         waitForKey();
+        if (scriptData->action == script_trigger_dialogue_once)
+            scriptData->data[0] = '\0';
     }
     if (scriptData->action == script_switch_maps)
     {
@@ -604,7 +606,7 @@ bool executeScriptAction(script* scriptData, player* player)
         }
         SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
         free(data);
-        returnThis = true;
+        exitGameLoop = true;
         Mix_HaltChannel(GATEWAY_CHANNEL);
     }
     if (scriptData->action == script_use_teleporter)
@@ -651,5 +653,5 @@ bool executeScriptAction(script* scriptData, player* player)
         //play animation (?) and sound
     }
     scriptData->active = false;
-    return returnThis;  //returns whether or not it wants to exit the loop
+    return exitGameLoop;  //returns whether or not it wants to exit the game loop
 }

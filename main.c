@@ -731,12 +731,12 @@ int mainLoop(player* playerSprite)
                     }
                     if (exec)
                     {
-                    script openDoorScript;
-                    char* data = calloc(99, sizeof(char));
-                    snprintf(data, 99, "[%d/%d/%d]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
-                    initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data);
-                    executeScriptAction(&openDoorScript, playerSprite);
-                    free(data);
+                        script openDoorScript;
+                        char* data = calloc(99, sizeof(char));
+                        snprintf(data, 99, "[%d/%d/%d]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
+                        initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data);
+                        executeScriptAction(&openDoorScript, playerSprite);
+                        free(data);
                     }
                 }
                 if (collisionData[7])  //teleporter
@@ -888,6 +888,7 @@ int mainLoop(player* playerSprite)
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
+            if (!thisScript.active)
             {
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
@@ -895,6 +896,8 @@ int mainLoop(player* playerSprite)
                     {
                         thisScript = theseScripts[i];
                         thisScript.active = true;
+                        if ((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once) && !checkSKInteract)
+                            thisScript.active = false;
                         break;
                     }
                 }

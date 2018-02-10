@@ -20,19 +20,20 @@ typedef struct {
 } player;
 
 typedef enum {
-    script_none,              //0 default, do nothing
-    script_trigger_dialogue,  //1 if player steps in coords, trigger a dialogue/text box
-    script_trigger_boss,      //2 if player steps in coords, spawn boss
-    script_switch_maps,      //3 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
-    script_use_gateway,       //4 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
-    script_use_teleporter,    //5 teleports to a specified matching teleporter
-    script_toggle_door,         //6 if player steps in coords or other action occurs, open a door
-    script_animation,         //7 if player steps in coords, do animation
-    script_boss_actions,      //8 if boss is still alive, execute boss actions
-    script_gain_exp,          //9 gives player some EXP. Don't abuse please
-    script_gain_money,        //10 gives player some money. Please don't abuse also
-    script_player_hurt,       //11 hurts the player by <data> amount
-    script_placeholder,       //12 ?
+    script_none,                   //0 default, do nothing
+    script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
+    script_trigger_dialogue_once,  //2 same as above, but just once.
+    script_trigger_boss,           //3 if player steps in coords, spawn boss
+    script_switch_maps,            //4 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
+    script_use_gateway,            //5 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
+    script_use_teleporter,         //6 teleports to a specified matching teleporter
+    script_toggle_door,            //7 if player steps in coords or other action occurs, open a door
+    script_animation,              //8 if player steps in coords, do animation
+    script_boss_actions,           //9 if boss is still alive, execute boss actions
+    script_gain_exp,               //19 gives player some EXP. Don't abuse please
+    script_gain_money,             //11 gives player some money. Please don't abuse also
+    script_player_hurt,            //12 hurts the player by <data> amount
+    script_placeholder,            //13 ?
 } scriptBehavior;
 
 typedef struct {
@@ -145,7 +146,7 @@ void writeTileData();
 //V script editor functions
 void mainScriptEdtior(mapPack* workingPack);
 int scriptSelectLoop(mapPack workingPack);
-script mainScripLoop(mapPack workingPack);
+script mainScriptLoop(mapPack workingPack, scriptBehavior action);
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void writeScriptData(script* mapScripts, int count);
 
@@ -864,7 +865,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                             x -= TILE_SIZE;
                         if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
                             x += TILE_SIZE;
-                        if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+                        if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
                             inQuit = true;
                         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
                         SDL_RenderPresent(mainRenderer);
@@ -904,7 +905,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                             x -= TILE_SIZE;
                         if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
                             x += TILE_SIZE;
-                        if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+                        if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
                             inQuit = true;
                         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
                         SDL_RenderPresent(mainRenderer);
@@ -960,7 +961,7 @@ SDL_Keycode getKey()
     while(SDL_PollEvent(&e) != 0)
     {
         if(e.type == SDL_QUIT)
-            keycode = -1;
+            keycode = ANYWHERE_QUIT;
         else
             if(e.type == SDL_KEYDOWN)
                 keycode = e.key.keysym.sym;
@@ -1061,17 +1062,19 @@ void mainScriptEdtior(mapPack* workingPack)
     initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
     bool quit = false;
     int choice = 0;
-    int mapPackNum = 0;
+    int scriptNum = 0;
     while(!quit)
     {
         choice = aMenu(tilesetTexture, MAINARROW_ID, "Script Editor", (char*[2]) {"Start Editing", "Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
         if (choice == 1)
         {
             loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
-            mapPackNum = scriptSelectLoop(*workingPack);
-            if (mapPackNum > 0)
+            scriptNum = scriptSelectLoop(*workingPack);
+            if (scriptNum > 0)
             {
-                //do things
+                script newScript = mainScriptLoop(*workingPack, (scriptBehavior) scriptNum);
+                if (newScript.action != script_none)
+                    writeScriptData(&newScript, 1);
             }
         }
 
@@ -1084,7 +1087,8 @@ int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
-    char* optionsArray[13] = {"None", "TriggerDialogue", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
+    const int optionsSize = 14;
+    char* optionsArray[] = {"None", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -1135,7 +1139,7 @@ int scriptSelectLoop(mapPack workingPack)
                 {
                     if (scriptType > 0)
                     {
-                        if (scriptType == 5)
+                        if (scriptType == 7)
                             scriptType -= 3;
                         else
                             scriptType--;
@@ -1144,9 +1148,9 @@ int scriptSelectLoop(mapPack workingPack)
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE)
                 {
-                    if (scriptType < 12)
+                    if (scriptType < optionsSize - 1)
                     {
-                        if (scriptType == 2)
+                        if (scriptType == 4)
                             scriptType += 3;
                         else
                             scriptType++;
@@ -1169,24 +1173,65 @@ int scriptSelectLoop(mapPack workingPack)
     return scriptType;
 }
 
+int toolchain_min(int x, int y)
+{
+    return ((x > y) ? y : x);
+}
+
 script mainScriptLoop(mapPack workingPack, scriptBehavior action)
 {
     script outputScript;
-    int map = chooseMap(workingPack), x = 0, y = 0, w = 0, h = 0;
+    int map = chooseMap(workingPack), x1 = 0, y1 = 0, x2 = 0, y2 = 0;
     char* data = calloc(99, sizeof(char));
-    bool quit = false;
+    sprite cursor;
+    initSprite(&cursor, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+    bool quit = false, editXY = true;
     SDL_Keycode key;
     while(!quit)
     {
+        SDL_RenderClear(mainRenderer);
         viewMap(workingPack, map, false);
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x1 ? x1 : cursor.x, .y = y1 ? y1 : cursor.y, .w = x1 ? cursor.x - x1 : cursor.w, .h = y1 ? cursor.y - y1 : cursor.h}));
         key = getKey();
+        if (SC_UP == SDL_GetScancodeFromKey(key) && cursor.y > 0)
+            cursor.y -= TILE_SIZE;
+        if (SC_DOWN == SDL_GetScancodeFromKey(key) && cursor.y < SCREEN_HEIGHT)
+            cursor.y += TILE_SIZE;
+        if (SC_LEFT == SDL_GetScancodeFromKey(key) && cursor.x > 0)
+            cursor.x -= TILE_SIZE;
+        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && cursor.x < SCREEN_WIDTH)
+            cursor.x += TILE_SIZE;
+        if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+        {
+            if (editXY)
+            {
+                x1 = cursor.x;
+                y1 = cursor.y;
+                editXY = false;
+            }
+            else
+            {
+                x2 = cursor.x;
+                y2 = cursor.y;
+                quit = true;
+            }
+        }
         if (key == ANYWHERE_QUIT)
             quit = true;
+        SDL_RenderPresent(mainRenderer);
+    }
+    if (action == script_trigger_dialogue)
+    {
+        //get dialogue text
+    }
+    if (action == script_gain_money || action == script_gain_exp || action == script_player_hurt)
+    {
+        //get amt
     }
     if (key == ANYWHERE_QUIT)
-        initScript(&outputScript, script_none, map, x, y, w, h, "");
+        initScript(&outputScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");
     else
-        initScript(&outputScript, action, map, x, y, w, h, data);
+        initScript(&outputScript, action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data);
     free(data);
     return outputScript;
 }
