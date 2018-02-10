@@ -6,21 +6,21 @@ h1, th {
   color: rgb(0, 134, 179);
   text-align: center;
 }
-p, td {
+p, td, li {
   color: rgb(0, 153, 204);
 }
 a:link {
   color: rgb(4, 120, 149);
 }
 a:visited {
-  color: rgb(4, 165, 204);
+  color: rgb(3, 121, 150);
 }
 a:hover {
   color: rgb(215, 223, 239);
   background-color: rgb(4, 120, 149);
 }
 strong {
-  color: rgb(3, 148, 183);
+  color: rgb(2, 121, 151);
 }
 table {
   border-collapse: collapse;
