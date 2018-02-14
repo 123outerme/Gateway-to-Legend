@@ -655,7 +655,7 @@ bool executeScriptAction(script* scriptData, player* player)
 		player->HP = player->maxHP;
         player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
     if (dmg > 0)
-        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0)
+        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
     else
         ; //play heal sound
         //play animation (?) and sound
