@@ -27,7 +27,7 @@
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
-#define checkRectCol(x1, y1, x2, y2) ((abs(abs(x1) - abs(x2)) < TILE_SIZE) && (abs(abs(y1) - abs(y2)) < TILE_SIZE))
+#define checkSquareCol(x1, y1, x2, y2, w) ((abs(abs(x1) - abs(x2)) < w) && (abs(abs(y1) - abs(y2)) < w))
 
 
 void changeVolumes();
@@ -786,7 +786,7 @@ int mainLoop(player* playerSprite)
                 {
                     bool collidedOnce = false;
 
-                    if (checkRectCol(sword.x, sword.y, enemies[i].x, enemies[i].y) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
+                    if (checkSquareCol(sword.x, sword.y, enemies[i].x, enemies[i].y, TILE_SIZE) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
                     {
                         if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
                         {
@@ -801,7 +801,7 @@ int mainLoop(player* playerSprite)
                         }
                     }
 
-                    if (!collidedOnce && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
+                    if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y, TILE_SIZE) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
                     {
                          script hurtPlayer;
                          initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
