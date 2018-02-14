@@ -1,4 +1,4 @@
-@ROBOCOPY %cd% "C:\Program Files\Git\code\Gateway-to-Legend" *.c *.h *.txt *.ico *.bin *.rc *.bat *.png *.ttf *.ogg *.html *.css /MIR /XD dirs .git GtL GtL-bin media
+@ROBOCOPY %cd% "C:\Program Files\Git\code\Gateway-to-Legend" *.c *.h *.txt *.ico *.bin *.rc *.bat *.png *.ttf *.ogg *.mp4 *.html *.css /MIR /XD dirs .git GtL GtL-bin media
 @cd "C:\Program Files\Git\code\Gateway-to-Legend"
 @set commitMessage=""
 @IF [%1]==[] (
