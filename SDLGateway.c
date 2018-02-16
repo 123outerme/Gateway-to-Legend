@@ -599,7 +599,7 @@ bool executeScriptAction(script* scriptData, player* player)
         free(data);
 	lastMap = tempMap;
 	lastX = tempX;
-	tempY = tempY;
+	lastY = tempY;
         exitGameLoop = true;
     }
     if (scriptData->action == script_use_gateway)
