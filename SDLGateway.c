@@ -573,6 +573,7 @@ bool executeScriptAction(script* scriptData, player* player)
         //printf("%d/", player->spr.x);
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         free(data);
+        exitGameLoop = true;
     }
     if (scriptData->action == script_use_gateway)
     {
