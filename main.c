@@ -221,10 +221,13 @@ int main(int argc, char* argv[])
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
             {
-                for(int i = 0; i < 3; i++)
+                for(int i = 0; i < 3; i++)  //reset door flags
                     doorFlags[i] = true;
-                for(int i = 0; i < MAX_ENEMIES + 1; i++)
+                for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
+                script resetLast;
+                initScript(&resetLast, script_switch_maps, 0, 0, 0, 0, 0, "[d/d/d]");
+                executeScriptAction(&resetLast, &person);
                 gameState = START_GAMECODE;
             }
             if (choice == -1)

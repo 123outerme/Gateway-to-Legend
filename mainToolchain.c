@@ -1065,7 +1065,7 @@ void mainScriptEdtior(mapPack* workingPack)
     int scriptNum = 0;
     while(!quit)
     {
-        choice = aMenu(tilesetTexture, workingPack.tilesetMaps[2], "Script Editor", (char*[2]) {"Start Editing", "Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
+        choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], "Script Editor", (char*[2]) {"Start Editing", "Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
         if (choice == 1)
         {
             loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));

@@ -566,40 +566,49 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_switch_maps)
     {
-	char* firstChar = "\0";
-	static int lastMap = -1, lastX = -1, lastY = -1;
-	int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
+        char* firstChar = "\0";
+        static int lastMap = -1, lastX = -1, lastY = -1;
+        int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
         char* data = calloc(99, sizeof(char));
-	firstChar = strtok(strcpy(data, scriptData->data), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
-	if (firstChar[0] == 'l')
-	{
-	    if(lastMap != -1)
-        	player->mapScreen = lastMap;
-	}
-	else
-	     player->mapScreen = strtol(firstChar, NULL, 10);
-        //printf("%d/", mapNum);
-	firstChar = strtok(NULL, "[/]");
-	if (firstChar[0] == 'l')
-	{
-	    if(lastX != -1)
-		player->spr.x = lastX;
-	}
-	else
-	    player->spr.x = strtol(firstChar, NULL, 10);
-        //printf("%d/", player->spr.x);
-	firstChar = strtok(NULL, "[/]");
-	if (firstChar[0] == 'l')
-	{
-	    if(lastY != -1)
-		player->spr.y = lastY;
-	}
-	else
-            player->spr.y = strtol(firstChar, NULL, 10);
+        firstChar = strtok(strcpy(data, scriptData->data), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        if (firstChar[0] == 'l')
+        {
+            if(lastMap != -1)
+                player->mapScreen = lastMap;
+        }
+        else
+            if (firstChar[0] == 'd')
+                lastMap = -1;
+            else
+                player->mapScreen = strtol(firstChar, NULL, 10);
+            //printf("%d/", mapNum);
+        firstChar = strtok(NULL, "[/]");
+        if (firstChar[0] == 'l')
+        {
+            if(lastX != -1)
+            player->spr.x = lastX;
+        }
+        else
+            if (firstChar[0] == 'd')
+                lastX = -1;
+            else
+                player->spr.x = strtol(firstChar, NULL, 10);
+            //printf("%d/", player->spr.x);
+        firstChar = strtok(NULL, "[/]");
+        if (firstChar[0] == 'l')
+        {
+            if(lastY != -1)
+            player->spr.y = lastY;
+        }
+        else
+            if (firstChar[0] == 'd')
+                lastY = -1;
+            else
+                player->spr.y = strtol(firstChar, NULL, 10);
         free(data);
-	lastMap = tempMap;
-	lastX = tempX;
-	lastY = tempY;
+        lastMap = tempMap;
+        lastX = tempX;
+        lastY = tempY;
         exitGameLoop = true;
     }
     if (scriptData->action == script_use_gateway)
