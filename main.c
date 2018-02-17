@@ -443,8 +443,8 @@ void changeFPS()
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 4;
-    char* optionsArray[] = {"No Cap", "30", "60", "120"};
+    const int optionsSize = 6;
+    char* optionsArray[] = {"No Cap", "30", "45", "60", "80", "120"};
     int FPSchoice = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
