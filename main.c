@@ -112,12 +112,14 @@ int main(int argc, char* argv[])
         {
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[3]) {"Play", "Settings", "Quit"}, 3, 1, AMENU_MAIN_THEME, true, true);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[4]) {"Play", "Coin Store", "Settings", "Quit"}, 4, 1, AMENU_MAIN_THEME, true, true);
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
+                ;
+            if (choice == 3)
                 gameState = OPTIONS_GAMECODE;
-            if (choice == 3 || choice == -1)
+            if (choice == 4 || choice == -1)
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
@@ -295,10 +297,13 @@ void changeVolumes()
                     if (cursor.y == TILE_SIZE * 5 && musicVolume > 0)
                     {
                         musicVolume -= 16;
+                        Mix_VolumeMusic(musicVolume);
                     }
                     else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
                     {
                         soundVolume -= 16;
+                        Mix_Volume(-1, soundVolume);
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
                 }
 
@@ -307,16 +312,20 @@ void changeVolumes()
                     if (cursor.y == TILE_SIZE * 5 && musicVolume < MIX_MAX_VOLUME)
                     {
                         musicVolume += 16;
+                        Mix_VolumeMusic(musicVolume);
                     }
                     else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
                     {
                         soundVolume += 16;
+                        Mix_Volume(-1, soundVolume);
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
                 }
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT) && cursor.y == TILE_SIZE * 7)
                 {
                     quit = true;
+                    Mix_Volume(-1, soundVolume);
                     Mix_PlayChannel(-1, OPTION_SOUND, 0);
                 }
             }
@@ -432,7 +441,82 @@ void changeName()
 
 void changeFPS()
 {
-    //
+    sprite cursor;
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    const int optionsSize = 4;
+    char* optionsArray[] = {"No Cap", "30", "60", "120"};
+    int FPSchoice = 0, selection = -1;
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
+    SDL_Event e;
+    bool quit = false;
+    while(!quit)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+        //foreground text
+        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
+
+        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+
+        drawText("Select", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
+        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
+        //Handle events on queue
+        while(SDL_PollEvent(&e) != 0)
+        {
+            //User requests quit
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                FPSchoice = ANYWHERE_QUIT;
+            }
+            //User presses a key
+            else if(e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                {
+                    if (cursor.y > 5 * TILE_SIZE)
+                        cursor.y -= TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (cursor.y < 7 * TILE_SIZE)
+                        cursor.y += TILE_SIZE;
+                }
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE && FPSchoice > 0)
+                    FPSchoice--;
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE && FPSchoice < optionsSize - 1)
+                    FPSchoice++;
+
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                {
+                    selection = cursor.y / TILE_SIZE - 4;
+                    if (selection != 1)
+                        quit = true;
+                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                }
+            }
+        }
+        drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        SDL_RenderPresent(mainRenderer);
+    }
+    if (selection != 3)
+    {
+        if (FPSchoice > 0)
+            FPS = strtol(optionsArray[FPSchoice], NULL, 10);
+        else
+            FPS = 0;
+    }
+    saveConfig(CONFIG_FILEPATH);
 }
 
 void clearData(player* playerSprite)
