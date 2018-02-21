@@ -1182,6 +1182,7 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
 {
     script outputScript;
     int map = chooseMap(workingPack), x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    int intervalSize = TILE_SIZE;
     char* data = calloc(99, sizeof(char));
     sprite cursor;
     initSprite(&cursor, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
@@ -1194,19 +1195,20 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x1 ? x1 : cursor.x, .y = y1 ? y1 : cursor.y, .w = x1 ? cursor.x - x1 : cursor.w, .h = y1 ? cursor.y - y1 : cursor.h}));
         key = getKey();
         if (SC_UP == SDL_GetScancodeFromKey(key) && cursor.y > 0)
-            cursor.y -= TILE_SIZE;
+            cursor.y -= intervalSize;
         if (SC_DOWN == SDL_GetScancodeFromKey(key) && cursor.y < SCREEN_HEIGHT)
-            cursor.y += TILE_SIZE;
+            cursor.y += intervalSize;
         if (SC_LEFT == SDL_GetScancodeFromKey(key) && cursor.x > 0)
-            cursor.x -= TILE_SIZE;
+            cursor.x -= intervalSize;
         if (SC_RIGHT == SDL_GetScancodeFromKey(key) && cursor.x < SCREEN_WIDTH)
-            cursor.x += TILE_SIZE;
+            cursor.x += intervalSize;
         if (SC_INTERACT == SDL_GetScancodeFromKey(key))
         {
             if (editXY)
             {
                 x1 = cursor.x;
                 y1 = cursor.y;
+                intervalSize = 6;
                 editXY = false;
             }
             else
@@ -1220,13 +1222,17 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
             quit = true;
         SDL_RenderPresent(mainRenderer);
     }
-    if (action == script_trigger_dialogue)
+    if (action == script_trigger_dialogue || script_trigger_dialogue_once)
     {
         //get dialogue text
     }
     if (action == script_gain_money || action == script_gain_exp || action == script_player_hurt)
     {
         //get amt
+    }
+    if (action == script_switch_maps)
+    {
+        //get location
     }
     if (key == ANYWHERE_QUIT)
         initScript(&outputScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");

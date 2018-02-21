@@ -186,6 +186,12 @@ int main(int argc, char* argv[])
                 loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten?
             else
                 createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
+
+            char* temp = "";
+            person.lastMap = strtol(readLine(saveFilePath, 4, &temp), NULL, 10);
+            person.lastX = strtol(readLine(saveFilePath, 5, &temp), NULL, 10);
+            person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
+
             gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
@@ -219,16 +225,16 @@ int main(int argc, char* argv[])
             saveLocalPlayer(person, saveFilePath);
             if (choice == 2)
                 gameState = MAINLOOP_GAMECODE;
-            if (choice == 3)
+            if (choice == 3 || choice == -1)
             {
                 for(int i = 0; i < 3; i++)  //reset door flags
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
-                script resetLast;
-                initScript(&resetLast, script_switch_maps, 0, 0, 0, 0, 0, "[d/d/d]");
-                executeScriptAction(&resetLast, &person);
                 gameState = START_GAMECODE;
+                person.lastMap = -1;
+                person.lastX = -1;
+                person.lastY = -1;
             }
             if (choice == -1)
                 quitGame = true;

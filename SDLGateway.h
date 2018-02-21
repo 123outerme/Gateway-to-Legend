@@ -29,6 +29,9 @@ typedef struct {
     int lastDirection;  //
     int invincCounter; //
     int animationCounter;
+    int lastMap;
+    int lastX;
+    int lastY;
     bool movementLocked;  // 1 byte
     char* extraData;
 } player;
