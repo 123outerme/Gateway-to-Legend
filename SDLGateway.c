@@ -72,10 +72,13 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle
     player->mapScreen = mapScreen;
     player->invincCounter = 0;
     player->animationCounter = 0;
-	player->movementLocked = false;
-	player->extraData = "";
-	player->xVeloc = 0;
+    player->movementLocked = false;
+    player->extraData = "";
+    player->xVeloc = 0;
     player->yVeloc = 0;
+    player->lastMap = -1;
+    player->lastX = -1;
+    player->lastY = -1;
     player->lastDirection = 8; //facing right
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
