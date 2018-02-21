@@ -614,12 +614,12 @@ int mainLoop(player* playerSprite)
     {
         for(int x = 0; x < WIDTH_IN_TILES; x++)
         {
-            if(eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
+            if(eventmap[y][x] > 10 && eventmap[y][x] < 14 && enemyCount < MAX_ENEMIES)
             {
                 enemyCount++;
                 if (enemyFlags[MAX_ENEMIES])
                 {
-                    initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
+                    initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 10), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
                     enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 14);
                 }
             }
@@ -1104,7 +1104,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         for(int x = startX; x < endX; x++)
         {
             searchIndex = eventmap[y][x] + 5 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 16 || searchIndex == 17 || searchIndex == 18))  //8,9,10 are the door indexes
+            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 15 || searchIndex == 16 || searchIndex == 17))  //8,9,10 are the door indexes
                 searchIndex = 5;  //5 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }
