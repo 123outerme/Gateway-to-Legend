@@ -823,19 +823,19 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
             {
 
-                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
+                if (playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14)  //enemies
                 {
                     int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(curTile > 11 && curTile < 15) && enemyCount < MAX_ENEMIES)
+                    if ((playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14) && !(curTile > 10 && curTile < 14) && enemyCount < MAX_ENEMIES)
                     {
                         enemyCount++;
                         eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
                         //printf("%d (+)\n", enemyCount);
                     }
 
-                    if (curTile > 11 && curTile < 15)
+                    if (curTile > 10 && curTile < 14)
                     {
-                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
+                        if (!(playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14))
                             enemyCount--;
                         eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
                         //printf("%d (-)\n", enemyCount);
@@ -996,7 +996,7 @@ void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX
         for(int dy = startY; dy < endY; dy++)
             for(int dx = startX; dx < endX; dx++)
             {
-                tile = workingPack.tilesetMaps[thisTilemap[dy][dx] + 4];  //add 4 to start at buttons
+                tile = workingPack.tilesetMaps[thisTilemap[dy][dx] + 4] - (thisTilemap[dy][dx] > 11) - (thisTilemap[dy][dx] > 13);  //add 4 to start at buttons
                 if (thisTilemap[dy][dx] < 2)
                     tile = 127 - (thisTilemap[dy][dx] == 1 && !hideCollision);
                 drawATile(thisTilemap[dy][dx] < 2 ? mainTilesetTexture : workingPack.mapPackTexture, tile, dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
