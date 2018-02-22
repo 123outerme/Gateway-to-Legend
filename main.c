@@ -620,7 +620,7 @@ int mainLoop(player* playerSprite)
                 if (enemyFlags[MAX_ENEMIES])
                 {
                     initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 10), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
-                    enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 14);
+                    enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 13);
                 }
             }
         }
