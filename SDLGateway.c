@@ -2,8 +2,6 @@
 
 #define TILE_ID_CURSOR 17
 
-#define calcWaitTime(x) x == 0 ? 0 : 1000 / x
-
 int initSounds()
 {
     /*MUSIC(0) = Mix_LoadWAV();
