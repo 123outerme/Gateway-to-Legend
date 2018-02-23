@@ -15,6 +15,8 @@
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
 
+#define calcWaitTime(x) x == 0 ? 0 : 1000 / x
+
 typedef struct {
     sprite spr;  //?
     char name[PLAYER_NAME_LIMIT + 1];  //9 bytes
@@ -147,15 +149,15 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 
 /*
 Sound effects should play upon walking
-killing enemies [ ]
+killing enemies [x]
 swinging the sword [x]
 pausing [ ]
 moving menu cursors [ ]
-selecting options [ ]
+selecting options [x]
 going through the portals [x]
 walking [x]
 opening doors [x]
-teleporting [ ]
+teleporting [x]
 getting hurt [x]
 etc.
 */
