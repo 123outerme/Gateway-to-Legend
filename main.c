@@ -522,8 +522,9 @@ void changeFPS()
     {
         if (FPSchoice > 0)
             FPS = strtol(optionsArray[FPSchoice], NULL, 10);
-        else
+	else
             FPS = 0;
+    targetTime = calcWaitTime(FPS);
     }
     saveConfig(CONFIG_FILEPATH);
 }
