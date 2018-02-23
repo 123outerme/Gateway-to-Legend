@@ -269,12 +269,12 @@ void changeVolumes()
         drawText("Sound Volumes", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
 
         SDL_SetRenderDrawColor(mainRenderer, titleOverColor.r, titleOverColor.g, titleOverColor.b, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 4.75 * TILE_SIZE, .w = musicVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 5.75 * TILE_SIZE, .w = soundVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = musicVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 6 * TILE_SIZE, .w = soundVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
 
         SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = musicVolume * 4, .h = TILE_SIZE / 2}));
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 6 * TILE_SIZE, .w = soundVolume * 4, .h = TILE_SIZE / 2}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 5.25 * TILE_SIZE, .w = musicVolume * 4, .h = TILE_SIZE / 2}));
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 6.25 * TILE_SIZE, .w = soundVolume * 4, .h = TILE_SIZE / 2}));
 
         drawText("Music", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
         drawText("Sounds", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
@@ -289,16 +289,16 @@ void changeVolumes()
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 5 * TILE_SIZE)
                 {
-                    if (cursor.y > 5 * TILE_SIZE)
-                        cursor.y -= TILE_SIZE;
+                    cursor.y -= TILE_SIZE;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 7 * TILE_SIZE)
                 {
-                    if (cursor.y < 7 * TILE_SIZE)
-                        cursor.y += TILE_SIZE;
+                    cursor.y += TILE_SIZE;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT)  && cursor.y != TILE_SIZE * 7)
@@ -312,7 +312,7 @@ void changeVolumes()
                     {
                         soundVolume -= 16;
                         Mix_Volume(-1, soundVolume);
-                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
                 }
 
@@ -327,7 +327,7 @@ void changeVolumes()
                     {
                         soundVolume += 16;
                         Mix_Volume(-1, soundVolume);
-                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
                 }
 
@@ -406,16 +406,16 @@ int changeControls()
                 //User presses a key
                 else if(e.type == SDL_KEYDOWN)
                 {
-                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 4 * TILE_SIZE)
                     {
-                        if (cursor.y > 4 * TILE_SIZE)
-                            cursor.y -= TILE_SIZE;
+                        cursor.y -= TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
 
-                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 11 * TILE_SIZE)
                     {
-                        if (cursor.y < 11 * TILE_SIZE)
-                            cursor.y += TILE_SIZE;
+                        cursor.y += TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
 
                     if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
@@ -488,23 +488,29 @@ void changeFPS()
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 5 * TILE_SIZE)
                 {
-                    if (cursor.y > 5 * TILE_SIZE)
-                        cursor.y -= TILE_SIZE;
+                    cursor.y -= TILE_SIZE;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 7 * TILE_SIZE)
                 {
-                    if (cursor.y < 7 * TILE_SIZE)
-                        cursor.y += TILE_SIZE;
+                    cursor.y += TILE_SIZE;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE && FPSchoice > 0)
+                {
                     FPSchoice--;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
+                }
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE && FPSchoice < optionsSize - 1)
+                {
                     FPSchoice++;
+                    Mix_PlayChannel(-1, PING_SOUND, 0);
+                }
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
                 {
@@ -566,7 +572,10 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         }
 
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
+        {
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
+            Mix_PlayChannel(-1, PING_SOUND, 0);
+        }
 
         if (menuKeycode == -1)
         {

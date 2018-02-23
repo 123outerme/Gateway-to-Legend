@@ -117,16 +117,18 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define MUSIC(x) audioArray[x > 2 ? 1 : x - 1]
 #define UNSHEATH_SOUND audioArray[2]
 #define OPTION_SOUND audioArray[3]
-#define STEP_SOUND(x) audioArray[x < 1 || x > 3 ? 5 : x + 3]
-#define SWING_SOUND audioArray[7]
-#define GATEWAYSTART_SOUND audioArray[8]
-#define GATEWAYEND_SOUND audioArray[9]
-#define DOOROPEN_SOUND audioArray[10]
-#define PLAYERHURT_SOUND audioArray[11]
-#define ENEMYHURT_SOUND audioArray[12]
+#define PING_SOUND audioArray[4]
+#define STEP_SOUND(x) audioArray[x < 1 || x > 4 ? 6 : x + 4]
+#define SWING_SOUND audioArray[8]
+#define GATEWAYSTART_SOUND audioArray[9]
+#define GATEWAYEND_SOUND audioArray[10]
+#define DOOROPEN_SOUND audioArray[11]
+#define PLAYERHURT_SOUND audioArray[12]
+#define ENEMYHURT_SOUND audioArray[13]
 
 #define UNSHEATH_FILE "audio/unsheath.ogg"
 #define OPTION_FILE "audio/unsheath_bass.ogg"
+#define PING_FILE "audio/menu.ogg"
 #define SWING_FILE "audio/swing.ogg"
 #define STEP_FILE "audio/step"  //this is like this on purpose, for some strcat() stuff
 #define GATEWAYSTART_FILE "audio/gateway1.ogg"
@@ -138,12 +140,13 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define MUSIC_CHANNEL(x) channelArray[x > 2 ? 1 : x - 1]
 #define UNSHEATH_CHANNEL channelArray[2]
 #define OPTION_CHANNEL channelArray[3]
-#define STEP_CHANNEL(x) channelArray[x < 3 || x > 5 ? 5 : x + 3]
-#define SWING_CHANNEL channelArray[7]
-#define GATEWAY_CHANNEL channelArray[8]
-#define DOOROPEN_CHANNEL channelArray[9]
-#define PLAYERHURT_CHANNEL channelArray[10]
-#define ENEMYHURT_CHANNEL channelArray[11]
+#define PING_CHANNEL channelArray[4]
+#define STEP_CHANNEL(x) channelArray[x < 1 || x > 3 ? 6 : x + 4]
+#define SWING_CHANNEL channelArray[8]
+#define GATEWAY_CHANNEL channelArray[9]
+#define DOOROPEN_CHANNEL channelArray[10]
+#define PLAYERHURT_CHANNEL channelArray[11]
+#define ENEMYHURT_CHANNEL channelArray[12]
 
 
 
@@ -152,7 +155,7 @@ Sound effects should play upon walking
 killing enemies [x]
 swinging the sword [x]
 pausing [ ]
-moving menu cursors [ ]
+moving menu cursors [x]
 selecting options [x]
 going through the portals [x]
 walking [x]
