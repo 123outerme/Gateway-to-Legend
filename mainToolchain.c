@@ -92,6 +92,9 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this number comes from
 #define MAX_MAP_PACK_DATA 6  //does not include sprite defines
 
+#define MAIN_HELP_TEXT "Make map-packs using this toolchain! Create maps, scripts, and setup your files and tileset using this. To navigate, use the keys you set up in the main program."
+#define SCRIPT_HELP_TEXT "Use your movement keys to maneuver between maps and to the tile you want. Press Confirm to \"drop the anchor\" there. Set the width and height next. Toggle interval between 1/8 tile and a full tile using Attack."
+#define MAPPACK_SETUP_HELP_TEXT "Change which files you use, assign tiles in your tileset to display certain objects, and change your New Game spawn here. Maneuver using movement keys and follow the instructions."
 
 typedef struct {
     SDL_Texture* mapPackTexture;
@@ -183,7 +186,7 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, MAINARROW_ID, "Gateway to Legend Toolchain", (char*[4]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Quit"}, 4, 1, AMENU_MAIN_THEME, true, false);
+        int code = aMenu(tilesetTexture, MAINARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false);
         if (code == 1)
         {
             closeSDL();
@@ -218,6 +221,18 @@ int main(int argc, char* argv[])
         }
 
         if (code == 4)
+        {
+            int key = 0;
+            while(!key)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                drawText(MAIN_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                key = getKey();
+            }
+        }
+
+        if (code == 5)
             quit = true;
 
         if (proceed && code < 4 && workingPack.mainFilePath[0] != '/')
@@ -1056,10 +1071,7 @@ void writeScriptData(script* mapScripts, int count)
 void mainScriptEdtior(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
-    bool quit = false;
-    int choice = 0;
     int scriptNum = 0;
-
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     scriptNum = scriptSelectLoop(*workingPack);
     if (scriptNum > 0)
@@ -1096,7 +1108,8 @@ int scriptSelectLoop(mapPack workingPack)
         drawText(optionsArray[scriptType], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
         drawText("Start", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
-        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        drawText("Info/Help", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
+        drawText("Back", 2.25 * TILE_SIZE, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
         //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
@@ -1118,7 +1131,7 @@ int scriptSelectLoop(mapPack workingPack)
 
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
                 {
-                    if (cursor.y < 7 * TILE_SIZE)
+                    if (cursor.y < 8 * TILE_SIZE)
                         cursor.y += TILE_SIZE;
                 }
 
@@ -1147,15 +1160,27 @@ int scriptSelectLoop(mapPack workingPack)
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
                 {
                     selection = cursor.y / TILE_SIZE - 4;
-                    if (selection != 1)
+                    if (selection != 1 && selection != 3)
                         quit = true;
+                }
+                if (selection == 3)
+                {
+                    int key = 0;
+                    while(!key)
+                    {
+                        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                        SDL_RenderFillRect(mainRenderer, NULL);
+                        drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                        key = getKey();
+                    }
+                    selection = 0;
                 }
             }
         }
         drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
-    if (selection == 3)
+    if (selection > 2)
         scriptType = -1;
     return scriptType;
 }
@@ -1263,7 +1288,7 @@ int mainMapPackWizard(mapPack* workingPack)
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", " ", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", "Info/Help", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false);
 
         if (choice == 1)
             editFilePaths(workingPack);
@@ -1279,7 +1304,16 @@ int mainMapPackWizard(mapPack* workingPack)
         }
 
         if (choice == 4)
-            ;
+        {
+            int key = 0;
+            while(!key)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                drawText(MAPPACK_SETUP_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                key = getKey();
+            }
+        }
 
         if (choice == 5)
             quit = true;

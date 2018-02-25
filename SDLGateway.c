@@ -260,17 +260,13 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
 
         for(int i = 0; ((options <= MAX_ITEMS) ? i < options : i < MAX_ITEMS); i++)
 	        drawText(optionsArray[i], 2 * TILE_SIZE + TILE_SIZE / 4, (5 + i) * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - (5 + i)) * TILE_SIZE, textColor, false);
-        /*if (isMain)
+        if (isMain)
         {
-            char version[12];
-            strcpy(version, FULLVERSION_STRING);
-            strcat(version, STATUS_SHORT);
-            strcat(version, "\0");
-            drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
+            /*drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
-            drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
-            drawText(version, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
-        }*/
+            drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);*/
+            drawText(VERSION_NUMBER, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR}, false);
+        }
 
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
         //Handle events on queue
@@ -325,10 +321,10 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     return selection;
 }
 
-SDL_Keycode getKey()
+SDL_Keycode getKey(int defaultKey)
 {
     SDL_Event e;
-    SDL_Keycode keycode = SDLK_ESCAPE;
+    SDL_Keycode keycode = defaultKey;
     while(SDL_PollEvent(&e) != 0)
     {
         if(e.type == SDL_QUIT)

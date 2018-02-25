@@ -31,7 +31,6 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-
 void changeVolumes();
 int changeControls();
 void changeName();
@@ -43,17 +42,7 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
 
-#define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
-#define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
-#define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
-#define AMENU_MAIN_TITLECOLOR2 0x00, 0xAC, 0xE6
-
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
-
-
-/*bool debug;
-bool doDebugDraw;
-SDL_Texture* eventTexture;  //eventmap layer is needed, this is just for debug, so when you're all done you can prob remove these*/
 
 int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
@@ -64,6 +53,8 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define ENEMY(x) tileIDArray[14 + x]
 
 #define MAIN_ARROW_ID 34
+
+#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+LeftShift to maneuver various worlds. Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 sprite enemies[MAX_ENEMIES];
@@ -127,7 +118,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[6]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Back"}, 6, 0, AMENU_MAIN_THEME, true, false);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false);
             if (choice == 1)
                 changeVolumes();
             if (choice == 2)
@@ -139,6 +130,17 @@ int main(int argc, char* argv[])
             if (choice == 5)
                 clearData(&person);
             if (choice == 6)
+            {
+                int pauseKey = 0;
+                while(!pauseKey)
+                {
+                    SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                    SDL_RenderFillRect(mainRenderer, NULL);
+                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                    pauseKey = getKey(0);
+                }
+            }
+            if (choice == 7)
                 gameState = START_GAMECODE;
             if (choice == -1)
                 quitGame = true;
@@ -575,7 +577,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
                           0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        menuKeycode = getKey();
+        menuKeycode = getKey(SDLK_ESCAPE);
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
             menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));

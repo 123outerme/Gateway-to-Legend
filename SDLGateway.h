@@ -4,6 +4,8 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
+#define VERSION_NUMBER "1.0.0a"
+
 #define SAVE_FILE_LINES 0
 #define PLAYER_NAME_LIMIT 8
 
@@ -14,6 +16,11 @@
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
 #define MAX_CHAR_IN_FILEPATH MAX_PATH
+
+#define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
+#define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
+#define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
+#define AMENU_MAIN_TITLECOLOR2 0x00, 0xAC, 0xE6
 
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
@@ -88,7 +95,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //lo
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
-SDL_Keycode getKey();  //like waitForKey but without waiting.
+SDL_Keycode getKey(int defaultKey);  //like waitForKey but without waiting.
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
 void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to global player save file
