@@ -674,6 +674,10 @@ bool executeScriptAction(script* scriptData, player* player)
         Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }
+    if (scriptData->action == script_boss_actions)
+    {
+        //fill with code to interpret actions and change coords via the script coord system
+    }
     if (scriptData->action == script_gain_exp)
     {
         player->experience += strtol(scriptData->data, NULL, 10);
@@ -688,15 +692,15 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         int dmg = strtol(scriptData->data, NULL, 10);
         player->HP -= dmg;
-	if (player->HP < 0)
-		player->HP = 0;
-	if (player->HP > player->maxHP)
-		player->HP = player->maxHP;
-        player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
-    if (dmg > 0)
-        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
-    else
-        ; //play heal sound
+        if (player->HP < 0)
+            player->HP = 0;
+        if (player->HP > player->maxHP)
+            player->HP = player->maxHP;
+            player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
+        if (dmg > 0)
+            Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+        else
+            ; //play heal sound
         //play animation (?) and sound
     }
     scriptData->active = false;

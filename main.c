@@ -29,6 +29,8 @@
 
 #define checkSquareCol(x1, y1, x2, y2, w) ((abs(abs(x1) - abs(x2)) < w) && (abs(abs(y1) - abs(y2)) < w))
 
+#define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
+
 
 void changeVolumes();
 int changeControls();
@@ -607,10 +609,11 @@ int mainLoop(player* playerSprite)
 	char mapFilePath[MAX_CHAR_IN_FILEPATH];
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
-    script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
+    script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     sprite bossSprite;
-    initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
-    int bossTiles = 1;
+    initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_na);
+    initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/0/1]");
+    int bossTiles = 1, bossHP = 1;
     thisScript.active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
@@ -642,11 +645,13 @@ int mainLoop(player* playerSprite)
     {
         if (theseScripts[i].action == script_boss_actions)
         {
-            initSprite(&bossSprite, theseScripts[i].x, theseScripts[i].y, theseScripts[i].w, 0, 0, SDL_FLIP_NONE, type_boss);
-            bossSprite.h = theseScripts[i].h;
+            bossScript = theseScripts[i];
+            initSprite(&bossSprite, bossScript.x, bossScript.y, bossScript.w, 0, 0, SDL_FLIP_NONE, type_boss);
+            bossSprite.h = bossScript.h;
             char* data = calloc(99, sizeof(char));
-            bossSprite.tileIndex = strtol(strtok(strcpy(data, theseScripts[i].data), "[/]"), NULL, 10);
+            bossSprite.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
             bossTiles = strtol(strtok(NULL, "[/]"), NULL, 10);
+            bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
             free(data);
         }
     }
@@ -1006,6 +1011,34 @@ int mainLoop(player* playerSprite)
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
+            if (bossSprite.x >= 0 && bossSprite.type == type_boss)
+            {
+                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.x, bossSprite.y, bossSprite.w, bossSprite.h))
+                {
+                    script hurtPlayer;
+                    initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "2");
+                    playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - bossSprite.x) > abs(playerSprite->spr.y - bossSprite.y))
+                        - 48 * (bossSprite.x > playerSprite->spr.x && (abs(playerSprite->spr.x - bossSprite.x) > abs(playerSprite->spr.y - bossSprite.y)));
+
+                    playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - bossSprite.y) > abs(playerSprite->spr.x - bossSprite.x))
+                        - 48 * (bossSprite.y > playerSprite->spr.y && (abs(playerSprite->spr.y - bossSprite.y) > abs(playerSprite->spr.x - bossSprite.x)));
+                    executeScriptAction(&hurtPlayer, playerSprite);
+                    playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
+                    Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+                }
+                if (checkRectCol(sword.x, sword.y, sword.w, sword.h, bossSprite.x, bossSprite.y, bossSprite.w, bossSprite.h) && swordTimer > SDL_GetTicks() + 250)
+                {
+                    if (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250)
+                    {
+                        bossHP--;
+                        if (bossHP < 1 && (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250))
+                            bossSprite.type = type_na;
+                        bossSprite.angle = swordTimer;  //angle == hit detection cooldown timer
+                        Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+                    }
+                }
+                executeScriptAction(&bossScript, playerSprite);
+            }
             if (!thisScript.active)
             {
                 for(int i = 0; i < maxTheseScripts; i++)
@@ -1057,10 +1090,10 @@ int mainLoop(player* playerSprite)
             if (enemies[i].type == type_enemy)
                 drawATile(tilesTexture, enemies[i].tileIndex, enemies[i].x, enemies[i].y, enemies[i].w, enemies[i].w, 0, enemies[i].flip);
         }
-        if (bossSprite.x >= 0)
+        if (bossSprite.type == type_boss)
         {
             for(int i = 0; i < bossTiles; i++)
-                drawATile(tilesTexture, bossSprite.tileIndex + (i % (int) sqrt(bossTiles)) + 8 * (i / (int) sqrt(bossTiles)), bossSprite.x + TILE_SIZE * (i % (int) sqrt(bossTiles)), bossSprite.y + TILE_SIZE * (i / (int) sqrt(bossTiles)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
+                drawATile(tilesTexture, bossSprite.tileIndex + (i / (int) sqrt(bossTiles)) + 8 * (i % (int) sqrt(bossTiles)), bossSprite.x + TILE_SIZE * (i % (int) sqrt(bossTiles)), bossSprite.y + TILE_SIZE * (i / (int) sqrt(bossTiles)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)
