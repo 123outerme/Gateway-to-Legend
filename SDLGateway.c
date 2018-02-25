@@ -687,15 +687,14 @@ bool executeScriptAction(script* scriptData, player* player)
         else
         {
             bool found = false;
-            strtok(data, "(|)");  //this fixes an issue
+            strtok(data, "(|)");  //this fixes an issue (takes out the first chunk which is just all the [/] junk
             while(!found)
             {
                 char* xStr = strtok(NULL, "(|)");
-                printf("<%s\n", xStr);
                 if (!xStr)  //no more data
                 {
                     moveFrame = 0;  //repeat
-                    printf(">%s\n", strtok(dataCopy, "(|)"));  //reset read location
+                    strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
                 }
                 else
                 {
@@ -707,7 +706,7 @@ bool executeScriptAction(script* scriptData, player* player)
                         found = true;
                 }
             }
-            printf("%d, %d for %d f. On frame %d\n", x, y, frames, moveFrame);
+            //printf("%d, %d for %d f. On frame %d\n", x, y, frames, moveFrame);
             scriptData->x += x;
             scriptData->y += y;
 
