@@ -608,6 +608,9 @@ int mainLoop(player* playerSprite)
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script));
+    sprite bossSprite;
+    initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+    int bossTiles = 1;
     thisScript.active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
@@ -633,6 +636,18 @@ int mainLoop(player* playerSprite)
                     enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 13);
                 }
             }
+        }
+    }
+    for(int i = 0; i < maxTheseScripts; i++)
+    {
+        if (theseScripts[i].action == script_boss_actions)
+        {
+            initSprite(&bossSprite, theseScripts[i].x, theseScripts[i].y, theseScripts[i].w, 0, 0, SDL_FLIP_NONE, type_boss);
+            bossSprite.h = theseScripts[i].h;
+            char* data = calloc(99, sizeof(char));
+            bossSprite.tileIndex = strtol(strtok(strcpy(data, theseScripts[i].data), "[/]"), NULL, 10);
+            bossTiles = strtol(strtok(NULL, "[/]"), NULL, 10);
+            free(data);
         }
     }
     enemyFlags[MAX_ENEMIES] = false;
@@ -1041,6 +1056,11 @@ int mainLoop(player* playerSprite)
         {
             if (enemies[i].type == type_enemy)
                 drawATile(tilesTexture, enemies[i].tileIndex, enemies[i].x, enemies[i].y, enemies[i].w, enemies[i].w, 0, enemies[i].flip);
+        }
+        if (bossSprite.x >= 0)
+        {
+            for(int i = 0; i < bossTiles; i++)
+                drawATile(tilesTexture, bossSprite.tileIndex + (i % (int) sqrt(bossTiles)) + 8 * (i / (int) sqrt(bossTiles)), bossSprite.x + TILE_SIZE * (i % (int) sqrt(bossTiles)), bossSprite.y + TILE_SIZE * (i / (int) sqrt(bossTiles)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)

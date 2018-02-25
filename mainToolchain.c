@@ -1059,23 +1059,14 @@ void mainScriptEdtior(mapPack* workingPack)
     bool quit = false;
     int choice = 0;
     int scriptNum = 0;
-    while(!quit)
-    {
-        choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], "Script Editor", (char*[2]) {"Start Editing", "Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
-        if (choice == 1)
-        {
-            loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
-            scriptNum = scriptSelectLoop(*workingPack);
-            if (scriptNum > 0)
-            {
-                script newScript = mainScriptLoop(*workingPack, (scriptBehavior) scriptNum);
-                if (newScript.action != script_none)
-                    writeScriptData(&newScript, 1);
-            }
-        }
 
-        if (choice == 2)
-            quit = true;
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
+    scriptNum = scriptSelectLoop(*workingPack);
+    if (scriptNum > 0)
+    {
+        script newScript = mainScriptLoop(*workingPack, (scriptBehavior) scriptNum);
+        if (newScript.action != script_none)
+            writeScriptData(&newScript, 1);
     }
 }
 
@@ -1182,7 +1173,7 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
     char* data = calloc(99, sizeof(char));
     sprite cursor;
     initSprite(&cursor, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
-    bool quit = false, editXY = true;
+    bool quit = false, editXY = true, bigIntervalSize = false;
     SDL_Keycode key;
     while(!quit)
     {
@@ -1190,6 +1181,18 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
         viewMap(workingPack, map, false);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x1 ? x1 : cursor.x, .y = y1 ? y1 : cursor.y, .w = x1 ? cursor.x - x1 : cursor.w, .h = y1 ? cursor.y - y1 : cursor.h}));
         key = getKey();
+        if (SC_ATTACK == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
+        {
+            intervalSize = 48;
+            bigIntervalSize = true;
+        }
+        else
+        if (!editXY && bigIntervalSize == true && SC_ATTACK == SDL_GetScancodeFromKey(key))
+        {
+            intervalSize = 6;
+            bigIntervalSize = false;
+        }
+
         if (SC_UP == SDL_GetScancodeFromKey(key) && cursor.y > 0)
             cursor.y -= intervalSize;
         if (SC_DOWN == SDL_GetScancodeFromKey(key) && cursor.y < SCREEN_HEIGHT)
