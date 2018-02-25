@@ -67,6 +67,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 sprite enemies[MAX_ENEMIES];
+sprite bossSprite;
 script* allScripts;
 int sizeOfAllScripts;
 
@@ -233,10 +234,14 @@ int main(int argc, char* argv[])
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
-                gameState = START_GAMECODE;
+                initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_na);
                 person.lastMap = -1;
                 person.lastX = -1;
                 person.lastY = -1;
+                script resetScript;
+                initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
+                executeScriptAction(&resetScript, &person);  //resets boss movement timer
+                gameState = START_GAMECODE;
             }
             if (choice == -1)
                 quitGame = true;
@@ -610,8 +615,6 @@ int mainLoop(player* playerSprite)
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
-    sprite bossSprite;
-    initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_na);
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/0/1]");
     int bossTiles = 1, bossHP = 1;
     thisScript.active = false;
@@ -1038,6 +1041,8 @@ int mainLoop(player* playerSprite)
                     }
                 }
                 executeScriptAction(&bossScript, playerSprite);
+                bossSprite.x = bossScript.x;
+                bossSprite.y = bossScript.y;  //ignore collision on purpose
             }
             if (!thisScript.active)
             {

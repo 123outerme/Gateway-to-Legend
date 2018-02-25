@@ -577,7 +577,7 @@ bool executeScriptAction(script* scriptData, player* player)
         char* firstChar = "\0";
         int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
         char* data = calloc(99, sizeof(char));
-        firstChar = strtok(strcpy(data, scriptData->data), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        firstChar = strtok(strncpy(data, scriptData->data, 99), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
         if (firstChar[0] == 'l')
         {
             if(player->lastMap != -1)
@@ -624,7 +624,7 @@ bool executeScriptAction(script* scriptData, player* player)
         Mix_HaltChannel(GATEWAY_CHANNEL);
         char* data = calloc(99, sizeof(char));
         //printf("%s\n", data);
-        player->mapScreen = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        player->mapScreen = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
         //printf("%d/", mapNum);
         player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d/", player->spr.x);
@@ -652,7 +652,7 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         char* data = calloc(99, sizeof(char));
         //printf("%s\n", data);
-        player->spr.x = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+        player->spr.x = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
         //printf("%d/", player->spr.x);
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
@@ -663,7 +663,7 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         char* data = calloc(99, sizeof(char));
         bool newDoorFlags[3] = {-1, -1, -1};
-        newDoorFlags[0] = strtol(strtok(strcpy(data, scriptData->data), "[/]"), NULL, 10);
+        newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
         for(int i = 0; i < 3; i++)
         {
             if (i > 0)
@@ -676,7 +676,55 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_boss_actions)
     {
-        //fill with code to interpret actions and change coords via the script coord system
+        static int moveFrame = 1;  //starts on frame 1 to iterate for 20f
+        int x = 0, y = 0, frames = 0, totalFrames = 0;
+        char* data = calloc(99, sizeof(char));
+        char* dataCopy = calloc(99, sizeof(char));  //strtok messes with the data, so this is necessary to use a clean copy when end of string is reached (quick fix)
+        strncpy(data, scriptData->data, 99);
+        strncpy(dataCopy, data, 99);
+        if (data[0] == 'r')
+            moveFrame = 0;
+        else
+        {
+            bool found = false;
+            strtok(data, "(|)");  //this fixes an issue
+            while(!found)
+            {
+                char* xStr = strtok(NULL, "(|)");
+                printf("<%s\n", xStr);
+                if (!xStr)  //no more data
+                {
+                    moveFrame = 0;  //repeat
+                    printf(">%s\n", strtok(dataCopy, "(|)"));  //reset read location
+                }
+                else
+                {
+                    x = strtol(xStr, NULL, 10);
+                    y = strtol(strtok(NULL, "(|)"), NULL, 10);
+                    frames = strtol(strtok(NULL, "(|)"), NULL, 10);
+                    totalFrames += frames;
+                    if (moveFrame <= totalFrames)
+                        found = true;
+                }
+            }
+            printf("%d, %d for %d f. On frame %d\n", x, y, frames, moveFrame);
+            scriptData->x += x;
+            scriptData->y += y;
+
+            if (scriptData->x < 0)
+                scriptData->x = 0;
+            if (scriptData->x > SCREEN_WIDTH - scriptData->w)
+                scriptData->x = SCREEN_WIDTH - scriptData->w;
+
+            if (scriptData->y < 0)
+                scriptData->y = 0;
+            if (scriptData->y > SCREEN_HEIGHT - scriptData->h)
+                scriptData->y = SCREEN_HEIGHT - scriptData->h;
+            //format: (x|y|frames|x2|y2|frames2...)
+            //fill with code to interpret actions and change coords via the script coord system
+            moveFrame++;
+        }
+        free(data);
     }
     if (scriptData->action == script_gain_exp)
     {
