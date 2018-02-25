@@ -15,6 +15,7 @@
 #define MAX_ENEMIES 6
 
 
+#define TITLESCREEN_GAMECODE -1
 #define START_GAMECODE 0
 #define OPTIONS_GAMECODE 1
 #define PLAY_GAMECODE 2
@@ -99,12 +100,33 @@ int main(int argc, char* argv[])
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(mainRenderer);
-    int gameState = 0;
+    int gameState = TITLESCREEN_GAMECODE;
     bool quitGame = false;
     while(!quitGame)
     {
         switch(gameState)
         {
+        case TITLESCREEN_GAMECODE:
+            {
+                SDL_Texture* titlescreen;
+                loadIMG("splashscreen.png", &titlescreen);
+                SDL_SetTextureBlendMode(titlescreen, SDL_BLENDMODE_NONE);  //this ensures it renders somehow
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+                int key = 0;
+                while(!key)
+                {
+                    SDL_RenderClear(mainRenderer);
+                    SDL_RenderCopy(mainRenderer, titlescreen, NULL, NULL);
+                    //drawText("Gateway to Legend", 1.5 * TILE_SIZE, 1.5 * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+                    //drawText("Press Any Key", 3.5 * TILE_SIZE, 12 * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+                    key = getKey();
+                    SDL_RenderPresent(mainRenderer);
+                }
+                Mix_PlayChannel(-1, SWING_SOUND, 0);
+                Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+            }
+            gameState = START_GAMECODE;
+            break;
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
             choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[4]) {"Play", "Coin Store", "Settings", "Quit"}, 4, 1, AMENU_MAIN_THEME, true, true);
@@ -577,7 +599,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
                           0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        menuKeycode = getKey(SDLK_ESCAPE);
+        menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
             menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));

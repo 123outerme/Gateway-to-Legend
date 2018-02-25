@@ -323,10 +323,10 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     return selection;
 }
 
-SDL_Keycode getKey(int defaultKey)
+SDL_Keycode getKey()
 {
     SDL_Event e;
-    SDL_Keycode keycode = defaultKey;
+    SDL_Keycode keycode = 0;
     while(SDL_PollEvent(&e) != 0)
     {
         if(e.type == SDL_QUIT)
