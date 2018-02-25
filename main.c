@@ -68,6 +68,7 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 sprite enemies[MAX_ENEMIES];
 sprite bossSprite;
+bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
 
@@ -194,6 +195,8 @@ int main(int argc, char* argv[])
             person.lastMap = strtol(readLine(saveFilePath, 4, &temp), NULL, 10);
             person.lastX = strtol(readLine(saveFilePath, 5, &temp), NULL, 10);
             person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
+            initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+            loadBoss = true;
 
             gameState = RELOAD_GAMECODE;
             break;
@@ -234,7 +237,8 @@ int main(int argc, char* argv[])
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
-                initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_na);
+                initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+                loadBoss = true;
                 person.lastMap = -1;
                 person.lastX = -1;
                 person.lastY = -1;
@@ -616,7 +620,8 @@ int mainLoop(player* playerSprite)
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/0/1]");
-    int bossTiles = 1, bossHP = 1;
+    static int bossTiles = 1;
+    static int bossHP = 1;
     thisScript.active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
@@ -649,12 +654,19 @@ int mainLoop(player* playerSprite)
         if (theseScripts[i].action == script_boss_actions)
         {
             bossScript = theseScripts[i];
-            initSprite(&bossSprite, bossScript.x, bossScript.y, bossScript.w, 0, 0, SDL_FLIP_NONE, type_boss);
-            bossSprite.h = bossScript.h;
             char* data = calloc(99, sizeof(char));
             bossSprite.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
             bossTiles = strtol(strtok(NULL, "[/]"), NULL, 10);
-            bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
+            if (!loadBoss)
+            {
+                bossScript.x = bossSprite.x;
+                bossScript.y = bossSprite.y;
+            }
+            else
+                bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
+            initSprite(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossSprite.tileIndex, 0, SDL_FLIP_NONE, bossSprite.type);
+            bossSprite.h = bossScript.h;
+            loadBoss = false;
             free(data);
         }
     }
@@ -1095,7 +1107,7 @@ int mainLoop(player* playerSprite)
             if (enemies[i].type == type_enemy)
                 drawATile(tilesTexture, enemies[i].tileIndex, enemies[i].x, enemies[i].y, enemies[i].w, enemies[i].w, 0, enemies[i].flip);
         }
-        if (bossSprite.type == type_boss)
+        if (bossSprite.x >= 0 && bossSprite.type == type_boss)
         {
             for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.tileIndex + (i / (int) sqrt(bossTiles)) + 8 * (i % (int) sqrt(bossTiles)), bossSprite.x + TILE_SIZE * (i % (int) sqrt(bossTiles)), bossSprite.y + TILE_SIZE * (i / (int) sqrt(bossTiles)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
