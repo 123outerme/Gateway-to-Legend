@@ -1047,7 +1047,12 @@ int mainLoop(player* playerSprite)
                     {
                         bossHP--;
                         if (bossHP < 1 && (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250))
+                        {
                             bossSprite.type = type_na;
+                            script openAllDoors;
+                            initScript(&openAllDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");
+                            executeScriptAction(&openAllDoors, playerSprite);
+                        }
                         bossSprite.angle = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
                     }
