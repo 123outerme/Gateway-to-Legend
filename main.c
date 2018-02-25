@@ -1110,7 +1110,7 @@ int mainLoop(player* playerSprite)
         if (bossSprite.x >= 0 && bossSprite.type == type_boss)
         {
             for(int i = 0; i < bossTiles; i++)
-                drawATile(tilesTexture, bossSprite.tileIndex + (i / (bossSprite.w / 48)) + 8 * (i % (bossSprite.h / 48)), bossSprite.x + TILE_SIZE * (i % (bossSprite.w / 48)), bossSprite.y + TILE_SIZE * (i / (bossSprite.w / 48)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
+                drawATile(tilesTexture, bossSprite.tileIndex + (i / (bossSprite.w / TILE_SIZE)) + 8 * (i % (bossSprite.h / TILE_SIZE)), bossSprite.x + TILE_SIZE * (i % (bossSprite.w / TILE_SIZE)), bossSprite.y + TILE_SIZE * (i / (bossSprite.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)
