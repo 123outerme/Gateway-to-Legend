@@ -756,16 +756,16 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (playerSprite->spr.y > 0 && checkSKUp)
+                if (playerSprite->spr.y > 0 && checkSKUp /*&& !playerSprite->yVeloc */)  //leave damage boosting in?
                     playerSprite->yVeloc -= PIXELS_MOVED;
 
-                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown)
+                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown /*&& !playerSprite->yVeloc*/)
                     playerSprite->yVeloc += PIXELS_MOVED;
 
-                if (playerSprite->spr.x > 0 && checkSKLeft)
+                if (playerSprite->spr.x > 0 && checkSKLeft /*&& !playerSprite->xVeloc*/)
                     playerSprite->xVeloc -= PIXELS_MOVED;
 
-                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight)
+                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight /*&& !playerSprite->xVeloc*/)
                     playerSprite->xVeloc += PIXELS_MOVED;
 
                 /*if (checkSKAttack && !textBoxOn && frame > targetTime / 2)

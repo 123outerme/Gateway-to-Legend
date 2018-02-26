@@ -723,6 +723,7 @@ void chooseCoords(mapPack workingPack, int mapNum, int* xPtr, int* yPtr)
     {
         viewMap(workingPack, mapNum, true, false);
         keycode = getKey();
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
         x += TILE_SIZE * ((SC_RIGHT == SDL_GetScancodeFromKey(keycode) && x < SCREEN_WIDTH - TILE_SIZE) - (SC_LEFT == SDL_GetScancodeFromKey(keycode) && x > 0));
         y += TILE_SIZE * ((SC_DOWN == SDL_GetScancodeFromKey(keycode) && y < SCREEN_HEIGHT - TILE_SIZE) - (SC_UP == SDL_GetScancodeFromKey(keycode) && y > 0));

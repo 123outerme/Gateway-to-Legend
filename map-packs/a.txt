@@ -3,9 +3,9 @@ maps/MainMaps.txt
 tileset/mainTileset48.png
 saves/MainAdventure.txt
 scripts/MainAdventure.txt
-384
-240
-3
+96
+336
+0
 16
 17
 34
