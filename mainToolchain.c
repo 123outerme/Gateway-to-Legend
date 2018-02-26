@@ -138,7 +138,7 @@ int mainMapCreator();
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);
 script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack workingPack);
-void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum);
+void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update);
 int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
@@ -683,7 +683,7 @@ int mainMapCreator(mapPack* workingPack)
 }
 //C:/Stephen/C/CodeBlocks/Gateway-to-Legend/Map-Creator/map-packs/a.txt
 
-void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum)
+void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update)
 {
     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(mainRenderer);
@@ -692,9 +692,9 @@ void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum)
     char* buffer = "";
     loadMapFile(workingPack.mapFilePath, newTilemap, newEventmap, thisLineNum, HEIGHT_IN_TILES, WIDTH_IN_TILES);
     drawMaps(workingPack, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
-    drawMaps(workingPack, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, !drawLineNum);
+    drawMaps(workingPack, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, update ? !drawLineNum : false);
     if (drawLineNum)
-        drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF}, true);
+        drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF}, update);
 }
 
 int chooseMap(mapPack workingPack)
@@ -705,13 +705,33 @@ int chooseMap(mapPack workingPack)
     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     while(!quit)
     {
-        viewMap(workingPack, mapNum, true);
+        viewMap(workingPack, mapNum, true, true);
         keycode = getKey();
         mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0) + 10 * (keycode == SDLK_s && mapNum + 9 < maxMapNum) - 10 * (keycode == SDLK_w && mapNum > 9);
         if (keycode == SDLK_RETURN || keycode == SDLK_ESCAPE || keycode == SDLK_SPACE || keycode == -1)
             quit = true;
     }
     return mapNum;
+}
+
+void chooseCoords(mapPack workingPack, int mapNum, int* xPtr, int* yPtr)
+{
+    bool quit = false;
+    SDL_Keycode keycode;
+    int x = 0, y = 0;
+    while(!quit)
+    {
+        viewMap(workingPack, mapNum, true, false);
+        keycode = getKey();
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
+        x += TILE_SIZE * ((SC_RIGHT == SDL_GetScancodeFromKey(keycode) && x < SCREEN_WIDTH - TILE_SIZE) - (SC_LEFT == SDL_GetScancodeFromKey(keycode) && x > 0));
+        y += TILE_SIZE * ((SC_DOWN == SDL_GetScancodeFromKey(keycode) && y < SCREEN_HEIGHT - TILE_SIZE) - (SC_UP == SDL_GetScancodeFromKey(keycode) && y > 0));
+        if (SC_INTERACT == SDL_GetScancodeFromKey(keycode) || SDL_SCANCODE_RETURN == SDL_GetScancodeFromKey(keycode))
+            quit = true;
+        SDL_RenderPresent(mainRenderer);
+    }
+    *xPtr = x;
+    *yPtr = y;
 }
 
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
@@ -869,7 +889,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     while(!inQuit)
                     {
                         SDL_RenderClear(mainRenderer);
-                        viewMap(workingPack, map, false);
+                        viewMap(workingPack, map, false, false);
                         drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
                         key = getKey();
                         if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
@@ -1203,7 +1223,7 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
-        viewMap(workingPack, map, false);
+        viewMap(workingPack, map, false, false);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x1 ? x1 : cursor.x, .y = y1 ? y1 : cursor.y, .w = x1 ? cursor.x - x1 : cursor.w, .h = y1 ? cursor.y - y1 : cursor.h}));
         key = getKey();
         if (SC_ATTACK == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
@@ -1386,46 +1406,11 @@ void editFilePaths(mapPack* workingPack)
 
 void editInitSpawn(mapPack* workingPack)
 {
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     SDL_RenderClear(mainRenderer);
-    bool quit = false;
-    while(!quit)
-    {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[4]) {"Initial X", "Initial Y", "Initial Map", "Back"}, 4, 0, AMENU_MAIN_THEME, true, false);
-        if (choice < 0 || choice == 4)
-            quit = true;
-        else
-        {
-            closeSDL();
-            char getString[MAX_PATH];
-            getString[0] = '\0';
-            switch(choice)
-            {
-            case 1:
-                printf("Initial X spawn-coordinate? (Was %d) ", workingPack->initX);
-                break;
-            case 2:
-                printf("Initial Y spawn-coordinate? (Was %d) ", workingPack->initY);
-                break;
-            case 3:
-                printf("Initial map spawn code? (Was %d) ", workingPack->initMap);
-                break;
-            }
-            scanf("%259[^\n]%*c", getString);
-            switch(choice)
-            {
-            case 1:
-                sscanf(getString, "%d", &(workingPack->initX));
-                break;
-            case 2:
-                sscanf(getString, "%d", &(workingPack->initY));
-                break;
-            case 3:
-                sscanf(getString, "%d", &(workingPack->initMap));
-                break;
-            }
-            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-        }
-    }
+    workingPack->initMap = chooseMap(*workingPack);
+    chooseCoords(*workingPack, workingPack->initMap, &(workingPack->initX), &(workingPack->initY));
+    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     saveMapPack(workingPack);
 }
 
