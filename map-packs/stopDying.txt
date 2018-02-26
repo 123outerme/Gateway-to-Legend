@@ -1,8 +1,8 @@
-Main Adventure
-maps/MainMaps.txt
+Stop Dying
+maps/StopDyingMaps.txt
 tileset/mainTileset48.png
-saves/MainAdventure.txt
-scripts/MainAdventure.txt
+saves/StopDying.txt
+scripts/StopDying.txt
 384
 240
 3

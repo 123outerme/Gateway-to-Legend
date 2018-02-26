@@ -658,7 +658,7 @@ bool executeScriptAction(script* scriptData, player* player)
         free(data);
     }
     if (scriptData->action == script_toggle_door)
-    {
+    {  //-1 = unchanged, 0 = open, 1 = closed
         char* data = calloc(99, sizeof(char));
         bool newDoorFlags[3] = {-1, -1, -1};
         newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);

@@ -673,6 +673,7 @@ int mainLoop(player* playerSprite)
             }
         }
     }
+    enemyFlags[MAX_ENEMIES] = false;
     for(int i = 0; i < maxTheseScripts; i++)
     {
         if (theseScripts[i].action == script_boss_actions)
@@ -694,7 +695,22 @@ int mainLoop(player* playerSprite)
             free(data);
         }
     }
-    enemyFlags[MAX_ENEMIES] = false;
+    checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
+    if (collisionData[4] || collisionData[5] || collisionData[6])
+    {  //if player spawns on top of door
+        script openDoors;
+        if (collisionData[4])
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/-1/-1]");
+
+        if (collisionData[5])
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/0/-1]");
+
+        if (collisionData[6])
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0]");
+
+        executeScriptAction(&openDoors, playerSprite);
+
+    }
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
     int exitCode = 2;
@@ -1201,7 +1217,7 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
         for(int i = 1; i < MAX_COLLISIONDATA_ARRAY; i++)
         {
             if (-1 != checkArrayForIVal(i + 1, (int[]) {topLeft, topRight, bottomLeft, bottomRight}, 4))
-            outputData[i] = true;
+                outputData[i] = true;
         }
     }
 }
