@@ -1105,11 +1105,11 @@ int mainLoop(player* playerSprite)
             {
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
-                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && (theseScripts[i].action != script_use_gateway || theseScripts[i].action != script_use_teleporter))
+                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && (theseScripts[i].action != script_use_gateway || theseScripts[i].action != script_use_teleporter || thisScript.action != script_boss_actions))
                     {
                         thisScript = theseScripts[i];
                         thisScript.active = true;
-                        if ((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once) && !checkSKInteract)
+                        if (((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once) && !checkSKInteract))
                             thisScript.active = false;
                         break;
                     }
