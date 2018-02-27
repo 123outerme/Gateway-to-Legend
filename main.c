@@ -693,6 +693,7 @@ int mainLoop(player* playerSprite)
             bossSprite.h = bossScript.h;
             loadBoss = false;
             free(data);
+            break;
         }
     }
     checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
@@ -891,6 +892,11 @@ int mainLoop(player* playerSprite)
                         exitCode = 2;
                         playerSprite->xVeloc = 0;
                         playerSprite->yVeloc = 0;
+                        initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+                        loadBoss = true;
+                        script resetScript;
+                        initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
+                        executeScriptAction(&resetScript, playerSprite);  //resets boss movement timer
                     }
                 }
 
@@ -1105,7 +1111,7 @@ int mainLoop(player* playerSprite)
             {
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
-                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && (theseScripts[i].action != script_use_gateway || theseScripts[i].action != script_use_teleporter || thisScript.action != script_boss_actions))
+                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && theseScripts[i].action != script_use_gateway && theseScripts[i].action != script_use_teleporter && thisScript.action != script_boss_actions)
                     {
                         thisScript = theseScripts[i];
                         thisScript.active = true;
