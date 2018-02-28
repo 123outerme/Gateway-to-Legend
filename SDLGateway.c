@@ -674,7 +674,7 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_boss_actions)
     {
-        static int moveFrame = 1;  //starts on frame 1 to iterate for 20f
+        static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
         int x = 0, y = 0, frames = 0, totalFrames = 0;
         char* data = calloc(99, sizeof(char));
         char* dataCopy = calloc(99, sizeof(char));  //strtok messes with the data, so this is necessary to use a clean copy when end of string is reached (quick fix)
@@ -691,7 +691,7 @@ bool executeScriptAction(script* scriptData, player* player)
                 char* xStr = strtok(NULL, "(|)");
                 if (!xStr)  //no more data
                 {
-                    moveFrame = 0;  //repeat
+                    moveFrame = 1;  //repeat; has to be 1 to reset to the way it is init'ed
                     strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
                 }
                 else
