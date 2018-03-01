@@ -208,9 +208,10 @@ int main(int argc, char* argv[])
                 loadMapPackData(&workingPack, mainFilePath);
                 createFile(CACHE_NAME);
                 appendLine(CACHE_NAME, (char*) mainFilePath);
-                proceed = true;
+                
             }
-        }
+			proceed = !back;
+		}
 
         if (code == 3 && strcmp(resumeStr, "(No Resume)\0") != 0)
         {
@@ -232,7 +233,7 @@ int main(int argc, char* argv[])
             }
         }
 
-        if (code == 5)
+        if (code == 5 || code == -1)
             quit = true;
 
         if (proceed && code < 4 && workingPack.mainFilePath[0] != '/')
