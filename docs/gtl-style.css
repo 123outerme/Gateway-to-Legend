@@ -2,26 +2,37 @@ body {
   background-color: rgb(215, 223, 239);
   font-family: "Lucida Console", "Courier New", Times, serif;
 }
+
 h1, th {
   color: rgb(0, 134, 179);
   text-align: center;
 }
+
 p, td, li {
   color: rgb(0, 153, 204);
 }
+
 a:link {
   color: rgb(4, 120, 149);
 }
+
 a:visited {
   color: rgb(3, 121, 150);
 }
+
 a:hover {
   color: rgb(215, 223, 239);
   background-color: rgb(4, 120, 149);
 }
+
+ul {
+  list-style-type: square;
+}
+
 strong {
   color: rgb(2, 121, 151);
 }
+
 table {
   border-collapse: collapse;
 }
@@ -30,12 +41,14 @@ th, td {
   border: 2px solid rgb(0, 96, 128);
   padding: 10px;
 }
+
 .center {
   display: block;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
 }
+
 .align_right {
   text-align: right;
 }
