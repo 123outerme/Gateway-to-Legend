@@ -8,6 +8,10 @@ h1, th {
   text-align: center;
 }
 
+h2 {
+  color: rgb(1, 147, 196);
+}
+
 p, td, li {
   color: rgb(0, 153, 204);
 }
