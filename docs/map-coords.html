@@ -17,7 +17,7 @@
         var x = document.getElementById("mapx").value;
         var y = document.getElementById("mapy").value;
 	var line = ((x - 1) % 10) + (10 * (y - 1)) + 1;
-        document.getElementById("return").innerHTML = "Line " + line + "\nMap ID " + (line - 1);
+        document.getElementById("return").innerHTML = "Line " + line + "<br />Map ID " + (line - 1);
       }
     </script>
   </head>
@@ -28,9 +28,9 @@
     <h1>Gateway to Legend</h1>
     <p>Use this tool to convert the (x, y) position you want your map to appear at, with the origin being at the top left of the world, to the line number you should put it on.</p>
     <form>
-      <input type="number" id="mapx" min="1" max="10" />
-      <input type="number" id="mapy" min="1" />
-      <input type="button" value="Submit" onclick="calcMapCoords();"/>
+      <input type="number" id="mapx" min="1" max="10" size="4" />
+      <input type="number" id="mapy" min="1" size="4" />
+      <input type="button" value="Submit" onclick="calcMapCoords();" size="4" />
     </form>
     <p id="return"></p>
     <noscript>Your browser does not support JavaScript!</noscript>
