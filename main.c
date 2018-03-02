@@ -32,6 +32,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
+void coinStore(player* playerSprite);
 void changeVolumes();
 int changeControls();
 void changeName();
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
-                ;
+                coinStore(&person);
             if (choice == 3)
                 gameState = OPTIONS_GAMECODE;
             if (choice == 4 || choice == -1)
@@ -284,9 +285,17 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void coinStore()
+void coinStore(player* playerSprite)
 {
-
+    bool quit = false;
+    while(!quit)
+    {
+        char title[18];
+        snprintf(title, 18, "Store: %d Coins", playerSprite->money);
+        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+        if (choice == 3 || choice == -1)
+            quit = true;
+    }
 }
 
 void changeVolumes()

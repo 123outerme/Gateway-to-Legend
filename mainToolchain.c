@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
                 loadMapPackData(&workingPack, mainFilePath);
                 createFile(CACHE_NAME);
                 appendLine(CACHE_NAME, (char*) mainFilePath);
-                
+
             }
 			proceed = !back;
 		}
@@ -557,9 +557,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
         /*if (isMain)
         {
             char version[12];
-            strcpy(version, FULLVERSION_STRING);
-            strcat(version, STATUS_SHORT);
-            strcat(version, "\0");
+            snprintf(version, 12, "%s%s", FULLVERSION_STRING, STATUS_SHORT);
             drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
             drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);

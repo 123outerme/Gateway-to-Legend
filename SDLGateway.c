@@ -283,6 +283,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
             {
                 quit = true;
                 selection = ANYWHERE_QUIT;
+                Mix_PlayChannel(-1, OPTION_SOUND, 0);
             }
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
@@ -730,6 +731,8 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_gain_exp)
     {
         player->experience += strtol(scriptData->data, NULL, 10);
+        if (player->experience > 9999)
+            player->experience = 9999;
         if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
             CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
         //play animation (?) and sound
@@ -737,6 +740,8 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_gain_money)
     {
         player->money += strtol(scriptData->data, NULL, 10);
+        if (player->money > 9999)
+            player->money = 9999;
         if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
             CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
         //play animation (?) and sound
