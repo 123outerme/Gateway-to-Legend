@@ -16,8 +16,11 @@
       function calcMapCoords() {
         var x = document.getElementById("mapx").value;
         var y = document.getElementById("mapy").value;
-	var line = ((x - 1) % 10) + (10 * (y - 1)) + 1;
-        document.getElementById("return").innerHTML = "Line " + line + "<br />Map ID " + (line - 1);
+        var line = ((x - 1) % 10) + (10 * (y - 1)) + 1;
+	      if (line > 0 || x > 10)
+          document.getElementById("return").innerHTML = "Line " + line + "<br />Map ID " + (line - 1);
+        else
+          document.getElementByID("return").innerHTML = "Please fill in the forms properly:<ul><li>All values must be filled in and must be numbers</li><li>Both arguments must be greater than or equal to 1</li><li>X must be less than or equal to 10</li></ul>";
       }
     </script>
   </head>
