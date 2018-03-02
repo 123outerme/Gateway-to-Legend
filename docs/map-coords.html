@@ -16,7 +16,8 @@
       function calcMapCoords() {
         var x = document.getElementById("mapx").value;
         var y = document.getElementById("mapy").value;
-        document.getElementById("return").innerHTML = ((x - 1) % 10) + (10 * (y - 1)) + 1;
+	var line = ((x - 1) % 10) + (10 * (y - 1)) + 1;
+        document.getElementById("return").innerHTML = "Line " + line + "\nMap ID " + (line - 1);
       }
     </script>
   </head>
