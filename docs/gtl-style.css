@@ -67,3 +67,11 @@ th, td {
   color: red;
   background-color: darkred;
 }
+
+.error-left-align {
+  border-radius: 15px;
+  max-width: 500px;
+  text-align: left;
+  color: red;
+  background-color: darkred;
+}
