@@ -3,7 +3,7 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8">
-	<meta name="description" content="Puzzle-RPG indie game">
+	  <meta name="description" content="Puzzle-RPG indie game">
     <meta name="keywords" content="free,indie,puzzle,rpg,puzzle-rpg,gateway,gateway-to-legend">
     <meta name="author" content="Stephen Policelli">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,14 @@
     <link rel = "stylesheet"
      type = "text/css"
      href = "gtl-style.css" />
-	<link rel="icon" type="image/ico" href="favicon.ico">
+	  <link rel="icon" type="image/ico" href="favicon.ico">
+    <script>
+      function calcMapCoords() {
+        var x = document.getElementById("mapx").value;
+        var y = document.getElementById("mapy").value;
+        document.getElementById("return").innerHTML = ((x - 1) % 10) + (10 * (y - 1)) + 1;
+      }
+    </script>
   </head>
   <body>
     <div class="align_right">
@@ -20,9 +27,11 @@
     <h1>Gateway to Legend</h1>
     <p>Use this tool to convert the (x, y) position you want your map to appear at, with the origin being at the top left of the world, to the line number you should put it on.</p>
     <form>
-      <input type="number" />
-      <input type="number" />
-      <input type="submit" value="Submit" />
+      <input type="number" id="mapx" min="1" max="10" />
+      <input type="number" id="mapy" min="1" />
+      <input type="submit" value="Submit" onclick="calcMapCoords();"/>
     </form>
+    <p id="return"></p>
+    <noscript>Your browser does not support JavaScript!</noscript>
   </body>
 </html>
