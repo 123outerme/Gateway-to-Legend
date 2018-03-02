@@ -284,6 +284,11 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void coinStore()
+{
+
+}
+
 void changeVolumes()
 {
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
@@ -342,6 +347,9 @@ void changeVolumes()
                     {
                         musicVolume -= 16;
                         Mix_VolumeMusic(musicVolume);
+                        Mix_Volume(-1, musicVolume);
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                        Mix_Volume(-1, soundVolume);
                     }
                     else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
                     {
@@ -357,6 +365,9 @@ void changeVolumes()
                     {
                         musicVolume += 16;
                         Mix_VolumeMusic(musicVolume);
+                        Mix_Volume(-1, musicVolume);
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                        Mix_Volume(-1, soundVolume);
                     }
                     else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
                     {
@@ -980,6 +991,11 @@ int mainLoop(player* playerSprite)
                             {
                                 enemies[i].type = type_na;
                                 enemyFlags[i] = false;
+                                script rewardScript;
+                                initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5");  //note: enemies should probably actually become money, "dropping" it and only rewarding when you pick it up
+                                executeScriptAction(&rewardScript, playerSprite);
+                                initScript(&rewardScript, script_gain_exp, 0, 0, 0, 0, 0, "25");
+                                executeScriptAction(&rewardScript, playerSprite);
                             }
                             enemies[i].angle = swordTimer;  //angle == hit detection cooldown timer
                         }
@@ -1095,9 +1111,13 @@ int mainLoop(player* playerSprite)
                         if (bossHP < 1 && (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250))
                         {
                             bossSprite.type = type_na;
-                            script openAllDoors;
-                            initScript(&openAllDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");
-                            executeScriptAction(&openAllDoors, playerSprite);
+                            script bossDeadScript;
+                            initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+                            executeScriptAction(&bossDeadScript, playerSprite);
+                            initScript(&bossDeadScript, script_gain_money, 0, 0, 0, 0, 0, "15");  //boss should probably become money, "dropping" it
+                            executeScriptAction(&bossDeadScript, playerSprite);
+                            initScript(&bossDeadScript, script_gain_exp, 0, 0, 0, 0, 0, "50");
+                            executeScriptAction(&bossDeadScript, playerSprite);
                         }
                         bossSprite.angle = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);

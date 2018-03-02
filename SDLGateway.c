@@ -53,6 +53,10 @@ int initSounds()
     if (!DOOROPEN_SOUND)
         return -5;
 
+    CASH_SOUND = Mix_LoadWAV(CASH_FILE);
+    if (!CASH_SOUND)
+        return -5;
+
     PLAYERHURT_SOUND = Mix_LoadWAV(PLAYERHURT_FILE);
     if (!PLAYERHURT_SOUND)
         return -5;
@@ -726,11 +730,15 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_gain_exp)
     {
         player->experience += strtol(scriptData->data, NULL, 10);
+        if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
+            CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
         //play animation (?) and sound
     }
     if (scriptData->action == script_gain_money)
     {
         player->money += strtol(scriptData->data, NULL, 10);
+        if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
+            CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
         //play animation (?) and sound
     }
     if (scriptData->action == script_player_hurt && player->invincCounter <= 0)

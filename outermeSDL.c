@@ -238,6 +238,12 @@ void closeSDL()
 	SDL_FreeSurface(mainScreen);
     SDL_DestroyWindow(mainWindow);
     SDL_DestroyRenderer(mainRenderer);
+    for(int i = 0; i < MAX_SOUNDS; i++)
+        Mix_FreeChunk(audioArray[i]);
+
+    for(int i = 0; i < MAX_MUSIC; i++)
+        Mix_FreeMusic(musicArray[i]);
+
     TTF_Quit();
     IMG_Quit();
     Mix_CloseAudio();

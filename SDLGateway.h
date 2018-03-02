@@ -130,8 +130,9 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GATEWAYSTART_SOUND audioArray[9]
 #define GATEWAYEND_SOUND audioArray[10]
 #define DOOROPEN_SOUND audioArray[11]
-#define PLAYERHURT_SOUND audioArray[12]
-#define ENEMYHURT_SOUND audioArray[13]
+#define CASH_SOUND audioArray[12]
+#define PLAYERHURT_SOUND audioArray[13]
+#define ENEMYHURT_SOUND audioArray[14]
 
 #define UNSHEATH_FILE "audio/unsheath.ogg"
 #define OPTION_FILE "audio/unsheath_bass.ogg"
@@ -141,6 +142,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GATEWAYSTART_FILE "audio/gateway1.ogg"
 #define GATEWAYEND_FILE "audio/gateway2.ogg"
 #define DOOROPEN_FILE "audio/doorOpen.ogg"
+#define CASH_FILE "audio/coin.ogg"
 #define PLAYERHURT_FILE "audio/playerHurt.ogg"
 #define ENEMYHURT_FILE "audio/enemyHurt.ogg"
 
@@ -152,8 +154,9 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SWING_CHANNEL channelArray[8]
 #define GATEWAY_CHANNEL channelArray[9]
 #define DOOROPEN_CHANNEL channelArray[10]
-#define PLAYERHURT_CHANNEL channelArray[11]
-#define ENEMYHURT_CHANNEL channelArray[12]
+#define CASH_CHANNEL channelArray[11]
+#define PLAYERHURT_CHANNEL channelArray[12]
+#define ENEMYHURT_CHANNEL channelArray[13]
 
 
 
