@@ -1100,6 +1100,17 @@ void mainScriptEdtior(mapPack* workingPack)
         if (newScript.action != script_none)
             writeScriptData(&newScript, 1);
     }
+    else
+    {
+        sprite scriptSpr;
+        initSprite(&scriptSpr, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
+        bool quit = false;
+        int scriptLineNum = 0;
+        while(!quit)
+        {
+            //load a script
+        }
+    }
 }
 
 int scriptSelectLoop(mapPack workingPack)
@@ -1107,7 +1118,7 @@ int scriptSelectLoop(mapPack workingPack)
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 14;
-    char* optionsArray[] = {"None", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
+    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
