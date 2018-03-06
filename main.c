@@ -293,8 +293,23 @@ void coinStore(player* playerSprite)
         char title[18];
         snprintf(title, 18, "Store: %d Coins", playerSprite->money);
         int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
-        if (choice == 3 || choice == -1)
+        switch(choice)
+        {
+        case 1:
+            {
+                //
+            }
+            break;
+        case 2:
+            {
+                //
+            }
+            break;
+        case 3:
+        case -1:
             quit = true;
+            break;
+        }
     }
 }
 
