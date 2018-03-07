@@ -17,7 +17,7 @@
     	    <a href="https://github.com/123outerme/Gateway-to-Legend">Go to the Github repository.</a>
     	</div>
     	<h1>Gateway to Legend</h1>
-		<div class="center" style="width: 800px;">
+		<div class="center" style="width: 1200px;">
     		<h2>Table of Contents</h2>
     		<h3><a href="#new">Starting a New Map-Pack</a></h3>
     		<h3><a href="#maps">Creating Maps</a></h3>
@@ -25,12 +25,13 @@
     		<h3><a href="#mpd">Editing Map-Pack Data</a></h3>
 		<br />
 		</div>
-		<div class="center" style="width: 800px;">
+		<hr />
+		<div class="center" style="width: 1200px;">
     		<h2 id="new">Starting a New Map-Pack</h2>
     		<p><strong>Select "New" from the menu after launching the toolchain. Input all the data it asks.</strong> After that, a window will launch with your tileset on it, and instructions. <strong>Navigate the cursor to the tile it asks you to find and press Space on it</strong>. Finish and it will naturally quit. If you make a mistake, press Enter before you complete the map-pack, and try again with Map-Pack Wizard -> Edit Tile Equates.</p>
 		</div>
-    
-    	<div class="center" style="width: 800px;">
+    	<hr />
+    	<div class="center" style="width: 1200px;">
 			<h2 id="maps">Creating Maps</h2>
 			<p>To create a map, load your map-pack then select <em>Map Creator</em>. You can load an existing map from your map-pack or start a new one. A new one will load all blank.<br />
 			Place down tiles using <strong><kbd>Interact</kbd></strong> <em>(default Space)</em>, and maneuver using <strong><kbd>Up/Down/Left/Right</kbd></strong> <em>(default WASD)</em>. Switch between placing tiles and objects using <strong><kbd>Attack</kbd></strong> <em>(default Left Shift)</em>. Objects are ordered as follows:</p>
@@ -48,18 +49,21 @@
 			The tileset should be made of 48x48 tiles, and it should be formatted with rows of 8 tiles and columns of 16, so <strong>the size of the tileset image is 768 x 384 px</strong>. Maps in scripts are referred to as their line number, minus 1. The map on line 1 would be map ID 0.
 			Save your map by pressing <strong><kbd>Menu</kbd></strong> <em>(default Escape)</em>, closing the window, or <kbd>Enter/Return</kbd>. Copy the data that's outputted to the console or <code>output/map.txt</code> to your map file on the line number you want it to appear. Use <a href="map-coords.html">this tool</a> to convert map coordinates in (x,y) to a line number.</p>
 		</div>
-		<div class="center" style="width: 800px;">
+		<hr />
+		<div class="center" style="width: 1200px;">
 			<h2 id="scripts">Creating Scripts</h2>
 			<p>A script is a line of data that corresponds to a certain action. This allows you to customize your experience with text boxes, bosses, teleporting, etc. <br/ >
 			 To create a script, pick the Script Editor option in the Tools menu. Select which type of action you would like to program and hit start. Maneuver the cursor using <strong><kbd>Up/Down/Left/Right</kbd></strong> <em>(default WASD)</em>, and place the X,Y coordinate of your script using <strong><kbd>Interact</kbd></strong> <em>(default Space)</em>. <wbr />
 			Then, you must set the width and height of your script. To change the amount your w/h increment and decrement by from a 1/8 of a tile to a full tile, press <strong><kbd>Attack</kbd></strong> <em>(default Left Shift)</em>. To switch back, press it again. This option is especially useful for defining the size of a boss. <wbr />
 			Press <strong><kbd>Interact</kbd></strong> again to place your width and height. Depending on what script you chose, you'll have to input extra data. After that, it'll output to the console and to <code>output/script.txt</code>. Copy and paste it anywhere in your script file, and if the second number is -1, change that number to the map ID of the map it's occuring on.</p>
 		</div>
-		<div class="center" style="width: 800px;">
+		<hr />
+		<div class="center" style="width: 1200px;">
 			<h2 id="mpd">Editing Map-Pack Data</h2>  
 			<p>When you first created your map-pack, you defined several things such as where to find your files, where you want the player to initially spawn, and what tiles map to what objects. During the development of your map-pack, some of these things will likely change. <wbr />
 		   Navigate to <em>Map-Pack Wizard</em> from the Tools menu. Select the option that pertains to the data you want to edit (Inital Spawn, Files, etc.) and follow the instructions. Any data you enter will automatically save to your map-pack.</p>
 		</div>
+		<hr />
 		<a href="index.html">Back to the main page.</a> <br />
 		<a href="screenshots.html">See my screenshots and videos.</a> <br />
 		<a href="mappacks.html">See the standard map-pack set.</a> <br />
