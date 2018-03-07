@@ -42,6 +42,12 @@ table {
   border-collapse: collapse;
 }
 
+hr {
+  width: 2000px;
+  border-width: 5px;  
+  border-style: groove;
+}
+
 th, td {
   border: 2px solid rgb(0, 96, 128);
   padding: 10px;
