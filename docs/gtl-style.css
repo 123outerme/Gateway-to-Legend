@@ -1,6 +1,7 @@
 body {
   background-color: rgb(215, 223, 239);
   font-family: "Lucida Console", "Courier New", Times, serif;
+  line-height: 1.6;
 }
 
 h1, th {
