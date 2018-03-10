@@ -68,9 +68,9 @@ int initSounds()
     return 0;
 }
 
-void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
+void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
-    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, type_player);
+    initSprite(&(player->spr), x, y, w, h, tileIndex, angle, flip, type_player);
     strcpy(player->name, "");
     player->level = 1;
     player->experience = 0;
@@ -91,9 +91,9 @@ void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
-    initPlayer(playerSprite, x, y, size, mapScreen, angle, flip, tileIndex);
+    initPlayer(playerSprite, x, y, w, h, mapScreen, angle, flip, tileIndex);
     playerSprite->HP = playerSprite->maxHP;
     saveLocalPlayer(*playerSprite, filePath);
 }
@@ -103,6 +103,13 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
     strcpy(playerSprite->name, "Player");
     //inputName(playerSprite);  //custom text input routine to get player->name
 	saveGlobalPlayer(*playerSprite, filePath);
+}
+
+void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type)
+{
+    initSprite(&(enemyPtr->spr), x, y, w, h, tileIndex, 0, SDL_FLIP_NONE, type);
+    enemyPtr->HP = HP;
+    enemyPtr->invincTimer = 0;
 }
 
 void initConfig(char* filePath)
@@ -202,7 +209,7 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
 
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
 {
-    int numsC = 0, numsR = 0,  i, num;
+    int numsC = 0, numsR = 0,  i = y, num;  //no reason to set i to y, just warding off warnings
     bool writeToTilemap = false;
     char thisLine[1200], substring[2];
     strcpy(thisLine, readLine(filePath, lineNum, (char**) &thisLine));
@@ -243,7 +250,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     if (options < 0)
         return ANYWHERE_QUIT;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
     bool quit = false, settingsReset = false;
     int selection = -1;
@@ -271,7 +278,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
             drawTile(TILE_ID_TILDA, 2, 0, TILE_SIZE, 0, SDL_FLIP_NONE);
             drawTile(TILE_ID_CUBED, TILE_SIZE, 0, TILE_SIZE, 0, SDL_FLIP_NONE);
             drawTile(TILE_ID_TILDA, 2 * TILE_SIZE - 2, 0, TILE_SIZE, 0, SDL_FLIP_NONE);
-            drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR}, false);
+            drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
         }
 
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
@@ -400,7 +407,7 @@ void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int sele
     bool conflict = false;
     for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
     {
-        if (CUSTOM_SCANCODES[i] == SDL_GetScancodeFromKey(kc))
+        if (CUSTOM_SCANCODES[i] == (int) SDL_GetScancodeFromKey(kc))
             conflict = true;
     }
     if (!conflict)
@@ -434,7 +441,7 @@ int readScript(script* scriptPtr, char* input)
 	return 0;
 }
 
-char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
+char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int* strNum)
 {
 	DIR* dir = opendir(directory);
 	if (dir == NULL)
@@ -444,7 +451,7 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 	}
 	struct dirent* ent;
 	char** strArray = malloc(maxStrings * sizeof(char*));
-	for (int i =0 ; i < maxStrings; ++i)
+	for (int i = 0 ; i < maxStrings; ++i)
 		strArray[i] = malloc(maxLength * sizeof(char));
 	int i = 0;
 	while ((ent = readdir(dir)) != NULL)
@@ -474,7 +481,7 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8,
                                                   .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
-    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0}, redraw);
+    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0, 0xFF}, redraw);
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
@@ -570,7 +577,7 @@ bool executeScriptAction(script* scriptData, player* player)
     bool exitGameLoop = false;
     if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once) && scriptData->data[0] != '\0')
     {
-        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
+        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
         waitForKey();
         if (scriptData->action == script_trigger_dialogue_once)
             scriptData->data[0] = '\0';
@@ -758,7 +765,9 @@ bool executeScriptAction(script* scriptData, player* player)
         if (dmg > 0)
             Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
         else
+        {
             ; //play heal sound
+        }
         //play animation (?) and sound
     }
     scriptData->active = false;

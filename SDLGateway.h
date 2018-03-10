@@ -45,6 +45,12 @@ typedef struct {
     char* extraData;
 } player;
 
+typedef struct {
+    sprite spr;
+    int invincTimer;
+    int HP;
+} enemy;
+
 typedef enum {
     script_none,                   //0 default, do nothing
     script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
@@ -84,9 +90,10 @@ typedef struct {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int initSounds();  //inits all sounds used. Returns -5 if one can't load
-void initPlayer(player* player, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int size, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
+void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
+void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type);  //inits an enemy
 void initConfig(char* filePath);  //resets config data
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
 void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance);  //initializes a new node
@@ -103,7 +110,7 @@ void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int sele
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath, const bool drawDebug);  //finds the path between (startX, startY) and (endX, endY) using the data in eventmap
 int readScript(script* scriptPtr, char* input);  //inits a script from a string input
-char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
+char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script

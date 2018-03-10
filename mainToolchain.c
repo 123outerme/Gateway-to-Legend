@@ -142,7 +142,7 @@ void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update
 int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
-void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex);
+void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
 //^map creator functions.
 
@@ -346,7 +346,7 @@ void createMapPack(mapPack* newPack)
 
     initSDL("Gateway to Legend Map-Pack Wizard", newPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 16, TILE_SIZE * 9, 24);
     sprite chooser;
-    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
+    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     char* temp = "";
     mainMapPackWizardLoop(&chooser, newPack->tilesetMaps);
 
@@ -531,7 +531,7 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     if (options < 0)
         return ANYWHERE_QUIT;
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
     bool quit = false, settingsReset = false;
     int selection = -1;
@@ -654,7 +654,7 @@ int mainMapCreator(mapPack* workingPack)
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
     player creator;
-    initPlayer(&creator, 0, 0, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
+    initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
     creator.mapScreen = -1;
     if (loadCheck[0] == 'y')
     {
@@ -1004,10 +1004,10 @@ SDL_Keycode getKey()
     return keycode;
 }
 
-void initPlayer(player* player, int x, int y, int size, int angle, SDL_RendererFlip flip, int tileIndex)
+void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex)
 {
     //inputName(player);  //custom text input routine to get player->name
-    initSprite(&(player->spr), x, y, size, tileIndex, angle, flip, (entityType) type_player);
+    initSprite(&(player->spr), x, y, w, h, tileIndex, angle, flip, (entityType) type_player);
 	player->level = 1;
 	player->experience = 0;
 	player->money = 0;
@@ -1103,7 +1103,7 @@ void mainScriptEdtior(mapPack* workingPack)
     else
     {
         sprite scriptSpr;
-        initSprite(&scriptSpr, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
+        initSprite(&scriptSpr, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
         bool quit = false;
         int scriptLineNum = 0;
         while(!quit)
@@ -1116,7 +1116,7 @@ void mainScriptEdtior(mapPack* workingPack)
 int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 14;
     char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
@@ -1228,7 +1228,7 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
     int intervalSize = TILE_SIZE;
     char* data = calloc(99, sizeof(char));
     sprite cursor;
-    initSprite(&cursor, 0, 0, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+    initSprite(&cursor, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
     bool quit = false, editXY = true, bigIntervalSize = false;
     SDL_Keycode key;
     while(!quit)
@@ -1437,7 +1437,7 @@ void editTileEquates(mapPack* workingPack)
     int numbers[MAX_SPRITE_MAPPINGS];
     numbers[0] = -1;
     sprite chooser;
-    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
+    initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     mainMapPackWizardLoop(&chooser, (int*) numbers);
     if (!(numbers[0] == -1))
     {

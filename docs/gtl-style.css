@@ -1,7 +1,6 @@
 body {
   background-color: rgb(215, 223, 239);
   font-family: "Lucida Console", "Courier New", Times, serif;
-  line-height: 1.6;
 }
 
 h1, th {
@@ -42,11 +41,6 @@ table {
   border-collapse: collapse;
 }
 
-hr {
-  width: 80%;
-  border-style: groove;
-}
-
 th, td {
   border: 2px solid rgb(0, 96, 128);
   padding: 10px;
@@ -61,16 +55,6 @@ th, td {
 
 .align_right {
   text-align: right;
-  float: right;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.align_left {
-  text-align: left;
-  float: left;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .error {

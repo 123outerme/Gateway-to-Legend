@@ -59,8 +59,8 @@ int tileIDArray[MAX_TILE_ID_ARRAY];
 #define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+LeftShift to maneuver various worlds. Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
-sprite enemies[MAX_ENEMIES];
-sprite bossSprite;
+enemy enemies[MAX_ENEMIES];
+enemy bossSprite;
 bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
@@ -70,7 +70,9 @@ int main(int argc, char* argv[])
     //setting up default values
     //debug = true;
     {
-        int initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+
+        int initCode = argc;
+        initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
         initCode = initSounds();
@@ -159,7 +161,7 @@ int main(int argc, char* argv[])
                 {
                     SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
                     SDL_RenderFillRect(mainRenderer, NULL);
-                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
                     pauseKey = getKey(0);
                 }
             }
@@ -208,7 +210,7 @@ int main(int argc, char* argv[])
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
-                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), 0, SDL_FLIP_NONE, PLAYER_ID);
+                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, TILE_SIZE, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), 0, SDL_FLIP_NONE, PLAYER_ID);
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
@@ -220,7 +222,7 @@ int main(int argc, char* argv[])
             person.lastMap = strtol(readLine(saveFilePath, 4, &temp), NULL, 10);
             person.lastX = strtol(readLine(saveFilePath, 5, &temp), NULL, 10);
             person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
-            initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+            initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 1, type_boss);
             loadBoss = true;
 
             gameState = RELOAD_GAMECODE;
@@ -262,7 +264,7 @@ int main(int argc, char* argv[])
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
-                initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+                initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
                 loadBoss = true;
                 person.lastMap = -1;
                 person.lastX = -1;
@@ -315,9 +317,9 @@ void coinStore(player* playerSprite)
 
 void changeVolumes()
 {
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF};
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
     bool quit = false;
     while(!quit)
@@ -420,9 +422,9 @@ void changeVolumes()
 int changeControls()
 {
     sprite cursor;
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
-    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
-    initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF};
+    initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     int selection = -1;
     bool superQuit = false;
     while(!superQuit)
@@ -521,12 +523,12 @@ void changeName()
 void changeFPS()
 {
     sprite cursor;
-    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 6;
     char* optionsArray[] = {"No Cap", "30", "45", "60", "80", "120"};
     int FPSchoice = 0, selection = -1;
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
-    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF};
     SDL_Event e;
     bool quit = false;
     while(!quit)
@@ -537,11 +539,11 @@ void changeFPS()
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
         //foreground text
-        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
+        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
 
-        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
 
         drawText("Select", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
         drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
@@ -632,8 +634,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
@@ -702,8 +704,7 @@ int mainLoop(player* playerSprite)
                 enemyCount++;
                 if (enemyFlags[MAX_ENEMIES])
                 {
-                    initSprite(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 10), 0, SDL_FLIP_NONE, enemyFlags[enemyCount - 1] ? type_enemy : type_na);
-                    enemies[enemyCount - 1].h = 1 + (eventmap[y][x] == 13);
+                    initEnemy(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 10), 1 + (eventmap[y][x] == 13), enemyFlags[enemyCount - 1] ? type_enemy : type_na);
                 }
             }
         }
@@ -715,17 +716,17 @@ int mainLoop(player* playerSprite)
         {
             bossScript = theseScripts[i];
             char* data = calloc(99, sizeof(char));
-            bossSprite.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
+            bossSprite.spr.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
             bossTiles = strtol(strtok(NULL, "[/]"), NULL, 10);
             if (!loadBoss)
             {
-                bossScript.x = bossSprite.x;
-                bossScript.y = bossSprite.y;
+                bossScript.x = bossSprite.spr.x;
+                bossScript.y = bossSprite.spr.y;
             }
             else
                 bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
-            initSprite(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossSprite.tileIndex, 0, SDL_FLIP_NONE, bossSprite.type);
-            bossSprite.h = bossScript.h;
+
+            initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, bossSprite.spr.type);
             loadBoss = false;
             free(data);
             break;
@@ -752,10 +753,10 @@ int mainLoop(player* playerSprite)
     int exitCode = 2;
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
-        frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks(),
-        swordTimer = SDL_GetTicks() + 250;
+        frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks();
+    Uint32 swordTimer = SDL_GetTicks() + 250;
     sprite sword;
-    initSprite(&sword, 0, 0, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
+    initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -875,7 +876,7 @@ int mainLoop(player* playerSprite)
                     else
                         yDir = 0;
                     yDir *= !xDir;  //x direction takes precedence over the y direction
-                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
 
                     if (!swordTimer)
                         swordTimer = SDL_GetTicks() + 750;
@@ -927,7 +928,7 @@ int mainLoop(player* playerSprite)
                         exitCode = 2;
                         playerSprite->xVeloc = 0;
                         playerSprite->yVeloc = 0;
-                        initSprite(&bossSprite, -48, -48, 0, 0, 0, SDL_FLIP_NONE, type_boss);
+                        initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
                         loadBoss = true;
                         script resetScript;
                         initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
@@ -1005,15 +1006,17 @@ int mainLoop(player* playerSprite)
                 {
                     bool collidedOnce = false;
 
-                    if (checkSquareCol(sword.x, sword.y, enemies[i].x, enemies[i].y, TILE_SIZE) && swordTimer > SDL_GetTicks() + 250 && enemies[i].type == type_enemy)  //sword collision
+                    if (checkSquareCol(sword.x, sword.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE)
+                        && swordTimer > SDL_GetTicks() + 250
+                        && enemies[i].spr.type == type_enemy)  //sword collision
                     {
-                        if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                        if (enemies[i].invincTimer == 0 || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
                         {
-                            enemies[i].h--;  //.h == health
+                            enemies[i].HP--;
                             playHitSound = true;
-                            if (enemies[i].h < 1 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                            if (enemies[i].HP < 1 /*&& (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250*/)
                             {
-                                enemies[i].type = type_na;
+                                enemies[i].spr.type = type_na;
                                 enemyFlags[i] = false;
                                 script rewardScript;
                                 initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5");  //note: enemies should probably actually become money, "dropping" it and only rewarding when you pick it up
@@ -1021,120 +1024,120 @@ int mainLoop(player* playerSprite)
                                 initScript(&rewardScript, script_gain_exp, 0, 0, 0, 0, 0, "25");
                                 executeScriptAction(&rewardScript, playerSprite);
                             }
-                            enemies[i].angle = swordTimer;  //angle == hit detection cooldown timer
+                            enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
                     }
 
-                    if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].x, enemies[i].y, TILE_SIZE) && enemies[i].type == type_enemy && !(playerSprite->invincCounter))  //player collision
+                    if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type == type_enemy && !(playerSprite->invincCounter))  //player collision
                     {
                          script hurtPlayer;
-                         initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].tileIndex != ENEMY(3) ? "1" : "2");
-                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y))
-                         - 48 * (enemies[i].x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].x) > abs(playerSprite->spr.y - enemies[i].y)));
+                         initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2");
+                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y))
+                         - 48 * (enemies[i].spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y)));
 
-                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x))
-                         - 48 * (enemies[i].y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].y) > abs(playerSprite->spr.x - enemies[i].x)));
+                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x))
+                         - 48 * (enemies[i].spr.y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x)));
                          executeScriptAction(&hurtPlayer, playerSprite);
                          playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
                          collidedOnce = true;
                     }
 
-                    if (enemies[i].tileIndex == ENEMY(1) && enemies[i].type == type_enemy)
+                    if (enemies[i].spr.tileIndex == ENEMY(1) && enemies[i].spr.type == type_enemy)
                     {
                         //behavior: move quickly at player, with little HP
                         int length = 0;
-                        node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
-                        /*if (enemies[i].x != playerSprite->spr.x)
-                            enemies[i].x += 3 - 6 * (playerSprite->spr.x < enemies[i].x);
-                        if (enemies[i].y != playerSprite->spr.y)
-                            enemies[i].y += 3 - 6 * (playerSprite->spr.y < enemies[i].y);*/
-                        if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                        /*if (enemies[i].spr.x != playerSprite->spr.x)
+                            enemies[i].spr.x += 3 - 6 * (playerSprite->spr.x < enemies[i].spr.x);
+                        if (enemies[i].spr.y != playerSprite->spr.y)
+                            enemies[i].spr.y += 3 - 6 * (playerSprite->spr.y < enemies[i].spr.y);*/
+                        if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
                         {
-                            if (nodeArray[1].x < enemies[i].x)
-                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            if (nodeArray[1].x < enemies[i].spr.x)
+                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
                             else
-                                enemies[i].flip = SDL_FLIP_NONE;
+                                enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                            if (enemies[i].x != nodeArray[1].x)  //nodeArray[1] -> next tile
-                                enemies[i].x += 3 - 6 * (nodeArray[1].x < enemies[i].x);
-                            if (enemies[i].y != nodeArray[1].y)
-                                enemies[i].y += 3 - 6 * (nodeArray[1].y < enemies[i].y);
+                            if (enemies[i].spr.x != nodeArray[1].x)  //nodeArray[1] -> next tile
+                                enemies[i].spr.x += 3 - 6 * (nodeArray[1].x < enemies[i].spr.x);
+                            if (enemies[i].spr.y != nodeArray[1].y)
+                                enemies[i].spr.y += 3 - 6 * (nodeArray[1].y < enemies[i].spr.y);
 
                         }
                         free(nodeArray);
                     }
 
-                    if (enemies[i].tileIndex == ENEMY(2) && enemies[i].type == type_enemy)
+                    if (enemies[i].spr.tileIndex == ENEMY(2) && enemies[i].spr.type == type_enemy)
                     {
                         //behavior: burst movement towards player?
-                        if (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250)
+                        if (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
                         {
-                            if (playerSprite->spr.x < enemies[i].x)
-                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            if (playerSprite->spr.x < enemies[i].spr.x)
+                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
                             else
-                                enemies[i].flip = SDL_FLIP_NONE;
+                                enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                            if (enemies[i].x != playerSprite->spr.x)
-                                enemies[i].x += 2 - 4 * (playerSprite->spr.x < enemies[i].x);
-                            if (enemies[i].y != playerSprite->spr.y)
-                                enemies[i].y += 2 - 4 * (playerSprite->spr.y < enemies[i].y);
+                            if (enemies[i].spr.x != playerSprite->spr.x)
+                                enemies[i].spr.x += 2 - 4 * (playerSprite->spr.x < enemies[i].spr.x);
+                            if (enemies[i].spr.y != playerSprite->spr.y)
+                                enemies[i].spr.y += 2 - 4 * (playerSprite->spr.y < enemies[i].spr.y);
                         }
                     }
 
-                    if (enemies[i].tileIndex == ENEMY(3) && enemies[i].type == type_enemy)
+                    if (enemies[i].spr.tileIndex == ENEMY(3) && enemies[i].spr.type == type_enemy)
                     {
                         //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
                         int length = 0;
                         static node curNode;
-                        if (!length || (curNode.x == enemies[i].x && curNode.y == enemies[i].y))
+                        if (!length || (curNode.x == enemies[i].spr.x && curNode.y == enemies[i].spr.y))
                         {
-                            node* nodeArray = BreadthFirst(enemies[i].x, enemies[i].y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                            node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
                             if (length > 0)
                             {
                                 curNode = nodeArray[1];
                                 free(nodeArray);
                             }
                         }
-                        if (length > 0 && (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250))
+                        if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
                         {
-                            if (curNode.x < enemies[i].x)
-                                enemies[i].flip = SDL_FLIP_HORIZONTAL;
+                            if (curNode.x < enemies[i].spr.x)
+                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
                             else
-                                enemies[i].flip = SDL_FLIP_NONE;
+                                enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                            if (enemies[i].x != curNode.x)
-                                enemies[i].x += 3 - 6 * (curNode.x < enemies[i].x);
-                            if (enemies[i].y != curNode.y)
-                                enemies[i].y += 3 - 6 * (curNode.y < enemies[i].y);
+                            if (enemies[i].spr.x != curNode.x)
+                                enemies[i].spr.x += 3 - 6 * (curNode.x < enemies[i].spr.x);
+                            if (enemies[i].spr.y != curNode.y)
+                                enemies[i].spr.y += 3 - 6 * (curNode.y < enemies[i].spr.y);
                         }
                     }
                 }
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
-            if (bossSprite.x >= 0 && bossSprite.type == type_boss)
+            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss)
             {
-                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.x, bossSprite.y, bossSprite.w, bossSprite.h))
+                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
                     script hurtPlayer;
                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "2");
-                    playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - bossSprite.x) > abs(playerSprite->spr.y - bossSprite.y))
-                        - 48 * (bossSprite.x > playerSprite->spr.x && (abs(playerSprite->spr.x - bossSprite.x) > abs(playerSprite->spr.y - bossSprite.y)));
+                    playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - bossSprite.spr.x) > abs(playerSprite->spr.y - bossSprite.spr.y))
+                        - 48 * (bossSprite.spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - bossSprite.spr.x) > abs(playerSprite->spr.y - bossSprite.spr.y)));
 
-                    playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - bossSprite.y) > abs(playerSprite->spr.x - bossSprite.x))
-                        - 48 * (bossSprite.y > playerSprite->spr.y && (abs(playerSprite->spr.y - bossSprite.y) > abs(playerSprite->spr.x - bossSprite.x)));
+                    playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - bossSprite.spr.y) > abs(playerSprite->spr.x - bossSprite.spr.x))
+                        - 48 * (bossSprite.spr.y > playerSprite->spr.y && (abs(playerSprite->spr.y - bossSprite.spr.y) > abs(playerSprite->spr.x - bossSprite.spr.x)));
                     executeScriptAction(&hurtPlayer, playerSprite);
                     playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
                     Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
                 }
-                if (checkRectCol(sword.x, sword.y, sword.w, sword.h, bossSprite.x, bossSprite.y, bossSprite.w, bossSprite.h) && swordTimer > SDL_GetTicks() + 250)
+                if (checkRectCol(sword.x, sword.y, sword.w, sword.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h) && swordTimer > SDL_GetTicks() + 250)
                 {
-                    if (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250)
+                    if (bossSprite.invincTimer == false || bossSprite.invincTimer < (int) SDL_GetTicks() + 250)
                     {
                         bossHP--;
-                        if (bossHP < 1 && (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250))
+                        if (bossHP < 1 /*&& (bossSprite.angle == false || bossSprite.angle < SDL_GetTicks() + 250)*/)
                         {
-                            bossSprite.type = type_na;
+                            bossSprite.spr.type = type_na;
                             script bossDeadScript;
                             initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
                             executeScriptAction(&bossDeadScript, playerSprite);
@@ -1143,13 +1146,13 @@ int mainLoop(player* playerSprite)
                             initScript(&bossDeadScript, script_gain_exp, 0, 0, 0, 0, 0, "50");
                             executeScriptAction(&bossDeadScript, playerSprite);
                         }
-                        bossSprite.angle = swordTimer;  //angle == hit detection cooldown timer
+                        bossSprite.invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
                     }
                 }
                 executeScriptAction(&bossScript, playerSprite);
-                bossSprite.x = bossScript.x;
-                bossSprite.y = bossScript.y;  //ignore collision on purpose
+                bossSprite.spr.x = bossScript.x;
+                bossSprite.spr.y = bossScript.y;  //ignore collision on purpose
             }
             if (!thisScript.active)
             {
@@ -1199,13 +1202,13 @@ int mainLoop(player* playerSprite)
 
         for(int i = 0; i < enemyCount; i++)
         {
-            if (enemies[i].type == type_enemy)
-                drawATile(tilesTexture, enemies[i].tileIndex, enemies[i].x, enemies[i].y, enemies[i].w, enemies[i].w, 0, enemies[i].flip);
+            if (enemies[i].spr.type == type_enemy)
+                drawATile(tilesTexture, enemies[i].spr.tileIndex, enemies[i].spr.x, enemies[i].spr.y, enemies[i].spr.w, enemies[i].spr.h, 0, enemies[i].spr.flip);
         }
-        if (bossSprite.x >= 0 && bossSprite.type == type_boss)
+        if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss)
         {
             for(int i = 0; i < bossTiles; i++)
-                drawATile(tilesTexture, bossSprite.tileIndex + (i / (bossSprite.w / TILE_SIZE)) + 8 * (i % (bossSprite.h / TILE_SIZE)), bossSprite.x + TILE_SIZE * (i % (bossSprite.w / TILE_SIZE)), bossSprite.y + TILE_SIZE * (i / (bossSprite.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.flip);
+                drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)

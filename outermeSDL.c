@@ -147,16 +147,16 @@ int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, 
     return wh;
 }
 
-void initSprite(sprite* spr, int x, int y, int size, int tileIndex, int angle, SDL_RendererFlip flip, entityType type)
+void initSprite(sprite* spr, int x, int y, int w, int h, int tileIndex, int angle, SDL_RendererFlip flip, entityType type)
 {
     spr->x = x;
 	spr->y = y;
-	spr->w = size;
-	spr->h = size;
+	spr->w = w;
+	spr->h = h;
 	spr->tileIndex = tileIndex;
 	spr->angle = angle;
 	spr->flip = flip;
-	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * size, .y = (tileIndex % 8) * size, .w = size, .h = size});
+	spr->clipRect = &((SDL_Rect){.x = (tileIndex / 8) * w, .y = (tileIndex % 8) * h, .w = w, .h = h});
 	spr->type = type;
 }
 
