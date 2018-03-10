@@ -103,6 +103,7 @@ void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from globa
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 SDL_Keycode getKey();  //like waitForKey but without waiting.
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);   //gets string input
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
 void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to global player save file

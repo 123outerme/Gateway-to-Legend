@@ -190,9 +190,7 @@ int main(int argc, char* argv[])
         int code = aMenu(tilesetTexture, MAINARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false);
         if (code == 1)
         {
-            closeSDL();
             createMapPack(&workingPack);
-            initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
             proceed = true;
         }
 
@@ -250,8 +248,9 @@ int main(int argc, char* argv[])
 
 void createMapPack(mapPack* newPack)
 {
-    char* getString = calloc(sizeof(char), MAX_CHAR_IN_FILEPATH);
-    char mapPackData[MAX_MAP_PACK_DATA][MAX_CHAR_IN_FILEPATH];
+    char* getString = calloc(sizeof(char), MAX_PATH);
+    char* message;
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
     int wizardState = 0;
     bool quit = false;
 	while (!quit)
@@ -259,33 +258,34 @@ void createMapPack(mapPack* newPack)
         switch(wizardState)
         {
         case 0:
-            printf("File name? map-packs/");
+            message = "File name? map-packs/";
             break;
         case 1:
-            printf("Title of map pack? ");
+            message = "Title of map pack? ";
             break;
         case 2:
-            printf("Path for maps file? maps/");
+            message = "Path for maps file? maps/";
             break;
         case 3:
-            printf("Path for tileset file? tileset/");
+            message = "Path for tileset file? tileset/";
             break;
         case 4:
-            printf("Path for savefile? saves/");
+            message = "Path for savefile? saves/";
             break;
         case 5:
-            printf("Path for scripts? scripts/");
+            message = "Path for scripts? scripts/";
             break;
         case 6:
-            printf("Initial X spawn-coordinate? ");
+            message = "Initial X spawn-coordinate? ";
             break;
         case 7:
-            printf("Initial Y spawn-coordinate? ");
+            message = "Initial Y spawn-coordinate? ";
             break;
-	case 8:
-	    printf("Initial map number? ");
+        case 8:
+            message = "Initial map number? ";
+            break;
         }
-        scanf(wizardState == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+        stringInput(&getString, message, MAX_PATH, "default.txt");
         switch(wizardState)
         {
         case 0:
@@ -294,7 +294,7 @@ void createMapPack(mapPack* newPack)
         case 3:
         case 4:
         case 5:
-            strncpy(mapPackData[wizardState], getString, 260);
+            strncpy(mapPackData[wizardState], getString, MAX_PATH);
 
             if (wizardState == 0)
                 strPrepend((char*) mapPackData[0], "map-packs/");
@@ -344,8 +344,6 @@ void createMapPack(mapPack* newPack)
     appendLine(newPack->mainFilePath, intToString(newPack->initX, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initY, getString));
     appendLine(newPack->mainFilePath, intToString(newPack->initMap, getString));
-
-    initSDL("Gateway to Legend Map-Pack Wizard", newPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 16, TILE_SIZE * 9, 24);
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     char* temp = "";
@@ -1037,6 +1035,8 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
                 {
                     char* temp = calloc(1, sizeof(char));
                     strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
+                    if (e.key.keysym.sym == SDLK_SPACE)  //space doesn't work until here
+                        temp[0] = ' ';
                     stringData[numChar++] = temp[0];
                     hasTyped = true;
                 }
@@ -1065,7 +1065,6 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
             SDL_RenderPresent(mainRenderer);
         }
     }
-
     if (!hasTyped || !strlen(stringData))
         strncpy(*data, defaultStr, maxChar);
     else
@@ -1429,28 +1428,28 @@ void editFilePaths(mapPack* workingPack)
             quit = true;
         else
         {
-            closeSDL();
-            char getString[MAX_PATH];
+            char* getString = calloc(MAX_PATH, sizeof(char));
+            char* message = calloc(99, sizeof(char));
             getString[0] = '\0';
             switch(choice)
             {
             case 1:
-                printf("Title of map pack? (Was %s)\n", workingPack->name);
+                sprintf(message, "Title of map pack? (Was %s)\n", workingPack->name);
                 break;
             case 2:
-                printf("Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
+                sprintf(message, "Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
                 break;
             case 3:
-                printf("Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
+                sprintf(message, "Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
                 break;
             case 4:
-                printf("Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
+                sprintf(message, "Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
                 break;
             case 5:
-                printf("Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
+                sprintf(message, "Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
                 break;
             }
-            scanf(choice == 1 ? "%19[^\n]%*c" : "%259[^\n]%*c", getString);
+            stringInput(&getString, message, 99, "default.txt");
             switch(choice)
             {
 
@@ -1474,7 +1473,8 @@ void editFilePaths(mapPack* workingPack)
                 strcpy(workingPack->scriptFilePath, getString);
                 break;
             }
-            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+            free(getString);
+            free(message);
         }
     }
     saveMapPack(workingPack);

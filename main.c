@@ -38,7 +38,6 @@ int changeControls();
 void changeName();
 void changeFPS();
 void clearData(player* playerSprite);
-void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
@@ -624,75 +623,6 @@ void clearData(player* playerSprite)
         createGlobalPlayer(playerSprite, GLOBALSAVE_FILEPATH);
         Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
     }
-}
-
-void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
-{
-    const int frameOffset = 250;
-    char* stringData = calloc(maxChar + 1, sizeof(char));
-    stringData[0] = ' ';
-    bool quit = false, hasTyped = false;
-    int numChar = 0, frame = 0;
-    SDL_Event e;
-    while(!quit)
-    {
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
-        SDL_RenderClear(mainRenderer);
-        SDL_RenderFillRect(mainRenderer, NULL);
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-            {
-                quit = true;
-                hasTyped = false;
-            }
-
-            if (e.type != SDL_KEYDOWN)
-                frame++;
-            else
-            {
-                if ((e.key.keysym.sym >= SDLK_SPACE && e.key.keysym.sym <= SDLK_z) && numChar < maxChar)
-                {
-                    char* temp = calloc(1, sizeof(char));
-                    strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
-                    stringData[numChar++] = temp[0];
-                    hasTyped = true;
-                }
-
-                if (e.key.keysym.sym == SDLK_BACKSPACE && numChar > 0)
-                {
-                    stringData[--numChar] = ' ';
-                    hasTyped = (numChar > 0);
-                }
-
-                if (e.key.keysym.scancode == SC_MENU || e.key.keysym.scancode == SDL_SCANCODE_RETURN)
-                    quit = true;
-            }
-
-            if (frame % frameOffset < frameOffset / 2 && numChar < maxChar)
-            {
-                SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-            }
-
-            if (frame % frameOffset >= frameOffset / 2)
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (maxChar + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
-
-            drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-            SDL_RenderPresent(mainRenderer);
-        }
-    }
-    Mix_PlayChannel(-1, OPTION_SOUND, 0);
-
-    if (!hasTyped || !strlen(stringData))
-        strncpy(*data, defaultStr, maxChar);
-    else
-        strncpy(*data, stringData, maxChar);
-    free(stringData);
 }
 
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
