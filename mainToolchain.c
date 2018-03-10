@@ -78,7 +78,7 @@ int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define WINDOW_NAME "Gateway to Legend Map Creator"
 #define MAIN_TILESET "tileset/mainTileset48.png"
 
-#define MAINARROW_ID 34
+#define MAIN_ARROW_ID 34
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
@@ -168,7 +168,7 @@ const int targetTime = 1000 / FRAMERATE;
 int main(int argc, char* argv[])
 {
     mapPack workingPack;
-    strcpy(workingPack.mainFilePath, "/\0");
+    strcpy(workingPack.mainFilePath, "/0");
     initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
 
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, MAINARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false);
+        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false);
         if (code == 1)
         {
             createMapPack(&workingPack);
@@ -455,7 +455,13 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
             selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
 
-        drawTile(MAINARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        if (maxStrNum / MAX_MAPPACKS_PER_PAGE > 0)
+        {
+            drawTile(MAIN_ARROW_ID, 8.5 * TILE_SIZE, 2, TILE_SIZE, 0, SDL_FLIP_HORIZONTAL);
+            drawTile(MAIN_ARROW_ID, 9.75 * TILE_SIZE, 2, TILE_SIZE, 0, SDL_FLIP_NONE);
+        }
+
+        drawTile(MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
@@ -621,7 +627,7 @@ int mainMapCreator(mapPack* workingPack)
     char mapFilePath[MAX_PATH];
     char tileFilePath[MAX_PATH];
 
-    int choice = aMenu(tilesetTexture, MAINARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
     if (choice != 3)
     {
         if (choice == 2)
@@ -664,7 +670,7 @@ int mainMapCreator(mapPack* workingPack)
         int scriptCount = 0;
         script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
 
-        choice = aMenu(tilesetTexture, MAINARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false);
+        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false);
 
         if (choice == 1)
         {
@@ -1164,7 +1170,7 @@ void mainScriptEdtior(mapPack* workingPack)
         if (newScript.action != script_none)
             writeScriptData(&newScript, 1);
     }
-    else
+    if (scriptNum == 0)
     {
         sprite scriptSpr;
         initSprite(&scriptSpr, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
@@ -1205,6 +1211,7 @@ int scriptSelectLoop(mapPack workingPack)
         drawText("Start", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
         drawText("Info/Help", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
         drawText("Back", 2.25 * TILE_SIZE, 8 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
+
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
         //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
@@ -1255,7 +1262,7 @@ int scriptSelectLoop(mapPack workingPack)
                 if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
                 {
                     selection = cursor.y / TILE_SIZE - 4;
-                    if (selection != 1 && selection != 3)
+                    if (selection == 2 || selection == 4)
                         quit = true;
                 }
                 if (selection == 3)
@@ -1272,10 +1279,12 @@ int scriptSelectLoop(mapPack workingPack)
                 }
             }
         }
-        drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        if (cursor.y / TILE_SIZE - 4 == 1)
+            drawATile(workingPack.mapPackTexture, cursor.tileIndex, 18 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
     }
-    if (selection > 2)
+    if (selection == 4)
         scriptType = -1;
     return scriptType;
 }
