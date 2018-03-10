@@ -72,6 +72,8 @@ int main(int argc, char* argv[])
     {
 
         int initCode = argc;
+    if (argc > 0 && argv[0])
+        initCode = 0;
         initCode = initSDL(WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
