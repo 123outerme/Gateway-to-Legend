@@ -38,7 +38,7 @@ int changeControls();
 void changeName();
 void changeFPS();
 void clearData(player* playerSprite);
-void stringInput(char** data, char* prompt, int maxChar);
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
@@ -521,7 +521,7 @@ int changeControls()
 void changeName(player* playerSprite)
 {
     char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
-    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT);
+    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player");
     strncpy(playerSprite->name, newName, PLAYER_NAME_LIMIT + 1);
     saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
     free(newName);
@@ -626,7 +626,7 @@ void clearData(player* playerSprite)
     }
 }
 
-void stringInput(char** data, char* prompt, int maxChar)
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
 {
     const int frameOffset = 250;
     char* stringData = calloc(maxChar + 1, sizeof(char));
@@ -680,7 +680,7 @@ void stringInput(char** data, char* prompt, int maxChar)
             }
 
             if (frame % frameOffset >= frameOffset / 2)
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (maxChar + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
 
             drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
             SDL_RenderPresent(mainRenderer);
@@ -689,7 +689,7 @@ void stringInput(char** data, char* prompt, int maxChar)
     Mix_PlayChannel(-1, OPTION_SOUND, 0);
 
     if (!hasTyped || !strlen(stringData))
-        strncpy(*data, " \0", maxChar);
+        strncpy(*data, defaultStr, maxChar);
     else
         strncpy(*data, stringData, maxChar);
     free(stringData);

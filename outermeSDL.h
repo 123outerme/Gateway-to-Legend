@@ -27,7 +27,7 @@
 #include <stdlib.h>        //This is included for calloc, rand(), and a lot of other stuff
 #include <math.h>          //This is included for log10
 #include <time.h>          //This is included for time() as the seed for rand()
-
+#include <ctype.h>         //This is included for toupper, etc.
 
 #define bool char
 #define false 0

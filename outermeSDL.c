@@ -253,7 +253,7 @@ void closeSDL()
 int checkArrayForIVal(int value, int array[], size_t arraySize)
 {
     int found = -1;
-    for(int i = 0; i < arraySize; i++)
+    for(int i = 0; i < (int) arraySize; i++)
     {
         if (value == array[i])
         {
@@ -271,7 +271,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
     length = strlen(input);
     if (foreToBack)
     {
-        for(i = 0; i < length; i++)
+        for(i = 0; i < (int) length; i++)
         {
             //printf("%c at %d\n", input[i], i);
             if (input[i] != removing)
@@ -280,7 +280,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
         if (i == 0)
             return input;
         int y = 0;
-        for(int x = i; x < length; x++)
+        for(int x = i; x < (int) length; x++)
             sansChar[y++] = input[x];
         sansChar[length] = '\0';
     }
@@ -294,7 +294,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
         }
         for(int x = 0; x < i + 1; x++)
             sansChar[x] = input[x];
-        sansChar[i + 1 < length ? i + 1 : length] = '\0';
+        sansChar[i + 1 < (int) length ? i + 1 : (int) length] = '\0';
     }
     //printf("%s at %d\n", sansChar, sansChar);'
     return sansChar;

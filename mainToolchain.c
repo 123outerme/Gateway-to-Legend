@@ -141,6 +141,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update);
 int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
@@ -510,7 +511,6 @@ int subMain(mapPack* workingPack)
     {
         loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
         int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[4]) {"Map Creator", "Script Editor", "Map-Pack Wizard", "Back"}, 4, 1, AMENU_MAIN_THEME, true, false);
-        closeSDL();
         if (code == 1)
             mainMapCreator(workingPack);
         if (code == 2)
@@ -622,62 +622,60 @@ int mainMapCreator(mapPack* workingPack)
     char* mainFilePath = calloc(MAX_PATH, sizeof(char));
     char mapFilePath[MAX_PATH];
     char tileFilePath[MAX_PATH];
-    char loadCheck[2];
-    printf("Load? (y/n) ");
-	scanf("%s", loadCheck);
-	if (loadCheck[0] == 'y')
+
+    int choice = aMenu(tilesetTexture, MAINARROW_ID, "New Map or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+    if (choice != 3)
     {
-        strncpy(mainFilePath, workingPack->mainFilePath, MAX_PATH);
-        if (!checkFile(mainFilePath, 0))
+        if (choice == 2)
         {
-            printf("Invalid main file.\n");
-            return 1;
-        }
-        uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
-        uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
-    }
-    else
-    {
-        strcpy(mainFilePath, "map-packs/a.txt");
-        uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
-        uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
-        for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
-        {
-            for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+            strncpy(mainFilePath, workingPack->mainFilePath, MAX_PATH);
+            if (!checkFile(mainFilePath, 0))
             {
-                tilemap[dy][dx] = 0;
-                eventmap[dy][dx] = 0;
+                printf("Invalid main file.\n");
+                return 1;
+            }
+            uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
+            uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
+        }
+        if (choice == 1)
+        {
+            strcpy(mainFilePath, "map-packs/a.txt");
+            uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
+            uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
+            for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
+            {
+                for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+                {
+                    tilemap[dy][dx] = 0;
+                    eventmap[dy][dx] = 0;
+                }
             }
         }
+        initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+        loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
+        loadIMG(MAIN_TILESET, &mainTilesetTexture);
+        player creator;
+        initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
+        creator.mapScreen = -1;
+        if (choice == 2)
+        {
+            creator.mapScreen = chooseMap(*workingPack);
+            loadMapFile(workingPack->mapFilePath, tilemap, eventmap, creator.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+        }
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        int scriptCount = 0;
+        script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
+
+        choice = aMenu(tilesetTexture, MAINARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false);
+
+        if (choice == 1)
+        {
+            writeTileData();
+            writeScriptData(mapScripts, scriptCount);
+        }
+        free(mapScripts);
     }
-    initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
-    loadIMG(MAIN_TILESET, &mainTilesetTexture);
-    player creator;
-    initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
-    creator.mapScreen = -1;
-    if (loadCheck[0] == 'y')
-    {
-        creator.mapScreen = chooseMap(*workingPack);
-        loadMapFile(workingPack->mapFilePath, tilemap, eventmap, creator.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-    }
-    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    int scriptCount = 0;
-    script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
-    closeSDL();
-    char saveCheck[2];
-    printf("Save? (y/n) ");
-	scanf("%s", saveCheck);
-	if (saveCheck[0] == 'y')
-    {
-        writeTileData();
-        writeScriptData(mapScripts, scriptCount);
-    }
-    free(mapScripts);
-    //waitForKey();
-    //SDL_Delay(1000);
-    initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     return 0;
 }
 //C:/Stephen/C/CodeBlocks/Gateway-to-Legend/Map-Creator/map-packs/a.txt
@@ -1002,6 +1000,74 @@ SDL_Keycode getKey()
                 keycode = e.key.keysym.sym;
     }
     return keycode;
+}
+
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
+{
+    const int frameOffset = 250;
+    char* stringData = calloc(maxChar + 1, sizeof(char));
+    stringData[0] = ' ';
+    bool quit = false, hasTyped = false;
+    int numChar = 0, frame = 0;
+    SDL_Event e;
+    while(!quit)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        while(SDL_PollEvent(&e) != 0)
+        {
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                hasTyped = false;
+            }
+
+            if (e.type != SDL_KEYDOWN)
+                frame++;
+            else
+            {
+                if ((e.key.keysym.sym >= SDLK_SPACE && e.key.keysym.sym <= SDLK_z) && numChar < maxChar)
+                {
+                    char* temp = calloc(1, sizeof(char));
+                    strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
+                    stringData[numChar++] = temp[0];
+                    hasTyped = true;
+                }
+
+                if (e.key.keysym.sym == SDLK_BACKSPACE && numChar > 0)
+                {
+                    stringData[--numChar] = ' ';
+                    hasTyped = (numChar > 0);
+                }
+
+                if (e.key.keysym.scancode == SC_MENU || e.key.keysym.scancode == SDL_SCANCODE_RETURN)
+                    quit = true;
+            }
+
+            if (frame % frameOffset < frameOffset / 2 && numChar < maxChar)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            }
+
+            if (frame % frameOffset >= frameOffset / 2)
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (maxChar + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
+
+            drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            SDL_RenderPresent(mainRenderer);
+        }
+    }
+
+    if (!hasTyped || !strlen(stringData))
+        strncpy(*data, defaultStr, maxChar);
+    else
+        strncpy(*data, stringData, maxChar);
+    free(stringData);
 }
 
 void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex)
