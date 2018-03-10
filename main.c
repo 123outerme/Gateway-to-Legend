@@ -38,6 +38,7 @@ int changeControls();
 void changeName();
 void changeFPS();
 void clearData(player* playerSprite);
+void stringInput(char** data, char* prompt, int maxChar);
 
 int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
@@ -151,7 +152,7 @@ int main(int argc, char* argv[])
             if (choice == 2)
                 choice = changeControls();
             if (choice == 3)
-                changeName();
+                changeName(&person);
             if (choice == 4)
                 changeFPS();
             if (choice == 5)
@@ -357,19 +358,19 @@ void changeVolumes()
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 5 * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                 {
                     cursor.y -= TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 7 * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
                 {
                     cursor.y += TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT)  && cursor.y != TILE_SIZE * 7)
+                if (e.key.keysym.scancode == SC_LEFT  && cursor.y != TILE_SIZE * 7)
                 {
                     if (cursor.y == TILE_SIZE * 5 && musicVolume > 0)
                     {
@@ -387,7 +388,7 @@ void changeVolumes()
                     }
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT)  && cursor.y != TILE_SIZE * 7)
+                if (e.key.keysym.scancode == SC_RIGHT  && cursor.y != TILE_SIZE * 7)
                 {
                     if (cursor.y == TILE_SIZE * 5 && musicVolume < MIX_MAX_VOLUME)
                     {
@@ -405,7 +406,7 @@ void changeVolumes()
                     }
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT) && cursor.y == TILE_SIZE * 7)
+                if (e.key.keysym.scancode == SC_INTERACT && cursor.y == TILE_SIZE * 7)
                 {
                     quit = true;
                     Mix_Volume(-1, soundVolume);
@@ -480,19 +481,19 @@ int changeControls()
                 //User presses a key
                 else if(e.type == SDL_KEYDOWN)
                 {
-                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 4 * TILE_SIZE)
+                    if (e.key.keysym.scancode == SC_UP && cursor.y > 4 * TILE_SIZE)
                     {
                         cursor.y -= TILE_SIZE;
                         Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
 
-                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 11 * TILE_SIZE)
+                    if (e.key.keysym.scancode == SC_DOWN && cursor.y < 11 * TILE_SIZE)
                     {
                         cursor.y += TILE_SIZE;
                         Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
 
-                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                    if (e.key.keysym.scancode == SC_INTERACT)
                     {
                         selection = cursor.y / TILE_SIZE - 3;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
@@ -517,9 +518,13 @@ int changeControls()
     return 0 - (selection == -1);  //returns -1 if selection == -1 else 0.
 }
 
-void changeName()
+void changeName(player* playerSprite)
 {
-    //
+    char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
+    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT);
+    strncpy(playerSprite->name, newName, PLAYER_NAME_LIMIT + 1);
+    saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
+    free(newName);
 }
 
 void changeFPS()
@@ -536,7 +541,6 @@ void changeFPS()
     while(!quit)
     {
         SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
-
         SDL_RenderClear(mainRenderer);
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
@@ -562,31 +566,31 @@ void changeFPS()
             //User presses a key
             else if(e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 5 * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                 {
                     cursor.y -= TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < 7 * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
                 {
                     cursor.y += TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE && FPSchoice > 0)
+                if (e.key.keysym.scancode == SC_LEFT && cursor.y == 5 * TILE_SIZE && FPSchoice > 0)
                 {
                     FPSchoice--;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE && FPSchoice < optionsSize - 1)
+                if (e.key.keysym.scancode == SC_RIGHT && cursor.y == 5 * TILE_SIZE && FPSchoice < optionsSize - 1)
                 {
                     FPSchoice++;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                if (e.key.keysym.scancode == SC_INTERACT)
                 {
                     selection = cursor.y / TILE_SIZE - 4;
                     if (selection != 1)
@@ -620,6 +624,75 @@ void clearData(player* playerSprite)
         createGlobalPlayer(playerSprite, GLOBALSAVE_FILEPATH);
         Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
     }
+}
+
+void stringInput(char** data, char* prompt, int maxChar)
+{
+    const int frameOffset = 250;
+    char* stringData = calloc(maxChar + 1, sizeof(char));
+    stringData[0] = ' ';
+    bool quit = false, hasTyped = false;
+    int numChar = 0, frame = 0;
+    SDL_Event e;
+    while(!quit)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+        drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        while(SDL_PollEvent(&e) != 0)
+        {
+            if(e.type == SDL_QUIT)
+            {
+                quit = true;
+                hasTyped = false;
+            }
+
+            if (e.type != SDL_KEYDOWN)
+                frame++;
+            else
+            {
+                if ((e.key.keysym.sym >= SDLK_SPACE && e.key.keysym.sym <= SDLK_z) && numChar < maxChar)
+                {
+                    char* temp = calloc(1, sizeof(char));
+                    strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
+                    stringData[numChar++] = temp[0];
+                    hasTyped = true;
+                }
+
+                if (e.key.keysym.sym == SDLK_BACKSPACE && numChar > 0)
+                {
+                    stringData[--numChar] = ' ';
+                    hasTyped = (numChar > 0);
+                }
+
+                if (e.key.keysym.scancode == SC_MENU || e.key.keysym.scancode == SDL_SCANCODE_RETURN)
+                    quit = true;
+            }
+
+            if (frame % frameOffset < frameOffset / 2 && numChar < maxChar)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            }
+
+            if (frame % frameOffset >= frameOffset / 2)
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (PLAYER_NAME_LIMIT + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
+
+            drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            SDL_RenderPresent(mainRenderer);
+        }
+    }
+    Mix_PlayChannel(-1, OPTION_SOUND, 0);
+
+    if (!hasTyped || !strlen(stringData))
+        strncpy(*data, " \0", maxChar);
+    else
+        strncpy(*data, stringData, maxChar);
+    free(stringData);
 }
 
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)

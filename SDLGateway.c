@@ -296,19 +296,19 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
             else if(e.type == SDL_KEYDOWN)
             {
                 const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP) && cursor.y > 5 * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                 {
                     cursor.y -= TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN) && cursor.y < (options + 4) * TILE_SIZE)
+                if (e.key.keysym.scancode == SC_DOWN && cursor.y < (options + 4) * TILE_SIZE)
                 {
                     cursor.y += TILE_SIZE;
                     Mix_PlayChannel(-1, PING_SOUND, 0);
                 }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                if (e.key.keysym.scancode == SC_INTERACT)
                 {
                     selection = cursor.y / TILE_SIZE - 4;
                     quit = true;
