@@ -623,7 +623,7 @@ int mainMapCreator(mapPack* workingPack)
     char mapFilePath[MAX_PATH];
     char tileFilePath[MAX_PATH];
 
-    int choice = aMenu(tilesetTexture, MAINARROW_ID, "New Map or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+    int choice = aMenu(tilesetTexture, MAINARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
     if (choice != 3)
     {
         if (choice == 2)
@@ -651,7 +651,6 @@ int mainMapCreator(mapPack* workingPack)
                 }
             }
         }
-        initSDL(WINDOW_NAME, tileFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
         loadIMG(MAIN_TILESET, &mainTilesetTexture);
         player creator;
@@ -673,6 +672,10 @@ int mainMapCreator(mapPack* workingPack)
         {
             writeTileData();
             writeScriptData(mapScripts, scriptCount);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_RenderClear(mainRenderer);
+            drawText("Outputted to output/map.txt and output/script.txt, if applicable.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+            waitForKey();
         }
         free(mapScripts);
     }
@@ -1131,8 +1134,6 @@ void writeTileData()
     }
     //printf(">%s\n", output);
     appendLine("output/map.txt", output);
-    printf("%s\n", output);
-    printf("outputted to output/map.txt\n");
 }
 
 
@@ -1146,10 +1147,8 @@ void writeScriptData(script* mapScripts, int count)
     for(int i = 0; i < count; i++)
     {
         snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s}", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data);
-        printf("%s\n", scriptText);
         appendLine(outputFile, scriptText);
     }
-    printf("outputted to output/script.txt. NOTE: If the second argument is -1, change to (line number of new map) - 1\n");
 }
 //end map creator code.
 
