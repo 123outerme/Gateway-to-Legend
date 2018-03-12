@@ -680,7 +680,11 @@ int mainMapCreator(mapPack* workingPack)
             writeScriptData(mapScripts, scriptCount);
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
             SDL_RenderClear(mainRenderer);
-            drawText("Outputted to output/map.txt and output/script.txt, if applicable.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+            char* exitNote = calloc(138, sizeof(char));
+            strcpy(exitNote, "Outputted to output/map.txt");
+            if (scriptCount > 0)
+                strcat(exitNote, " and output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
+            drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
             waitForKey();
         }
         free(mapScripts);
