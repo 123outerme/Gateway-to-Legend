@@ -1,61 +1,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.2 as of right now. Future versions of the header may not be compatible
-#include "dirent.h"  //for directory searching
+#include "SDLGateway.h"  //for directory searching
 
 #define PIXELS_MOVED TILE_SIZE
-
-typedef struct {
-    sprite spr;  //?
-    char name[8 + 1];  //9 bytes
-    int level;  //
-    int experience;  //
-    int money;  //
-    int HP;  //
-    int maxHP;  //
-    int worldNum;  //
-    int mapScreen;  //8 bytes
-    int lastScreen;  //8 bytes
-    int overworldX;  //
-    int overworldY;  //
-    bool movementLocked;  // 1 byte
-} player;
-
-typedef enum {
-    script_none,                   //0 default, do nothing
-    script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
-    script_trigger_dialogue_once,  //2 same as above, but just once.
-    script_trigger_boss,           //3 if player steps in coords, spawn boss
-    script_switch_maps,            //4 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
-    script_use_gateway,            //5 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
-    script_use_teleporter,         //6 teleports to a specified matching teleporter
-    script_toggle_door,            //7 if player steps in coords or other action occurs, open a door
-    script_animation,              //8 if player steps in coords, do animation
-    script_boss_actions,           //9 if boss is still alive, execute boss actions
-    script_gain_exp,               //19 gives player some EXP. Don't abuse please
-    script_gain_money,             //11 gives player some money. Please don't abuse also
-    script_player_hurt,            //12 hurts the player by <data> amount
-    script_placeholder,            //13 ?
-} scriptBehavior;
-
-typedef struct {
-    int mapNum;
-    int x;
-    int y;
-    int w;
-    int h;
-    scriptBehavior action;
-    char* data;
-    bool active;
-} script;
-
-#define SIZE_OF_SCANCODE_ARRAY 7
-int CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
-#define SC_UP CUSTOM_SCANCODES[0]
-#define SC_DOWN CUSTOM_SCANCODES[1]
-#define SC_LEFT CUSTOM_SCANCODES[2]
-#define SC_RIGHT CUSTOM_SCANCODES[3]
-#define SC_INTERACT CUSTOM_SCANCODES[4]
-#define SC_MENU CUSTOM_SCANCODES[5]
-#define SC_ATTACK CUSTOM_SCANCODES[6]
 
 #define checkSKUp keyStates[SC_UP]
 #define checkSKDown keyStates[SC_DOWN]
@@ -130,7 +76,6 @@ void editTileEquates(mapPack* workingPack);
 
 void createMapPack(mapPack* newPack);
 void loadMapPackData(mapPack* loadPack, char* location);
-char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 //^ working with loading a map-pack to work on
 
@@ -143,7 +88,6 @@ int chooseMap(mapPack workingPack);
 SDL_Keycode getKey();
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
-void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex);
 void writeTileData();
 //^map creator functions.
 
@@ -163,7 +107,6 @@ void strPrepend(char* input, const char* prepend);
 //this is to match the tilemap array in outermeSDL.h
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* mainTilesetTexture;
-const int targetTime = 1000 / FRAMERATE;
 
 int main(int argc, char* argv[])
 {
@@ -175,7 +118,7 @@ int main(int argc, char* argv[])
     if (checkFile(CONFIG_FILEPATH, 0))
         loadConfig(CONFIG_FILEPATH);
     else
-        initConfig();
+        initConfig(CONFIG_FILEPATH);
 
     bool quit = false, proceed = false;
     char* resumeStr = "\0";
@@ -386,27 +329,6 @@ void loadMapPackData(mapPack* loadPack, char* location)
     loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture));
 }
 
-void initConfig()
-{
-    SC_UP = SDL_SCANCODE_W;
-    SC_DOWN = SDL_SCANCODE_S;
-    SC_LEFT = SDL_SCANCODE_A;
-    SC_RIGHT = SDL_SCANCODE_D;
-    SC_INTERACT = SDL_SCANCODE_SPACE;
-    SC_MENU = SDL_SCANCODE_ESCAPE;
-    SC_ATTACK = SDL_SCANCODE_LSHIFT;
-}
-
-void loadConfig(char* filePath)
-{
-    char* buffer = "";
-    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
-    {
-        readLine(filePath, i, &buffer);
-        CUSTOM_SCANCODES[i] = strtol(buffer, NULL, 10);
-    }
-}
-
 void saveMapPack(mapPack* writePack)
 {
     char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
@@ -479,36 +401,6 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
     strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
 }
 
-char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
-{
-	DIR* dir = opendir(directory);
-	if (dir == NULL)
-	{
-		perror("Can't open this directory.");
-		exit(1);
-	}
-	struct dirent* ent;
-	char** strArray = malloc(maxStrings * sizeof(char*));
-	for (int i =0 ; i < maxStrings; ++i)
-		strArray[i] = malloc(maxLength * sizeof(char));
-	int i = 0;
-	while ((ent = readdir(dir)) != NULL)
-	{
-		if (strlen(ent->d_name) > 2)
-		{
-			//printf("%s -> %d\n", ent->d_name, strArray[i]);
-			sprintf(strArray[i++], "%s", ent->d_name);
-		}
-	}
-	closedir(dir);
-	if (maxStrings >= i)
-		*strNum = i;
-	else
-		*strNum = maxStrings;
-	//printf("Done\n\n");
-	return strArray;
-}
-
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
@@ -527,97 +419,6 @@ int subMain(mapPack* workingPack)
             quit = true;
     }
     return 0;
-}
-
-int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
-{
-    const int MAX_ITEMS = 9;
-    if (curSelect < 1)
-        curSelect = 1;
-    if (options < 0)
-        return ANYWHERE_QUIT;
-    sprite cursor;
-    initSprite(&cursor, TILE_SIZE, (curSelect + 4) * TILE_SIZE, TILE_SIZE, TILE_SIZE, cursorID, 0, SDL_FLIP_NONE, (entityType) type_na);
-    SDL_Event e;
-    bool quit = false, settingsReset = false;
-    int selection = -1;
-    //While application is running
-    while(!quit)
-    {
-        if (border)
-            SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
-        else
-            SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
-
-        SDL_RenderClear(mainRenderer);
-        SDL_RenderFillRect(mainRenderer, NULL);
-        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        //background text (drawn first)
-        drawText(title, 1 * TILE_SIZE + (5 - 2 * !isMain) * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
-        //foreground text
-        drawText(title, 1 * TILE_SIZE + TILE_SIZE / (2 + 2 * !isMain) , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
-
-        for(int i = 0; ((options <= MAX_ITEMS) ? i < options : i < MAX_ITEMS); i++)
-	        drawText(optionsArray[i], 2 * TILE_SIZE + TILE_SIZE / 4, (5 + i) * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - (5 + i)) * TILE_SIZE, textColor, false);
-        /*if (isMain)
-        {
-            char version[12];
-            snprintf(version, 12, "%s%s", FULLVERSION_STRING, STATUS_SHORT);
-            drawTile(TILE_ID_TILDA, 0, 0, TILE_SIZE, SDL_FLIP_NONE);
-            drawTile(TILE_ID_CUBED, 1 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
-            drawTile(TILE_ID_TILDA, 2 * TILE_SIZE, 0, TILE_SIZE, SDL_FLIP_NONE);
-            drawText(version, 2 * TILE_SIZE + TILE_SIZE / 4, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){24, 195, 247}, true);
-        }*/
-
-        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-        //Handle events on queue
-        while(SDL_PollEvent(&e) != 0)
-        {
-            //User requests quit
-            if(e.type == SDL_QUIT)
-            {
-                quit = true;
-                selection = ANYWHERE_QUIT;
-            }
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
-                {
-                    if (cursor.y > 5 * TILE_SIZE)
-                        cursor.y -= TILE_SIZE;
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
-                {
-                    if (cursor.y < (options + 4) * TILE_SIZE)
-                        cursor.y += TILE_SIZE;
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
-                {
-                    selection = cursor.y / TILE_SIZE - 4;
-                    quit = true;
-                }
-                if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R] && !settingsReset)
-                {
-                    SC_UP = SDL_SCANCODE_W;
-                    SC_DOWN = SDL_SCANCODE_S;
-                    SC_LEFT = SDL_SCANCODE_A;
-                    SC_RIGHT = SDL_SCANCODE_D;
-                    SC_ATTACK = SDL_SCANCODE_LSHIFT;
-                    SC_INTERACT = SDL_SCANCODE_SPACE;
-                    SC_MENU = SDL_SCANCODE_ESCAPE;
-                    settingsReset = true;
-                }
-            }
-        }
-        drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        SDL_RenderPresent(mainRenderer);
-    }
-    return selection;
 }
 
 int mainMapCreator(mapPack* workingPack)
@@ -660,7 +461,7 @@ int mainMapCreator(mapPack* workingPack)
         loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
         loadIMG(MAIN_TILESET, &mainTilesetTexture);
         player creator;
-        initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE, 0);
+        initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
         creator.mapScreen = -1;
         if (choice == 2)
         {
@@ -686,6 +487,7 @@ int mainMapCreator(mapPack* workingPack)
                 strcat(exitNote, " and output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
             drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
             waitForKey();
+            free(exitNote);
         }
         free(mapScripts);
     }
@@ -743,51 +545,6 @@ void chooseCoords(mapPack workingPack, int mapNum, int* xPtr, int* yPtr)
     }
     *xPtr = x;
     *yPtr = y;
-}
-
-char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum)
-{
-    char* dummy = "";
-    readLine(filePath, lineNum, &dummy);
-    strcpy((char*) output, dummy);
-    dummy = removeChar((char*) output, '\n', outputLength, false);
-    strcpy((char*) output, dummy);
-    return *output;
-}
-
-void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x)
-{
-    int numsC = 0, numsR = 0,  i, num;
-    bool writeToTilemap = false;
-    char thisLine[1200], substring[2];
-    strcpy(thisLine, readLine(filePath, lineNum, (char**) &thisLine));
-    //printf("%s\n", thisLine);
-    for(i = 0; i < 1200; i += 2)
-    {
-        sprintf(substring, "%.2s", thisLine + i);
-        //*(array + numsR++ + numsC * x)
-        num = (int)strtol(substring, NULL, 16);
-        if (writeToTilemap)
-            tilemapData[numsC][numsR++] = num;
-        else
-            eventmapData[numsC][numsR] = num;
-        //printf(writeToTilemap ? "i = %d @ nums[%d][%d] = (%s)\n" : "i = %d @ eventArray[%d][%d] = (%s)\n", i, numsC, numsR - writeToTilemap, substring);
-        writeToTilemap = !writeToTilemap;
-        if (numsR > x - 1)
-        {
-            numsC++;
-            numsR = 0;
-        }
-        //printf("%d\n", num);
-    }
-    /*for(int dy = 0; dy < y; dy++)
-    {
-        for(int dx = 0; dx < x; dx++)
-        {
-            *(tilemapData + dx + dy * x) = sameArray[dy][dx];
-            *(eventmapData + dx + dy * x) = eventArray[dy][dx];
-        }
-    }*/
 }
 
 script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack workingPack)
@@ -998,109 +755,6 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 	frame++;
     }
     return mapScripts;
-}
-
-SDL_Keycode getKey()
-{
-    SDL_Event e;
-    SDL_Keycode keycode = 0;
-    while(SDL_PollEvent(&e) != 0)
-    {
-        if(e.type == SDL_QUIT)
-            keycode = ANYWHERE_QUIT;
-        else
-            if(e.type == SDL_KEYDOWN)
-                keycode = e.key.keysym.sym;
-    }
-    return keycode;
-}
-
-void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
-{
-    const int frameOffset = 250;
-    char* stringData = calloc(maxChar + 1, sizeof(char));
-    stringData[0] = ' ';
-    bool quit = false, hasTyped = false;
-    int numChar = 0, frame = 0;
-    SDL_Event e;
-    while(!quit)
-    {
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
-        SDL_RenderClear(mainRenderer);
-        SDL_RenderFillRect(mainRenderer, NULL);
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        while(SDL_PollEvent(&e) != 0)
-        {
-            if(e.type == SDL_QUIT)
-            {
-                quit = true;
-                hasTyped = false;
-            }
-
-            if (e.type != SDL_KEYDOWN)
-                frame++;
-            else
-            {
-                if ((e.key.keysym.sym >= SDLK_SPACE && e.key.keysym.sym <= SDLK_z) && numChar < maxChar)
-                {
-                    char* temp = calloc(1, sizeof(char));
-                    strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
-                    if (e.key.keysym.sym == SDLK_SPACE)  //space doesn't work until here
-                        temp[0] = ' ';
-                    stringData[numChar++] = temp[0];
-                    hasTyped = true;
-                }
-
-                if (e.key.keysym.sym == SDLK_BACKSPACE && numChar > 0)
-                {
-                    stringData[--numChar] = ' ';
-                    hasTyped = (numChar > 0);
-                }
-
-                if (e.key.keysym.scancode == SC_MENU || e.key.keysym.scancode == SDL_SCANCODE_RETURN)
-                    quit = true;
-            }
-
-            if (frame % frameOffset < frameOffset / 2 && numChar < maxChar)
-            {
-                SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-            }
-
-            if (frame % frameOffset >= frameOffset / 2)
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (maxChar + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
-
-            drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-            SDL_RenderPresent(mainRenderer);
-        }
-    }
-    if (!hasTyped || !strlen(stringData))
-        strncpy(*data, defaultStr, maxChar);
-    else
-        strncpy(*data, stringData, maxChar);
-    free(stringData);
-}
-
-void initPlayer(player* player, int x, int y, int w, int h, int angle, SDL_RendererFlip flip, int tileIndex)
-{
-    //inputName(player);  //custom text input routine to get player->name
-    initSprite(&(player->spr), x, y, w, h, tileIndex, angle, flip, (entityType) type_player);
-	player->level = 1;
-	player->experience = 0;
-	player->money = 0;
-	player->HP = 50;
-	player->maxHP = 50;
-	player->worldNum = 1;
-	player->mapScreen = 10;
-	player->lastScreen = 10;
-	player->overworldX = x;
-	player->overworldY = y;
-	player->movementLocked = false;
-    SDL_Delay(300);
-    //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen)
@@ -1374,19 +1028,6 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
         initScript(&outputScript, action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data);
     free(data);
     return outputScript;
-}
-
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
-{
-	scriptPtr->action = action;
-	scriptPtr->mapNum = mapNum;
-	scriptPtr->x = x;
-	scriptPtr->y = y;
-	scriptPtr->w = w;
-	scriptPtr->h = h;
-	scriptPtr->data = calloc(99, sizeof(char));
-	strncpy(scriptPtr->data, data, 99);
-	scriptPtr->active = true;
 }
 //end script editor code.
 

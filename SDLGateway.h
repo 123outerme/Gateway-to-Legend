@@ -9,7 +9,7 @@
 #define SAVE_FILE_LINES 0
 #define PLAYER_NAME_LIMIT 8
 
-#define WINDOW_NAME "Gateway to Legend"
+#define GAME_WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
