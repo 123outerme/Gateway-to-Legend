@@ -1,5 +1,5 @@
-#ifndef SDLSEEKERS_H_INCLUDED
-#define SDLSEEKERS_H_INCLUDED
+#ifndef SDLGATEWAY_H_INCLUDED
+#define SDLGATEWAY_H_INCLUDED
 
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
@@ -15,7 +15,9 @@
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
-#define MAX_CHAR_IN_FILEPATH MAX_PATH
+#ifndef MAX_PATH
+#def MAX_PATH 260
+#endif
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3

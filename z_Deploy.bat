@@ -1,4 +1,4 @@
-@ROBOCOPY %cd% "%cd%\GtL-bin\build" *.c *.h *.ico *.rc
+@ROBOCOPY %cd% "%cd%\GtL-bin\build" *.c *.h *.ico *.rc *.sh a_makeWindows.bat
 @ROBOCOPY %cd% "%cd%\GtL-bin\execute" *.txt *.png *.ttf *.ogg /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj" "%cd%\media" "%cd%\docs"
 @ROBOCOPY %cd% "%cd%\GtL-bin" *.txt
 @ROBOCOPY %cd% "%cd%\GtL-bin\stuff" *.ico *.rc
