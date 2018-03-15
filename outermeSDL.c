@@ -266,7 +266,7 @@ int checkArrayForIVal(int value, int array[], size_t arraySize)
 
 char* removeChar(char input[], char removing, size_t length, bool foreToBack)
 {
-    static char sansChar[255];
+    static char sansChar[260];
     int i;
     length = strlen(input);
     if (foreToBack)
@@ -282,7 +282,7 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
         int y = 0;
         for(int x = i; x < (int) length; x++)
             sansChar[y++] = input[x];
-        sansChar[length] = '\0';
+        sansChar[y] = '\0';
     }
     else
     {
@@ -290,13 +290,13 @@ char* removeChar(char input[], char removing, size_t length, bool foreToBack)
         {
             if (input[i] != removing)
                 break;
-            //printf("%c\n", input[i]);
+            //printf("%c at %d\n", input[i], i);
         }
         for(int x = 0; x < i + 1; x++)
             sansChar[x] = input[x];
         sansChar[i + 1 < (int) length ? i + 1 : (int) length] = '\0';
     }
-    //printf("%s at %d\n", sansChar, sansChar);'
+    //printf("%s at %d\n", sansChar, sansChar);
     return sansChar;
 }
 

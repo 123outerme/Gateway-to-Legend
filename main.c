@@ -179,13 +179,13 @@ int main(int argc, char* argv[])
                 break;
             }
             //loading map pack stuff
-            uniqueReadLine((char**) &mapFilePath, MAX_PATH - 9, mainFilePath, 1);
+            uniqueReadLine((char**) &mapFilePath, MAX_PATH - 1, mainFilePath, 1);
             //printf("%s\n", mapFilePath);
-            uniqueReadLine((char**) &tileFilePath, MAX_PATH - 9, mainFilePath, 2);
+            uniqueReadLine((char**) &tileFilePath, MAX_PATH - 1, mainFilePath, 2);
             //printf("%s\n", tileFilePath);
-            uniqueReadLine((char**) &saveFilePath, MAX_PATH - 9, mainFilePath, 3);
+            uniqueReadLine((char**) &saveFilePath, MAX_PATH - 1, mainFilePath, 3);
             //printf("%s\n", saveFilePath);
-            uniqueReadLine((char**) &scriptFilePath, MAX_PATH - 9, mainFilePath, 4);
+            uniqueReadLine((char**) &scriptFilePath, MAX_PATH - 1, mainFilePath, 4);
             //printf("%s\n", scriptFilePath);
             loadIMG(tileFilePath, &tilesTexture);
             free(allScripts);

@@ -492,6 +492,8 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
     strcpy((char*) output, dummy);
     dummy = removeChar((char*) output, '\n', outputLength, false);
     strcpy((char*) output, dummy);
+    dummy = removeChar((char*) output, '\r', outputLength, false);
+    strcpy((char*) output, dummy);
     return *output;
 }
 
@@ -521,9 +523,9 @@ char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int*
 		exit(1);
 	}
 	struct dirent* ent;
-	char** strArray = malloc(maxStrings * sizeof(char*));
+	char** strArray = calloc(maxStrings, sizeof(char*));
 	for (int i = 0 ; i < maxStrings; ++i)
-		strArray[i] = malloc(maxLength * sizeof(char));
+		strArray[i] = calloc(maxLength, sizeof(char));
 	int i = 0;
 	while ((ent = readdir(dir)) != NULL)
 	{
