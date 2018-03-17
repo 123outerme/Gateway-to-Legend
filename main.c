@@ -702,11 +702,14 @@ int mainLoop(player* playerSprite)
         if (allScripts[i].mapNum == playerSprite->mapScreen)
             theseScripts[maxTheseScripts++] = allScripts[i];
     }
+    if (maxTheseScripts)
     {
         script* new_ptr = realloc(theseScripts, maxTheseScripts * sizeof(script));
         if (new_ptr != NULL)
             theseScripts = new_ptr;
     }
+    else
+        theseScripts = NULL;
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {
@@ -1238,8 +1241,8 @@ int mainLoop(player* playerSprite)
         exitCode = 1;
         playerSprite->HP = playerSprite->maxHP;
     }
-
-    free(theseScripts);
+    if (theseScripts)
+        free(theseScripts);
     free(collisionData);
     return exitCode;
 }
