@@ -517,8 +517,8 @@ int changeControls()
 void changeName(player* playerSprite)
 {
     char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
-    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player");
-    strncpy(playerSprite->name, newName, PLAYER_NAME_LIMIT + 1);
+    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player", true);
+    strncpy(playerSprite->name, newName, strlen(newName));
     saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
     free(newName);
 }
@@ -613,7 +613,7 @@ void changeFPS()
 
 void clearData(player* playerSprite)
 {
-    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Clear All Data:\nAre You Sure?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false);
+    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Clear All Data:\nAre You Sure?", (char*[2]) {"Yes, Do It", "No, Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
     if (choice == 1)
     {
         createFile(CONFIG_FILEPATH);
@@ -1200,7 +1200,6 @@ int mainLoop(player* playerSprite)
             }
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
-
         if (swordTimer && SDL_GetTicks() >= swordTimer)
             swordTimer = 0;
 
@@ -1208,8 +1207,8 @@ int mainLoop(player* playerSprite)
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
         framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
 
-	if (drawFPS)
-	    drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
+        if (drawFPS)
+            drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
 
         drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 

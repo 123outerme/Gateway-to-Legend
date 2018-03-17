@@ -84,6 +84,7 @@ void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_Renderer
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int hideTileNumOf, bool updateScreen);  //draws a tilemap from a given tileset texture.
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
+SDL_Keycode getKey();  //gets a keycode that was pressed, or none if none was pressed during collection
 SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
 void closeSDL();  //closes SDL and related stuff
 int checkArrayForIVal(int value, int array[], size_t arraySize);  //finds an int in an int array
@@ -95,7 +96,7 @@ char* readLine(char* filePath, int lineNum, char** output);  //reads a certain l
 
 char* intToString(int value, char * result);  //turns inputted int into a string
 int digits(int num);  //gets the number of digits an int has
-int pwrOf10(int power);  //gets 10 ^ input
+int toPowerOf10(int power);  //gets 10 ^ input
 void* freeThisMem(void* x);  //frees memory of any type/object/whatever and nulls its pointer.
 
 SDL_Window* mainWindow;

@@ -208,6 +208,21 @@ void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bo
     }
 }
 
+SDL_Keycode getKey()
+{
+    SDL_Event e;
+    SDL_Keycode keycode = 0;
+    while(SDL_PollEvent(&e) != 0)
+    {
+        if(e.type == SDL_QUIT)
+            keycode = -1;
+        else
+            if(e.type == SDL_KEYDOWN)
+                keycode = e.key.keysym.sym;
+    }
+    return keycode;
+}
+
 SDL_Keycode waitForKey()
 {
     SDL_Event e;
@@ -403,16 +418,16 @@ char* intToString(int value, char* result)
 	int usedVal = 0;
 	for (int i = digit; i > 0; i--)
 	{
-		int x = (value - usedVal) / pwrOf10(i - 1);
+		int x = (value - usedVal) / toPowerOf10(i - 1);
 		result[digit - i] = (char) x + '0';
 		//printf("result[%d] = (%d) / %d = %d = character %c\n", digit - i, value - usedVal, pwrOf10(i - 1), x, result[digit - i]);
-		usedVal = usedVal + (result[digit - i] - '0') * pwrOf10(i - 1);
+		usedVal = usedVal + (result[digit - i] - '0') * toPowerOf10(i - 1);
 		//printf("usedVal = itself + %d * %d = %d\n", (int) result[digit - i] - '0', pwrOf10(i - 1), usedVal);
 	}
 	if (negFlag)
     {
-        char negative[1];
-        strcpy(negative, "-");
+        char negative[digit + 1];
+        negative[0] = '-';
         strcat(negative, result);
         strcpy(result, negative);
     }
@@ -425,7 +440,7 @@ int digits(int num)
         num *= -1;
 	return 1 + log10(num);
 }
-int pwrOf10(int power)
+int toPowerOf10(int power)
 {
 	int val = 1;
 	int i = power;

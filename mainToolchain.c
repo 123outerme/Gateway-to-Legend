@@ -85,8 +85,6 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack workingPack);
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update);
 int chooseMap(mapPack workingPack);
-SDL_Keycode getKey();
-void stringInput(char** data, char* prompt, int maxChar, char* defaultStr);
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 void writeTileData();
 //^map creator functions.
@@ -228,7 +226,7 @@ void createMapPack(mapPack* newPack)
             message = "Initial map number? ";
             break;
         }
-        stringInput(&getString, message, MAX_PATH, "default.txt");
+        stringInput(&getString, message, MAX_PATH, "default.txt", false);
         switch(wizardState)
         {
         case 0:
@@ -836,9 +834,10 @@ void mainScriptEdtior(mapPack* workingPack)
         initSprite(&scriptSpr, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
         bool quit = false;
         int scriptLineNum = 0;
+        SDL_Event e;
         while(!quit)
         {
-            //load a script
+            //load script
         }
     }
 }
@@ -1105,7 +1104,7 @@ void editFilePaths(mapPack* workingPack)
                 sprintf(message, "Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
                 break;
             }
-            stringInput(&getString, message, 99, "default.txt");
+            stringInput(&getString, message, 99, "default.txt", false);
             switch(choice)
             {
 

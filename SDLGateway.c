@@ -100,9 +100,16 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 
 void createGlobalPlayer(player* playerSprite, char* filePath)
 {
-    strcpy(playerSprite->name, "Player");
-    //inputName(playerSprite);  //custom text input routine to get player->name
+    char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
+    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player", true);
+    strncpy(playerSprite->name, newName, strlen(newName));
+    free(newName);
+    playerSprite->maxHP = 12;
+    playerSprite->level = 1;
+    playerSprite->experience = 0;
+    playerSprite->money = 0;
 	saveGlobalPlayer(*playerSprite, filePath);
+    //saves: name, max HP, level, exp, money
 }
 
 void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type)
@@ -335,29 +342,12 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
     return selection;
 }
 
-SDL_Keycode getKey()
-{
-    SDL_Event e;
-    SDL_Keycode keycode = 0;
-    while(SDL_PollEvent(&e) != 0)
-    {
-        if(e.type == SDL_QUIT)
-            keycode = -1;
-        else
-            if(e.type == SDL_KEYDOWN)
-            {
-                keycode = e.key.keysym.sym;
-            }
-    }
-    return keycode;
-}
-
-void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
+void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps)
 {
     const int frameOffset = 250;
     char* stringData = calloc(maxChar + 1, sizeof(char));
     stringData[0] = ' ';
-    bool quit = false, hasTyped = false;
+    bool quit = false, hasTyped = false, capital = startCaps;
     int numChar = 0, frame = 0;
     SDL_Event e;
     while(!quit)
@@ -386,6 +376,8 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
                     strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
                     if (e.key.keysym.sym == SDLK_SPACE)  //space doesn't work until here
                         temp[0] = ' ';
+                    else if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z && !capital)
+                        temp[0] = (char) tolower(temp[0]);
                     stringData[numChar++] = temp[0];
                     hasTyped = true;
                 }
@@ -396,6 +388,9 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
                     hasTyped = (numChar > 0);
                 }
 
+                if (e.key.keysym.sym == SDLK_LSHIFT || e.key.keysym.sym == SDLK_RSHIFT)
+                    capital = !capital;
+
                 if (e.key.keysym.scancode == SC_MENU || e.key.keysym.scancode == SDL_SCANCODE_RETURN)
                     quit = true;
             }
@@ -404,6 +399,12 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr)
             {
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
+                if (capital)
+                {
+                    SDL_RenderDrawLine(mainRenderer, (2.5 + numChar) * TILE_SIZE, 4.25 * TILE_SIZE, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE);
+                    SDL_RenderDrawLine(mainRenderer, (2 + numChar) * TILE_SIZE, 4 * TILE_SIZE, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE);
+                    SDL_RenderDrawLine(mainRenderer, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE, (3 + numChar) * TILE_SIZE, 4 * TILE_SIZE);
+                }
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
             }
 
