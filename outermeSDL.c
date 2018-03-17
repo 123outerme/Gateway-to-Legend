@@ -234,15 +234,25 @@ void closeSDL()
 {
     TTF_CloseFont(mainFont);
     //TTF_CloseFont(smallFont);
-	SDL_DestroyTexture(tilesetTexture);
-	SDL_FreeSurface(mainScreen);
-    SDL_DestroyWindow(mainWindow);
-    SDL_DestroyRenderer(mainRenderer);
+	if (tilesetTexture)
+        SDL_DestroyTexture(tilesetTexture);
+	if (mainScreen)
+        SDL_FreeSurface(mainScreen);
+    if (mainWindow)
+        SDL_DestroyWindow(mainWindow);
+    if (mainRenderer)
+        SDL_DestroyRenderer(mainRenderer);
     for(int i = 0; i < MAX_SOUNDS; i++)
-        Mix_FreeChunk(audioArray[i]);
+    {
+        if (audioArray[i])
+            Mix_FreeChunk(audioArray[i]);
+    }
 
     for(int i = 0; i < MAX_MUSIC; i++)
-        Mix_FreeMusic(musicArray[i]);
+    {
+        if (musicArray[i])
+            Mix_FreeMusic(musicArray[i]);
+    }
 
     TTF_Quit();
     IMG_Quit();

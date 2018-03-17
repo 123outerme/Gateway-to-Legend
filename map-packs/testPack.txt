@@ -1,8 +1,8 @@
 Test Area
-maps/TestMaps.txt
+maps/testMaps.txt
 tileset/mainTileset48.png
-saves/TestArea.txt
-scripts/TestArea.txt
+saves/testArea.txt
+scripts/testArea.txt
 432
 336
 1
