@@ -352,14 +352,14 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     SDL_Event e;
     while(!quit)
     {
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+        while(SDL_PollEvent(&e) != 0)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
         SDL_RenderClear(mainRenderer);
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        while(SDL_PollEvent(&e) != 0)
-        {
             if(e.type == SDL_QUIT)
             {
                 quit = true;
