@@ -160,23 +160,6 @@ void initSprite(sprite* spr, int x, int y, int w, int h, int tileIndex, int angl
 	spr->type = type;
 }
 
-void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen)
-{
-    for(int dy = startY; dy < endY; dy++)
-        for(int dx = startX; dx < endX; dx++)
-            drawTile(tilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-    if (updateScreen)
-        SDL_RenderPresent(mainRenderer);
-}
-
-void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_RendererFlip flip)
-{
-    //printf("%d , %d\n", id  / 8, (id % 8));
-    if (canDrawTiles)
-        SDL_RenderCopyEx(mainRenderer, tilesetTexture, &((SDL_Rect) {.x = (id / 8) * width, .y = (id % 8) * width, .w = width, .h = width}), &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = width}), angle, &((SDL_Point) {.x = width / 2, .y = width / 2}), flip);
-    //SDL_RenderPresent(mainRenderer);
-}
-
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int hideTileNumOf, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)

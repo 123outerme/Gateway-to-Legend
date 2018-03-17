@@ -596,8 +596,9 @@ void changeFPS()
             }
         }
         if (cursor.y / TILE_SIZE - 4 == 1)
-            drawTile(cursor.tileIndex, 8 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        drawTile(cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+            drawATile(mainRenderer, cursor.tileIndex, 8 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        drawATile(mainRenderer, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+
         SDL_RenderPresent(mainRenderer);
     }
     if (selection != 3)
@@ -662,12 +663,12 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         if (maxStrNum / MAX_MAPPACKS_PER_PAGE > 0)
         {
             if (menuPage > 0)
-                drawTile(MAIN_ARROW_ID, 8.5 * TILE_SIZE, 2, TILE_SIZE, 0, SDL_FLIP_HORIZONTAL);
+                drawATile(tilesetTexture, MAIN_ARROW_ID, 8.5 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_HORIZONTAL);
             if (menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE)
-                drawTile(MAIN_ARROW_ID, 9.75 * TILE_SIZE, 2, TILE_SIZE, 0, SDL_FLIP_NONE);
+                drawATile(tilesetTexture, MAIN_ARROW_ID, 9.75 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }
 
-        drawTile(MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        drawATile(tilesetTexture, MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
         if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
