@@ -81,7 +81,7 @@ typedef struct {
     int w;
     int h;
     scriptBehavior action;
-    char* data;
+    char data[99];
     bool active;
 } script;
 

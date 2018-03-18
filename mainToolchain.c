@@ -1012,7 +1012,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
     {
         SDL_RenderClear(mainRenderer);
         viewMap(workingPack, map, false, false);
-        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? x1 : cursor.x, .y = !editXY ? y1 : cursor.y, .w = !editXY ? cursor.x - x1 : x2 - x1, .h = !editXY ? cursor.y - y1 : x2 - x1}));
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? x1 : cursor.x, .y = !editXY ? y1 : cursor.y, .w = !editXY ? cursor.x - x1 : cursor.w, .h = !editXY ? cursor.y - y1 : cursor.h}));
         key = getKey();
         if (SC_ATTACK == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
         {
@@ -1040,8 +1040,8 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             {
                 x1 = cursor.x;
                 y1 = cursor.y;
-                cursor.x = x2;
-                cursor.y = y2;
+                cursor.x = x1 + cursor.w;
+                cursor.y = y1 + cursor.h;
                 intervalSize = 6;
                 editXY = false;
             }
@@ -1056,20 +1056,23 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             quit = true;
         SDL_RenderPresent(mainRenderer);
     }
-    if (editScript->action == script_trigger_dialogue || editScript->action == script_trigger_dialogue_once)
+    if (!(key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU)))
     {
-        stringInput(&(editScript->data), "What should be said?", 99, "Hello!", true);
-    }
-    if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
-    {
-        char* message = calloc(99, sizeof(char));
-        snprintf(message, 99, "How much %s?", editScript->action == script_gain_money ? "money" : (editScript->action == script_gain_exp ? "exp" : "damage"));
-        stringInput(&(editScript->data), message, 3, "0", false);
-        free(message);
-    }
-    if (editScript->action == script_switch_maps)
-    {
-        //stringInput(&(editScript->data), "Which map ID, x, and y? format: [ID/x/y]", 3, false);
+        if (editScript->action == script_trigger_dialogue || editScript->action == script_trigger_dialogue_once)
+        {
+            stringInput(&data, "What should be said?", 99, "Hello!", true);
+        }
+        if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
+        {
+            char* message = calloc(17, sizeof(char));
+            snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : (editScript->action == script_gain_exp ? "exp" : "damage"));
+            stringInput(&data, message, 3, "0", false);
+            free(message);
+        }
+        if (editScript->action == script_switch_maps)
+        {
+            //pick map, then x/y
+        }
     }
     if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
         initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");

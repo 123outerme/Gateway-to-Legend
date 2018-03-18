@@ -151,7 +151,7 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	scriptPtr->y = y;
 	scriptPtr->w = w;
 	scriptPtr->h = h;
-	scriptPtr->data = data;
+	strcpy(scriptPtr->data, data);
 	scriptPtr->active = true;
 }
 
@@ -373,9 +373,9 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
 
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps)
 {
-    const int frameOffset = 250;
-    char* stringData = calloc(maxChar + 1, sizeof(char));
+    char* stringData = calloc(maxChar + 1, sizeof(char)), * dispString = calloc(maxChar + 2, sizeof(char));
     stringData[0] = ' ';
+    dispString[0] = ' ';
     bool quit = false, hasTyped = false, capital = startCaps;
     int numChar = 0, frame = 0;
     SDL_Event e;
@@ -384,11 +384,11 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
         while(SDL_PollEvent(&e) != 0)
         {
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
-        SDL_RenderClear(mainRenderer);
-        SDL_RenderFillRect(mainRenderer, NULL);
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            SDL_RenderClear(mainRenderer);
+            SDL_RenderFillRect(mainRenderer, NULL);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+            drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
             if(e.type == SDL_QUIT)
             {
                 quit = true;
@@ -409,12 +409,17 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
                         temp[0] = (char) tolower(temp[0]);
                     stringData[numChar++] = temp[0];
                     hasTyped = true;
+                    strncpy(dispString, stringData, numChar);
+                    if (numChar < maxChar)
+                        strncat(dispString, "_\0", numChar + 1);
                 }
 
                 if (e.key.keysym.sym == SDLK_BACKSPACE && numChar > 0)
                 {
-                    stringData[--numChar] = ' ';
+                    stringData[--numChar] = '\0';
                     hasTyped = (numChar > 0);
+                    strncpy(dispString, stringData, numChar + 1);
+                    strncat(dispString, "_\0", numChar + 1);
                 }
 
                 if (e.key.keysym.sym == SDLK_LSHIFT || e.key.keysym.sym == SDLK_RSHIFT)
@@ -424,23 +429,15 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
                     quit = true;
             }
 
-            if (frame % frameOffset < frameOffset / 2 && numChar < maxChar)
+            if (capital)
             {
-                SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = (2 + numChar) * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE / 8}));
-                if (capital)
-                {
-                    SDL_RenderDrawLine(mainRenderer, (2.5 + numChar) * TILE_SIZE, 4.25 * TILE_SIZE, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE);
-                    SDL_RenderDrawLine(mainRenderer, (2 + numChar) * TILE_SIZE, 4 * TILE_SIZE, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE);
-                    SDL_RenderDrawLine(mainRenderer, (2.5 + numChar) * TILE_SIZE, 3.75 * TILE_SIZE, (3 + numChar) * TILE_SIZE, 4 * TILE_SIZE);
-                }
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+                drawText("/", .5 * TILE_SIZE, 13.3 * TILE_SIZE, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                drawText("\\", TILE_SIZE, 13.3 * TILE_SIZE, TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = TILE_SIZE, .y = 13.6 * TILE_SIZE, .w = .25 * TILE_SIZE, .h = .9 * TILE_SIZE}));
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
             }
-
-            if (frame % frameOffset >= frameOffset / 2)
-                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = 2 * TILE_SIZE, .y = 4.5 * TILE_SIZE, .w = (maxChar + 1) * TILE_SIZE, .h = TILE_SIZE / 8}));
-
-            drawText(stringData, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4.5 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            drawText(dispString, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
             SDL_RenderPresent(mainRenderer);
         }
     }
@@ -451,6 +448,7 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     else
         strncpy(*data, stringData, maxChar);
     free(stringData);
+    free(dispString);
 }
 
 void saveConfig(char* filePath)

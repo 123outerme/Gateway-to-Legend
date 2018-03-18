@@ -122,6 +122,8 @@ int main(int argc, char* argv[])
                 }
                 Mix_PlayChannel(-1, SWING_SOUND, 0);
                 Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+                if (key == ANYWHERE_QUIT)
+                quitGame = true;
             }
             gameState = START_GAMECODE;
             break;
