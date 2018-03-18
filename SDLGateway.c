@@ -249,6 +249,27 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
     }*/
 }
 
+void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen)
+{
+        int tile = 0;
+        for(int dy = startY; dy < endY; dy++)
+            for(int dx = startX; dx < endX; dx++)
+            {
+                if (isEvent)
+                {
+                    tile = tileIDArray[thisTilemap[dy][dx] + 4];  //add 4 to start at buttons
+                    if (thisTilemap[dy][dx] < 2)
+                        tile = 127 - (thisTilemap[dy][dx] == 1 && !hideCollision);
+                    drawATile(thisTilemap[dy][dx] < 2 ? tilesetTexture : tileTexture, tile, dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                }
+                else
+                    drawATile(tileTexture, thisTilemap[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+            }
+
+    if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
+}
+
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
 {
     const int MAX_ITEMS = 9;
@@ -656,6 +677,37 @@ bool executeScriptAction(script* scriptData, player* player)
         if (scriptData->action == script_trigger_dialogue_once)
             scriptData->data[0] = '\0';
     }
+    if (scriptData->action == script_trigger_boss && scriptData->data[0] != '\0')
+    {
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+        for(int i = 0; i < 120; i++)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL_RenderClear(mainRenderer);
+            drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
+            drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
+            SDL_RenderFillRect(mainRenderer, NULL);
+            SDL_RenderPresent(mainRenderer);
+            SDL_Delay(7);
+        }
+        char* temp = "", * data = calloc(99, sizeof(char));
+        script theBoss;
+        readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));
+        int bossIndex = strtol(strtok(strcpy(data, theBoss.data), "[/]"), NULL, 10);
+        SDL_Delay(500);
+        for(int i = 0; i < 120; i++)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+            SDL_RenderClear(mainRenderer);
+            drawATile(tilesTexture, bossIndex, theBoss.x, theBoss.y, theBoss.w, theBoss.h, 0, SDL_FLIP_NONE);
+            SDL_RenderPresent(mainRenderer);
+            SDL_Delay(5);
+        }
+        //fade to white while displaying boss
+        free(data);
+        scriptData->data[0] = '\0';
+    }
     if (scriptData->action == script_switch_maps)
     {
         char* firstChar = "\0";
@@ -697,10 +749,14 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
         GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
-        for(int i = 120; i > -1; i--)
+        for(int i = 0; i < 120; i++)
         {
-            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
             SDL_RenderClear(mainRenderer);
+            drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
+            drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
+            SDL_RenderFillRect(mainRenderer, NULL);
             SDL_RenderPresent(mainRenderer);
             SDL_Delay(9);
         }

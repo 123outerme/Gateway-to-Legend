@@ -23,7 +23,6 @@
 #define OVERWORLDMENU_GAMECODE 4
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
-#define MAX_TILE_ID_ARRAY 18
 #define MAX_COLLISIONDATA_ARRAY 13
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
@@ -46,7 +45,6 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
 
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 
-int tileIDArray[MAX_TILE_ID_ARRAY];
 #define PLAYER_ID tileIDArray[0]
 #define PLAYERWALK_ID tileIDArray[1]
 #define CURSOR_ID tileIDArray[2]
@@ -80,8 +78,6 @@ int main(int argc, char* argv[])
             return initCode;
     }
     //loading in map pack header files
-    char mainFilePath[MAX_PATH], mapFilePath[MAX_PATH - 9], tileFilePath[MAX_PATH - 9],
-            saveFilePath[MAX_PATH - 9], scriptFilePath[MAX_PATH - 9];
     char** listOfFilenames;
     int maxStrNum = 0;
     listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_PATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
@@ -113,7 +109,6 @@ int main(int argc, char* argv[])
             {
                 SDL_Texture* titlescreen;
                 loadIMG("splashscreen.png", &titlescreen);
-                SDL_SetTextureBlendMode(titlescreen, SDL_BLENDMODE_NONE);  //this ensures it renders somehow
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
                 int key = 0;
                 while(!key)
@@ -252,6 +247,7 @@ int main(int argc, char* argv[])
             for(int i = 0; i < MAX_ENEMIES + 1; i++)
                 enemyFlags[i] = true;
             person.invincCounter = 0;
+            loadBoss = true;
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
@@ -596,8 +592,8 @@ void changeFPS()
             }
         }
         if (cursor.y / TILE_SIZE - 4 == 1)
-            drawATile(mainRenderer, cursor.tileIndex, 8 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        drawATile(mainRenderer, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+            drawATile(tilesetTexture, cursor.tileIndex, 8 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 
         SDL_RenderPresent(mainRenderer);
     }
@@ -688,14 +684,13 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-	bool quit = false, debugDrawPath = false, drawFPS = false;
+	bool quit = false, debugDrawPath = false, drawFPS = false, firstBossFrame = true;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_PATH];
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
-    initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/0/1]");
-    static int bossTiles = 1;
+    initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
     static int bossHP = 1;
     thisScript.active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
@@ -734,7 +729,6 @@ int mainLoop(player* playerSprite)
             bossScript = theseScripts[i];
             char* data = calloc(99, sizeof(char));
             bossSprite.spr.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
-            bossTiles = strtol(strtok(NULL, "[/]"), NULL, 10);
             if (!loadBoss)
             {
                 bossScript.x = bossSprite.spr.x;
@@ -743,7 +737,7 @@ int mainLoop(player* playerSprite)
             else
                 bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
 
-            initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, bossSprite.spr.type);
+            initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
             loadBoss = false;
             free(data);
             break;
@@ -945,11 +939,6 @@ int mainLoop(player* playerSprite)
                         exitCode = 2;
                         playerSprite->xVeloc = 0;
                         playerSprite->yVeloc = 0;
-                        initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
-                        loadBoss = true;
-                        script resetScript;
-                        initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
-                        executeScriptAction(&resetScript, playerSprite);  //resets boss movement timer
                     }
                 }
 
@@ -1005,11 +994,11 @@ int mainLoop(player* playerSprite)
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
                         if (theseScripts[i].action == script_use_gateway && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
-                            {
-                                thisScript = theseScripts[i];
-                                found = true;
-                                break;
-                            }
+                        {
+                            thisScript = theseScripts[i];
+                            found = true;
+                            break;
+                        }
                     }
                     thisScript.active = found;
                     //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
@@ -1132,7 +1121,7 @@ int mainLoop(player* playerSprite)
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
-            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss)
+            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
             {
                 if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
@@ -1179,7 +1168,7 @@ int mainLoop(player* playerSprite)
                     {
                         thisScript = theseScripts[i];
                         thisScript.active = true;
-                        if (((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once) && !checkSKInteract))
+                        if (((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once || (thisScript.action == script_trigger_boss && thisScript.data[0] == '\0')) && !checkSKInteract))
                             thisScript.active = false;
                         break;
                     }
@@ -1221,11 +1210,15 @@ int mainLoop(player* playerSprite)
             if (enemies[i].spr.type == type_enemy)
                 drawATile(tilesTexture, enemies[i].spr.tileIndex, enemies[i].spr.x, enemies[i].spr.y, enemies[i].spr.w, enemies[i].spr.h, 0, enemies[i].spr.flip);
         }
-        if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss)
+        if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
         {
-            for(int i = 0; i < bossTiles; i++)
+            drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
+            /*for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);
+                */
         }
+        else
+            firstBossFrame = false;
 
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
@@ -1245,6 +1238,16 @@ int mainLoop(player* playerSprite)
     if (theseScripts)
         free(theseScripts);
     free(collisionData);
+
+    if (exitCode == 2)
+    {
+        initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
+        loadBoss = true;
+        script resetScript;
+        initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
+        executeScriptAction(&resetScript, playerSprite);  //resets boss movement timer
+    }
+
     return exitCode;
 }
 

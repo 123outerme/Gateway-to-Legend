@@ -20,6 +20,8 @@
 #define MAX_PATH 260
 #endif
 
+#define MAX_TILE_ID_ARRAY 18
+
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
 #define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
@@ -104,6 +106,7 @@ void loadConfig(char* filePath);  //loads config data into the public variables
 void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
+void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps);   //gets string input
 void saveConfig(char* filePath);  //saves config data to the file
@@ -120,6 +123,7 @@ bool executeScriptAction(script* scriptData, player* player);  //executes a scri
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
+int tileIDArray[MAX_TILE_ID_ARRAY];
 
 #define SIZE_OF_SCANCODE_ARRAY 7
 SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
