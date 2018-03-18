@@ -92,7 +92,7 @@ void writeTileData();
 //V script editor functions
 void mainScriptEdtior(mapPack* workingPack);
 int scriptSelectLoop(mapPack workingPack);
-script mainScriptLoop(mapPack workingPack, scriptBehavior action);
+script mainScriptLoop(mapPack workingPack, script* editScript);
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void writeScriptData(script* mapScripts, int count);
 
@@ -820,24 +820,72 @@ void mainScriptEdtior(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
     int scriptNum = 0;
+    char* temp = "";
+    script editScript;
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     scriptNum = scriptSelectLoop(*workingPack);
-    if (scriptNum > 0)
-    {
-        script newScript = mainScriptLoop(*workingPack, (scriptBehavior) scriptNum);
-        if (newScript.action != script_none)
-            writeScriptData(&newScript, 1);
-    }
     if (scriptNum == 0)
     {
-        sprite scriptSpr;
-        initSprite(&scriptSpr, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, (entityType) type_na);
+        script loadedScript;
         bool quit = false;
-        int scriptLineNum = 0;
-        SDL_Event e;
+        char* temp = "";
+        int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
+        readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+        SDL_Keycode key;
         while(!quit)
         {
-            //load script
+            SDL_RenderClear(mainRenderer);
+            viewMap(*workingPack, loadedScript.mapNum, true, false);
+            key = getKey();
+            if (key == SDL_GetKeyFromScancode(SC_UP))
+            {
+                if (scriptLineNum > 9)
+                    scriptLineNum -= 10;
+                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            }
+
+            if (key == SDL_GetKeyFromScancode(SC_DOWN))
+            {
+                if (scriptLineNum < maxLines)
+                    scriptLineNum += 10;
+                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            }
+
+            if (key == SDL_GetKeyFromScancode(SC_LEFT))
+            {
+                if (scriptLineNum > 0)
+                    scriptLineNum--;
+                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            }
+
+            if (key == SDL_GetKeyFromScancode(SC_RIGHT))
+            {
+                if (scriptLineNum < maxLines)
+                    scriptLineNum++;
+                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            }
+            if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
+                quit = true;
+
+            drawText(intToString(scriptLineNum, temp), SCREEN_WIDTH - TILE_SIZE * (!scriptLineNum ? 1 : digits(scriptLineNum)), 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
+            SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
+            SDL_RenderPresent(mainRenderer);
+        }
+        scriptNum = -1;
+        editScript = loadedScript;
+    }
+    if (scriptNum != 0)
+    {
+        if (scriptNum > 0)
+            initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "");
+        mainScriptLoop(*workingPack, &editScript);
+        if (editScript.action != script_none)
+        {
+            writeScriptData(&editScript, 1);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_RenderClear(mainRenderer);
+            drawText("Outputted to output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+            waitForKey();
         }
     }
 }
@@ -953,21 +1001,20 @@ int toolchain_min(int x, int y)
     return ((x > y) ? y : x);
 }
 
-script mainScriptLoop(mapPack workingPack, scriptBehavior action)
+script mainScriptLoop(mapPack workingPack, script* editScript)
 {
-    script outputScript;
-    int map = chooseMap(workingPack), x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    int map = editScript->mapNum, x1 = editScript->x, y1 = editScript->y, x2 = editScript->x + editScript->w, y2 = editScript->y + editScript->h;
     int intervalSize = TILE_SIZE;
     char* data = calloc(99, sizeof(char));
     sprite cursor;
-    initSprite(&cursor, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+    initSprite(&cursor, x1, y1, x2 - x1, y2 - y1, 0, 0, SDL_FLIP_NONE, type_na);
     bool quit = false, editXY = true, bigIntervalSize = false;
     SDL_Keycode key;
     while(!quit)
     {
         SDL_RenderClear(mainRenderer);
         viewMap(workingPack, map, false, false);
-        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x1 ? x1 : cursor.x, .y = y1 ? y1 : cursor.y, .w = x1 ? cursor.x - x1 : cursor.w, .h = y1 ? cursor.y - y1 : cursor.h}));
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? x1 : cursor.x, .y = !editXY ? y1 : cursor.y, .w = !editXY ? cursor.x - x1 : x2 - x1, .h = !editXY ? cursor.y - y1 : x2 - x1}));
         key = getKey();
         if (SC_ATTACK == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
         {
@@ -995,6 +1042,8 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
             {
                 x1 = cursor.x;
                 y1 = cursor.y;
+                cursor.x = x2;
+                cursor.y = y2;
                 intervalSize = 6;
                 editXY = false;
             }
@@ -1005,28 +1054,31 @@ script mainScriptLoop(mapPack workingPack, scriptBehavior action)
                 quit = true;
             }
         }
-        if (key == ANYWHERE_QUIT)
+        if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
             quit = true;
         SDL_RenderPresent(mainRenderer);
     }
-    if (action == script_trigger_dialogue || script_trigger_dialogue_once)
+    if (editScript->action == script_trigger_dialogue || editScript->action == script_trigger_dialogue_once)
     {
-        //get dialogue text
+        stringInput(&(editScript->data), "What should be said?", 99, "Hello!", true);
     }
-    if (action == script_gain_money || action == script_gain_exp || action == script_player_hurt)
+    if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
     {
-        //get amt
+        char* message = calloc(99, sizeof(char));
+        snprintf(message, 99, "How much %s?", editScript->action == script_gain_money ? "money" : (editScript->action == script_gain_exp ? "exp" : "damage"));
+        stringInput(&(editScript->data), message, 3, "0", false);
+        free(message);
     }
-    if (action == script_switch_maps)
+    if (editScript->action == script_switch_maps)
     {
-        //get location
+        //stringInput(&(editScript->data), "Which map ID, x, and y? format: [ID/x/y]", 3, false);
     }
-    if (key == ANYWHERE_QUIT)
-        initScript(&outputScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");
+    if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
+        initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");
     else
-        initScript(&outputScript, action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data);
+        initScript(editScript, editScript->action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data);
     free(data);
-    return outputScript;
+    return *editScript;
 }
 //end script editor code.
 
