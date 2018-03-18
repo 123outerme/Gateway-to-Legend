@@ -6,12 +6,20 @@
 
 int initSounds()
 {
-    /*MUSIC(0) = Mix_LoadWAV();
+    /*MUSIC(0) = Mix_LoadMUS();
     if (!MUSIC(0))
         return -5;*/
 
-    /*MUSIC(1) = Mix_LoadWAV();
+    /*MUSIC(1) = Mix_LoadMUS();
     if (!MUSIC(1))
+        return -5;
+
+    MUSIC(2) = Mix_LoadMUS();
+    if (!MUSIC(2))
+        return -5;
+
+    MUSIC(3) = Mix_LoadMUS();
+    if (!MUSIC(3))
         return -5;*/
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
@@ -75,8 +83,8 @@ void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int a
     player->level = 1;
     player->experience = 0;
     player->money = 0;
-    player->HP = 12;
-    player->maxHP = 12;
+    player->HP = DEFAULT_PLAYER_HEALTH;
+    player->maxHP = DEFAULT_PLAYER_HEALTH;
     player->mapScreen = mapScreen;
     player->invincCounter = 0;
     player->animationCounter = 0;
@@ -100,8 +108,8 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 
 void createGlobalPlayer(player* playerSprite, char* filePath)
 {
-    char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
-    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player", true);
+    char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
+    stringInput(&newName, "Change name to:", MAX_PLAYER_NAME, "Player", true);
     strncpy(playerSprite->name, newName, strlen(newName));
     free(newName);
     playerSprite->maxHP = 12;

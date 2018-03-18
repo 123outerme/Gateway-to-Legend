@@ -818,7 +818,6 @@ void writeScriptData(script* mapScripts, int count)
 //start script editor code
 void mainScriptEdtior(mapPack* workingPack)
 {
-    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
     int scriptNum = 0;
     char* temp = "";
     script editScript;
@@ -828,7 +827,6 @@ void mainScriptEdtior(mapPack* workingPack)
     {
         script loadedScript;
         bool quit = false;
-        char* temp = "";
         int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
         readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
         SDL_Keycode key;

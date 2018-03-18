@@ -7,8 +7,9 @@
 #define VERSION_NUMBER "1.0.0a"
 
 #define SAVE_FILE_LINES 0
-#define PLAYER_NAME_LIMIT 8
-
+#define MAX_PLAYER_NAME 8
+#define MAX_PLAYER_HEALTH 32
+#define DEFAULT_PLAYER_HEALTH 12
 #define GAME_WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
@@ -31,7 +32,7 @@
 
 typedef struct {
     sprite spr;  //?
-    char name[PLAYER_NAME_LIMIT + 1];  //9 bytes
+    char name[MAX_PLAYER_NAME + 1];  //9 bytes
     int level;  //
     int experience;  //
     int money;  //

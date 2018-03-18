@@ -292,14 +292,92 @@ void coinStore(player* playerSprite)
         int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
         switch(choice)
         {
-        case 1:
+        case 1:  //extra health
             {
-                //
+                {
+                    char textString[12];
+                    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF};
+                    sprite cursor;
+                    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
+                    SDL_Event e;
+                    bool quit = false;
+                    while(!quit)
+                    {
+                        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+                        SDL_RenderClear(mainRenderer);
+                        SDL_RenderFillRect(mainRenderer, NULL);
+                        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+                        //background text (drawn first)
+                        drawText("Increase Max HP", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
+                        //foreground text
+                        drawText("Increase Max HP", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
+
+                        SDL_SetRenderDrawColor(mainRenderer, titleOverColor.r, titleOverColor.g, titleOverColor.b, 0xFF);
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 11.25 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = (playerSprite->maxHP - DEFAULT_PLAYER_HEALTH) * 16 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
+
+                        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+                        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 11.5 * TILE_SIZE, .y = 5.25 * TILE_SIZE, .w = (playerSprite->maxHP - DEFAULT_PLAYER_HEALTH) * 16, .h = TILE_SIZE / 2}));
+
+                        drawText("Increase:", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        snprintf(textString, 12, "%.1f Hearts", playerSprite->maxHP / 4.0);
+                        drawText(textString, 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+                        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+                        snprintf(textString, 12, "%d Coins", playerSprite->money);
+                        drawText(textString, 2.25 * TILE_SIZE, 9 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+                        drawText("15 Coins per half-heart", 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+
+                        while(SDL_PollEvent(&e) != 0)
+                        {
+                            //User requests quit
+                            if(e.type == SDL_QUIT)
+                                quit = true;
+                            //User presses a key
+                            else if(e.type == SDL_KEYDOWN)
+                            {
+                                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
+                                {
+                                    cursor.y -= TILE_SIZE;
+                                    Mix_PlayChannel(-1, PING_SOUND, 0);
+                                }
+
+                                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
+                                {
+                                    cursor.y += TILE_SIZE;
+                                    Mix_PlayChannel(-1, PING_SOUND, 0);
+                                }
+
+                                if (e.key.keysym.scancode == SC_INTERACT)
+                                {
+                                    if (cursor.y == TILE_SIZE * 7)
+                                    {
+                                        quit = true;
+                                        Mix_Volume(-1, soundVolume);
+                                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                                    }
+                                    if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money > 14)
+                                    {
+                                        playerSprite->maxHP += 2;
+                                        playerSprite->money -= 15;
+                                    }
+                                }
+                            }
+                        }
+                        drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                        SDL_RenderPresent(mainRenderer);
+                    }
+                        saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
+                }
             }
             break;
-        case 2:
+        case 2:  //techniques
             {
-                //
+                {
+                    //
+                }
             }
             break;
         case 3:
@@ -512,8 +590,8 @@ int changeControls()
 
 void changeName(player* playerSprite)
 {
-    char* newName = calloc(PLAYER_NAME_LIMIT + 1, sizeof(char));
-    stringInput(&newName, "Change name to:", PLAYER_NAME_LIMIT, "Player", true);
+    char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
+    stringInput(&newName, "Change name to:", MAX_PLAYER_NAME, "Player", true);
     strncpy(playerSprite->name, newName, strlen(newName));
     saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
     free(newName);
