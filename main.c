@@ -188,12 +188,15 @@ int main(int argc, char* argv[])
             loadIMG(tileFilePath, &tilesTexture);
             free(allScripts);
             allScripts = calloc(checkFile(scriptFilePath, -1) + 2, sizeof(script));
-            for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
+            if (checkFile(scriptFilePath, -1))
             {
-                script thisScript;
-                readScript(&thisScript, readLine(scriptFilePath, i, &buffer));
-                allScripts[i] = thisScript;
-                sizeOfAllScripts = i + 1;
+                for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
+                {
+                    script thisScript;
+                    readScript(&thisScript, readLine(scriptFilePath, i, &buffer));
+                    allScripts[i] = thisScript;
+                    sizeOfAllScripts = i + 1;
+                }
             }
             for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
             {
