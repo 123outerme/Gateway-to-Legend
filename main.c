@@ -43,6 +43,8 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
 
+void aMenu_drawMain();
+
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 
 #define PLAYER_ID tileIDArray[0]
@@ -130,7 +132,7 @@ int main(int argc, char* argv[])
             break;
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[4]) {"Play", "Coin Store", "Settings", "Quit"}, 4, 1, AMENU_MAIN_THEME, true, true);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[4]) {"Play", "Coin Store", "Settings", "Quit"}, 4, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -141,7 +143,7 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false);
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 changeVolumes();
             if (choice == 2)
@@ -202,7 +204,7 @@ int main(int argc, char* argv[])
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
-            quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, AMENU_MAIN_THEME, true, false);
+            quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, AMENU_MAIN_THEME, true, false, NULL);
             if (quitGame == 3 || quitGame == -1)
             {
                 quitGame = (quitGame == -1);
@@ -240,7 +242,7 @@ int main(int argc, char* argv[])
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             Mix_HaltChannel(-1);
-            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 2 || choice == 3 || choice == -1)
@@ -295,7 +297,7 @@ void coinStore(player* playerSprite)
     {
         char title[18];
         snprintf(title, 18, "Store: %d Coins", playerSprite->money);
-        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
         switch(choice)
         {
         case 1:  //extra health
@@ -694,7 +696,7 @@ void changeFPS()
 
 void clearData(player* playerSprite)
 {
-    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Clear All Data:\nAre You Sure?", (char*[2]) {"Yes, Do It", "No, Back"}, 2, 0, AMENU_MAIN_THEME, true, false);
+    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Clear All Data:\nAre You Sure?", (char*[2]) {"Yes, Do It", "No, Back"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL);
     if (choice == 1)
     {
         createFile(CONFIG_FILEPATH);
@@ -1397,4 +1399,12 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);
+}
+
+void aMenu_drawMain()
+{
+    drawATile(tilesetTexture, TILE_ID_TILDA, 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+    drawATile(tilesetTexture, TILE_ID_CUBED, TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+    drawATile(tilesetTexture, TILE_ID_TILDA, 2 * TILE_SIZE - 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+    drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
 }

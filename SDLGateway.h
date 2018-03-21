@@ -28,6 +28,10 @@
 #define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
 #define AMENU_MAIN_TITLECOLOR2 0x00, 0xAC, 0xE6
 
+#define TILE_ID_CURSOR 17
+#define TILE_ID_TILDA 125
+#define TILE_ID_CUBED 124
+
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
 typedef struct {
@@ -108,7 +112,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //lo
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
-int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);  //draws a menu using the colors and options presented
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain, void (*extraDrawing)(void));  //draws a menu using the colors and options presented
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps);   //gets string input
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file

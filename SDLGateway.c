@@ -1,9 +1,5 @@
 #include "SDLGateway.h"
 
-#define TILE_ID_CURSOR 17
-#define TILE_ID_TILDA 125
-#define TILE_ID_CUBED 124
-
 int initSounds()
 {
     /*MUSIC(0) = Mix_LoadMUS();
@@ -281,7 +277,7 @@ void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int s
         SDL_RenderPresent(mainRenderer);
 }
 
-int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain)
+int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain, void (*extraDrawing)(void))
 {
     const int MAX_ITEMS = 9;
     if (curSelect < 1)
@@ -312,13 +308,8 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
 
         for(int i = 0; ((options <= MAX_ITEMS) ? i < options : i < MAX_ITEMS); i++)
 	        drawText(optionsArray[i], 2 * TILE_SIZE + TILE_SIZE / 4, (5 + i) * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - (5 + i)) * TILE_SIZE, textColor, false);
-        if (isMain)
-        {
-            drawATile(tilesetTexture, TILE_ID_TILDA, 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-            drawATile(tilesetTexture, TILE_ID_CUBED, TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-            drawATile(tilesetTexture, TILE_ID_TILDA, 2 * TILE_SIZE - 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-            drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        }
+        if (extraDrawing)
+            (*extraDrawing)();
 
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
         //Handle events on queue
