@@ -72,6 +72,9 @@ int initSounds()
     ENEMYHURT_SOUND = Mix_LoadWAV(ENEMYHURT_FILE);
     if (!ENEMYHURT_SOUND)
         return -5;
+    TELEPORT_SOUND = Mix_LoadWAV(TELEPORT_FILE);
+    if (!TELEPORT_SOUND)
+        return -5;
 
     return 0;
 }
@@ -701,7 +704,7 @@ bool executeScriptAction(script* scriptData, player* player)
         script theBoss;
         readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));
         int bossIndex = strtol(strtok(strcpy(data, theBoss.data), "[/]"), NULL, 10);
-        SDL_Delay(500);
+        SDL_Delay(400);
         for(int i = 0; i < 120; i++)
         {
             SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
@@ -714,7 +717,7 @@ bool executeScriptAction(script* scriptData, player* player)
         free(data);
         scriptData->data[0] = '\0';
     }
-    if (scriptData->action == script_switch_maps)
+    if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')
     {
         char* firstChar = "\0";
         int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
@@ -802,6 +805,7 @@ bool executeScriptAction(script* scriptData, player* player)
         //printf("%d/", player->spr.x);
         player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
         //printf("%d\n", player->spr.y);
+        Mix_PlayChannel(-1, TELEPORT_SOUND, 0);
         //play animation at old & new coords?
         free(data);
     }

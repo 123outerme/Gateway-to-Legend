@@ -51,6 +51,7 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
 #define HP_ID tileIDArray[3]
 #define SWORD_ID tileIDArray[4]
 #define ENEMY(x) tileIDArray[14 + x]
+#define GOLD_ID tileIDArray[18]
 
 #define MAIN_ARROW_ID 34
 
@@ -194,7 +195,7 @@ int main(int argc, char* argv[])
                 allScripts[i] = thisScript;
                 sizeOfAllScripts = i + 1;
             }
-            for(int i = 0; i < MAX_TILE_ID_ARRAY; i++)
+            for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
@@ -769,10 +770,10 @@ int mainLoop(player* playerSprite)
 	char mapFilePath[MAX_PATH];
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
-    script thisScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
+    script newScript, * thisScript = &newScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
     static int bossHP = 1;
-    thisScript.active = false;
+    thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
         if (allScripts[i].mapNum == playerSprite->mapScreen)
@@ -1052,12 +1053,12 @@ int mainLoop(player* playerSprite)
                     {
                         if (theseScripts[i].action == script_use_teleporter && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
                             {
-                                thisScript = theseScripts[i];
+                                thisScript = &(theseScripts[i]);
                                 found = true;
                                 break;
                             }
                     }
-                    thisScript.active = found;
+                    thisScript->active = found;
                 }
                 if (collisionData[8] && !playerSprite->invincCounter)
                 {
@@ -1075,12 +1076,12 @@ int mainLoop(player* playerSprite)
                     {
                         if (theseScripts[i].action == script_use_gateway && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
                         {
-                            thisScript = theseScripts[i];
+                            thisScript = &(theseScripts[i]);
                             found = true;
                             break;
                         }
                     }
-                    thisScript.active = found;
+                    thisScript->active = found;
                     //initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_use_portal, "[0/456/336]\0");
                     playerSprite->extraData = mapFilePath;
                     exitCode = 2;
@@ -1102,30 +1103,38 @@ int mainLoop(player* playerSprite)
                             playHitSound = true;
                             if (enemies[i].HP < 1 /*&& (enemies[i].angle == false || enemies[i].angle < SDL_GetTicks() + 250*/)
                             {
-                                enemies[i].spr.type = type_na;
+                                enemies[i].spr.type = type_generic;
                                 enemyFlags[i] = false;
-                                script rewardScript;
-                                initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5");  //note: enemies should probably actually become money, "dropping" it and only rewarding when you pick it up
-                                executeScriptAction(&rewardScript, playerSprite);
-                                initScript(&rewardScript, script_gain_exp, 0, 0, 0, 0, 0, "25");
-                                executeScriptAction(&rewardScript, playerSprite);
+                                enemies[i].spr.tileIndex = GOLD_ID;
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
                     }
 
-                    if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type == type_enemy && !(playerSprite->invincCounter))  //player collision
+                    if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type != type_na && !(playerSprite->invincCounter))  //player collision
                     {
-                         script hurtPlayer;
-                         initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2");
-                         playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y))
-                         - 48 * (enemies[i].spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y)));
+                        if (enemies[i].spr.type == type_enemy)
+                        {
+                            script hurtPlayer;
+                            initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2");
+                            playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y))
+                             - 48 * (enemies[i].spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y)));
 
-                         playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x))
-                         - 48 * (enemies[i].spr.y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x)));
-                         executeScriptAction(&hurtPlayer, playerSprite);
-                         playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
-                         collidedOnce = true;
+                            playerSprite->yVeloc += 24 * (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x))
+                             - 48 * (enemies[i].spr.y > playerSprite->spr.y && (abs(playerSprite->spr.y - enemies[i].spr.y) > abs(playerSprite->spr.x - enemies[i].spr.x)));
+                            executeScriptAction(&hurtPlayer, playerSprite);
+                            playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
+                            collidedOnce = true;
+                        }
+                        else if (enemies[i].spr.type == type_generic)
+                        {
+                            script rewardScript;
+                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5");  //note: enemies should probably actually become money, "dropping" it and only rewarding when you pick it up
+                            executeScriptAction(&rewardScript, playerSprite);
+                            initScript(&rewardScript, script_gain_exp, 0, 0, 0, 0, 0, "25");
+                            executeScriptAction(&rewardScript, playerSprite);
+                            enemies[i].spr.type = type_na;
+                        }
                     }
 
                     if (enemies[i].spr.tileIndex == ENEMY(1) && enemies[i].spr.type == type_enemy)
@@ -1240,16 +1249,19 @@ int mainLoop(player* playerSprite)
                 bossSprite.spr.x = bossScript.x;
                 bossSprite.spr.y = bossScript.y;  //ignore collision on purpose
             }
-            if (!thisScript.active)
-            {
+            if (!thisScript->active)
+            {  //script search loop
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
-                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h})) && theseScripts[i].action != script_use_gateway && theseScripts[i].action != script_use_teleporter && thisScript.action != script_boss_actions)
+                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}))
+                        && theseScripts[i].action != script_use_gateway && theseScripts[i].action != script_use_teleporter
+                        && theseScripts[i].action != script_boss_actions)
                     {
-                        thisScript = theseScripts[i];
-                        thisScript.active = true;
-                        if (((thisScript.action == script_trigger_dialogue || thisScript.action == script_trigger_dialogue_once || (thisScript.action == script_trigger_boss && thisScript.data[0] == '\0')) && !checkSKInteract))
-                            thisScript.active = false;
+                        thisScript = &(theseScripts[i]);
+                        thisScript->active = true;
+                        if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
+                            || (thisScript->action == script_trigger_boss && thisScript->data[0] == '\0') || thisScript->action == script_none)
+                            thisScript->active = false;
                         break;
                     }
                 }
@@ -1267,10 +1279,6 @@ int mainLoop(player* playerSprite)
             drawFPS = keyStates[SDL_SCANCODE_F12];
             debugDrawPath = keyStates[SDL_SCANCODE_RSHIFT];
 
-            if (keyStates[SDL_SCANCODE_Z])
-            {
-                initScript(&thisScript, script_use_teleporter, 0, 0, 0, 0, 0, "[96/96]\0");
-            }
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
         if (swordTimer && SDL_GetTicks() >= swordTimer)
@@ -1287,15 +1295,14 @@ int mainLoop(player* playerSprite)
 
         for(int i = 0; i < enemyCount; i++)
         {
-            if (enemies[i].spr.type == type_enemy)
+            if (enemies[i].spr.type != type_na)
                 drawATile(tilesTexture, enemies[i].spr.tileIndex, enemies[i].spr.x, enemies[i].spr.y, enemies[i].spr.w, enemies[i].spr.h, 0, enemies[i].spr.flip);
         }
         if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
         {
             drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
             /*for(int i = 0; i < bossTiles; i++)
-                drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);
-                */
+                drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);*/
         }
         else
             firstBossFrame = false;
@@ -1306,8 +1313,8 @@ int mainLoop(player* playerSprite)
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         lastFrame = SDL_GetTicks();
-        if (thisScript.active)
-            quit = executeScriptAction(&thisScript, playerSprite);
+        if (thisScript->active)
+            quit = executeScriptAction(thisScript, playerSprite);
     }
 
     if (playerSprite->HP < 1)

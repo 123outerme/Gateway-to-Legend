@@ -54,11 +54,12 @@
 typedef enum
 {
     type_na,  //0
-    type_chest,  //1
-    type_npc,  //2
-    type_boss,  //3
-    type_player,  //4
-    type_enemy  //5
+    type_generic, //1
+    type_chest,  //2
+    type_npc,  //3
+    type_boss,  //4
+    type_player,  //5
+    type_enemy  //6
 } entityType;
 
 typedef struct

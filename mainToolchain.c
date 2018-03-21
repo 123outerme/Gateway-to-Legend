@@ -34,9 +34,8 @@
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3."}
-#define MAX_SPRITE_MAPPINGS 18  //sprite defines and other map-pack data? I'm really not sure where this number comes from
-#define MAX_MAP_PACK_DATA 6  //does not include sprite defines
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3.", "Pick the gold."}
+#define MAX_MAP_PACK_DATA 6 //does not include sprite defines
 
 #define MAIN_HELP_TEXT "Make map-packs using this toolchain! Create maps, scripts, and setup your files and tileset using this. To navigate, use the keys you set up in the main program."
 #define SCRIPT_HELP_TEXT "Use your movement keys to maneuver between maps and to the tile you want. Press Confirm to \"drop the anchor\" there. Set the width and height next. Toggle interval between 1/8 tile and a full tile using Attack."

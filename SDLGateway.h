@@ -21,7 +21,7 @@
 #define MAX_PATH 260
 #endif
 
-#define MAX_TILE_ID_ARRAY 18
+#define MAX_SPRITE_MAPPINGS 19  //sprite defines
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
@@ -124,7 +124,7 @@ bool executeScriptAction(script* scriptData, player* player);  //executes a scri
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
-int tileIDArray[MAX_TILE_ID_ARRAY];
+int tileIDArray[MAX_SPRITE_MAPPINGS];
 
 #define SIZE_OF_SCANCODE_ARRAY 7
 SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
@@ -136,18 +136,19 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_MENU CUSTOM_SCANCODES[5]
 #define SC_ATTACK CUSTOM_SCANCODES[6]
 
-#define MUSIC(x) audioArray[x > 2 ? 1 : x - 1]
-#define UNSHEATH_SOUND audioArray[2]
-#define OPTION_SOUND audioArray[3]
-#define PING_SOUND audioArray[4]
-#define STEP_SOUND(x) audioArray[x < 1 || x > 4 ? 6 : x + 4]
-#define SWING_SOUND audioArray[8]
-#define GATEWAYSTART_SOUND audioArray[9]
-#define GATEWAYEND_SOUND audioArray[10]
-#define DOOROPEN_SOUND audioArray[11]
-#define CASH_SOUND audioArray[12]
-#define PLAYERHURT_SOUND audioArray[13]
-#define ENEMYHURT_SOUND audioArray[14]
+#define MUSIC(x) musicArray[x > 4 ? 1 : x - 1]
+#define UNSHEATH_SOUND audioArray[1]
+#define OPTION_SOUND audioArray[2]
+#define PING_SOUND audioArray[3]
+#define STEP_SOUND(x) audioArray[x < 1 || x > 4 ? 4 : x + 3]
+#define SWING_SOUND audioArray[7]
+#define GATEWAYSTART_SOUND audioArray[8]
+#define GATEWAYEND_SOUND audioArray[9]
+#define DOOROPEN_SOUND audioArray[10]
+#define CASH_SOUND audioArray[11]
+#define PLAYERHURT_SOUND audioArray[12]
+#define ENEMYHURT_SOUND audioArray[13]
+#define TELEPORT_SOUND audioArray[14]
 
 #define UNSHEATH_FILE "audio/unsheath.ogg"
 #define OPTION_FILE "audio/unsheath_bass.ogg"
@@ -160,18 +161,19 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define CASH_FILE "audio/coin.ogg"
 #define PLAYERHURT_FILE "audio/playerHurt.ogg"
 #define ENEMYHURT_FILE "audio/enemyHurt.ogg"
+#define TELEPORT_FILE "audio/teleport.ogg"
 
-#define MUSIC_CHANNEL(x) channelArray[x > 2 ? 1 : x - 1]
-#define UNSHEATH_CHANNEL channelArray[2]
-#define OPTION_CHANNEL channelArray[3]
-#define PING_CHANNEL channelArray[4]
-#define STEP_CHANNEL(x) channelArray[x < 1 || x > 3 ? 6 : x + 4]
-#define SWING_CHANNEL channelArray[8]
-#define GATEWAY_CHANNEL channelArray[9]
-#define DOOROPEN_CHANNEL channelArray[10]
-#define CASH_CHANNEL channelArray[11]
-#define PLAYERHURT_CHANNEL channelArray[12]
-#define ENEMYHURT_CHANNEL channelArray[13]
+#define UNSHEATH_CHANNEL channelArray[1]
+#define OPTION_CHANNEL channelArray[2]
+#define PING_CHANNEL channelArray[3]
+#define STEP_CHANNEL(x) channelArray[x < 1 || x > 3 ? 4 : x + 3]
+#define SWING_CHANNEL channelArray[7]
+#define GATEWAY_CHANNEL channelArray[8]
+#define DOOROPEN_CHANNEL channelArray[9]
+#define CASH_CHANNEL channelArray[10]
+#define PLAYERHURT_CHANNEL channelArray[11]
+#define ENEMYHURT_CHANNEL channelArray[12]
+#define TELEPORT_CHANNEL channelArray[13]
 
 
 
