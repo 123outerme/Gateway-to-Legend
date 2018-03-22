@@ -286,6 +286,7 @@ int main(int argc, char* argv[])
     saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
     SDL_DestroyTexture(tilesTexture);
     free(allScripts);
+	free(listOfFilenames);
     closeSDL();
     return 0;
 }
