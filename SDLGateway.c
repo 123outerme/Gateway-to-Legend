@@ -536,7 +536,7 @@ int readScript(script* scriptPtr, char* input)
 	return 0;
 }
 
-char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const char* directory, int* strNum)
+char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int* strNum)
 {
 	DIR* dir;
 	struct dirent* ent;
@@ -547,7 +547,7 @@ char** getListOfFiles(const size_t maxStrings, const size_t maxLength, const cha
 		exit(1);
 	}
 	char** strArray = calloc(maxStrings, sizeof(char*));
-	for (int i =0 ; i < maxStrings; ++i)
+	for (int i = 0 ; i < maxStrings; ++i)
 		strArray[i] = calloc(maxLength, sizeof(char));
 	int i = 0;
 	while ((ent = readdir (dir)) != NULL)

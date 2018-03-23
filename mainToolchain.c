@@ -55,10 +55,6 @@ typedef struct {
     int tilesetMaps[MAX_SPRITE_MAPPINGS];
 } mapPack;
 
-
-int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain);
-// ^ whatever
-
 void initConfig();
 void loadConfig(char* filePath);
 
@@ -127,7 +123,7 @@ int main(int argc, char* argv[])
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false);
+        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false, NULL);
         if (code == 1)
         {
             createMapPack(&workingPack);
@@ -405,7 +401,7 @@ int subMain(mapPack* workingPack)
     while(!quit)
     {
         loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
-        int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[4]) {"Map Creator", "Script Editor", "Map-Pack Wizard", "Back"}, 4, 1, AMENU_MAIN_THEME, true, false);
+        int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[4]) {"Map Creator", "Script Editor", "Map-Pack Wizard", "Back"}, 4, 1, AMENU_MAIN_THEME, true, false, NULL);
         if (code == 1)
             mainMapCreator(workingPack);
         if (code == 2)
@@ -427,7 +423,7 @@ int mainMapCreator(mapPack* workingPack)
     char mapFilePath[MAX_PATH];
     char tileFilePath[MAX_PATH];
 
-    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false);
+    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
     if (choice != 3)
     {
         if (choice == 2)
@@ -470,7 +466,7 @@ int mainMapCreator(mapPack* workingPack)
         int scriptCount = 0;
         script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
 
-        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false);
+        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL);
 
         if (choice == 1)
         {
@@ -1090,7 +1086,7 @@ int mainMapPackWizard(mapPack* workingPack)
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", "Info/Help", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", "Info/Help", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false, NULL);
 
         if (choice == 1)
             editFilePaths(workingPack);
@@ -1130,7 +1126,7 @@ void editFilePaths(mapPack* workingPack)
     bool quit = false;
     while(!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[6]) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", "Back"}, 6, 0, AMENU_MAIN_THEME, true, false);
+        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[6]) {"Change Name", "Edit Map Path", "Edit Tileset Path", "Edit Save Path", "Edit Script Path", "Back"}, 6, 0, AMENU_MAIN_THEME, true, false, NULL);
         if (choice < 0 || choice == 6)
             quit = true;
         else
