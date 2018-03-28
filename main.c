@@ -775,23 +775,24 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-	bool quit = false, debugDrawPath = false, drawFPS = false, firstBossFrame = true;
+	bool quit = false, debugDrawPath = false, drawFPS = false;
+	static bool firstBossFrame = true;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_PATH];
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
-    script newScript, * thisScript = &newScript, * theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
+    script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
     static int bossHP = 1;
     thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
         if (allScripts[i].mapNum == playerSprite->mapScreen)
-            theseScripts[maxTheseScripts++] = allScripts[i];
+            theseScripts[maxTheseScripts++] = &allScripts[i];
     }
     if (maxTheseScripts)
     {
-        script* new_ptr = realloc(theseScripts, maxTheseScripts * sizeof(script));
+        script** new_ptr = realloc(theseScripts, maxTheseScripts * sizeof(script*));
         if (new_ptr != NULL)
             theseScripts = new_ptr;
     }
@@ -815,9 +816,9 @@ int mainLoop(player* playerSprite)
     enemyFlags[MAX_ENEMIES] = false;
     for(int i = 0; i < maxTheseScripts; i++)
     {
-        if (theseScripts[i].action == script_boss_actions)
+        if (theseScripts[i]->action == script_boss_actions)
         {
-            bossScript = theseScripts[i];
+            bossScript = *theseScripts[i];
             char* data = calloc(99, sizeof(char));
             bossSprite.spr.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
             if (!loadBoss)
@@ -1061,9 +1062,9 @@ int mainLoop(player* playerSprite)
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
-                        if (theseScripts[i].action == script_use_teleporter && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
+                        if (theseScripts[i]->action == script_use_teleporter && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h})))  //not using faster collision bc some scripts might be width != 48
                             {
-                                thisScript = &(theseScripts[i]);
+                                thisScript = theseScripts[i];
                                 found = true;
                                 break;
                             }
@@ -1084,9 +1085,9 @@ int mainLoop(player* playerSprite)
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
-                        if (theseScripts[i].action == script_use_gateway && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h})))  //not using faster collision bc some scripts might be width != 48
+                        if (theseScripts[i]->action == script_use_gateway && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h})))  //not using faster collision bc some scripts might be width != 48
                         {
-                            thisScript = &(theseScripts[i]);
+                            thisScript = theseScripts[i];
                             found = true;
                             break;
                         }
@@ -1098,13 +1099,10 @@ int mainLoop(player* playerSprite)
                 }
             }
 
-            if (keyStates[SDL_SCANCODE_GRAVE] && debugFlag) //~
+            if (keyStates[SDL_SCANCODE_GRAVE] && debugFlag) //console / ~
                 {
                     char* command = calloc(50, sizeof(char));
                     stringInput(&command, "~", 50, "x", false);
-
-                    if (!strncmp(command, "drawpath", 8))
-                        debugDrawPath = !debugDrawPath;
 
                     if (!strncmp(command, "invincible", 10))
                         playerSprite->invincCounter = 600;
@@ -1135,6 +1133,15 @@ int mainLoop(player* playerSprite)
                         free(commandCpy);
                     }
 
+                    if (!strncmp(command, "execscript", 10))
+                    {
+                        char* commandCpy = calloc(50, sizeof(char));
+                        char* temp = "";
+                        strncpy(commandCpy, command, 50);
+                        script exec;
+                        readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
+                        executeScriptAction(&exec, playerSprite);
+                    }
                     free(command);
                 }
 
@@ -1304,14 +1311,14 @@ int mainLoop(player* playerSprite)
             {  //script search loop
                 for(int i = 0; i < maxTheseScripts; i++)
                 {
-                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i].x, .y = theseScripts[i].y, .w = theseScripts[i].w, .h = theseScripts[i].h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}))
-                        && theseScripts[i].action != script_use_gateway && theseScripts[i].action != script_use_teleporter
-                        && theseScripts[i].action != script_boss_actions)
+                    if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}))
+                        && theseScripts[i]->action != script_use_gateway && theseScripts[i]->action != script_use_teleporter
+                        && theseScripts[i]->action != script_boss_actions)
                     {
-                        thisScript = &(theseScripts[i]);
+                        thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && thisScript->data[0] == '\0') || thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && (thisScript->data[0] == '\0')) || thisScript->action == script_none)
                             thisScript->active = false;
                         break;
                     }
