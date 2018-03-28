@@ -66,19 +66,22 @@ bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
 
+bool debugFlag;
+Sint64 gameTicks;
+
 int main(int argc, char* argv[])
 {
     //setting up default values
     {
-        int initCode = argc;
-    if (argc > 0 && argv[0])
-        initCode = 0;
-        initCode = initSDL(GAME_WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+        int initCode = initSDL(GAME_WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
         initCode = initSounds();
         if (initCode != 0)
             return initCode;
+        debugFlag = false;
+        if (argc > 0 && (strcmp(argv[0], "--debug") ||  strcmp(argv[0], "-d")))
+            debugFlag = true;
     }
     //loading in map pack header files
     char** listOfFilenames;
@@ -232,6 +235,7 @@ int main(int argc, char* argv[])
         case MAINLOOP_GAMECODE:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
             person.extraData = mapFilePath;
+            gameTicks = SDL_GetTicks();
             choice = mainLoop(&person);
             if (choice == ANYWHERE_QUIT)
                 quitGame = true;
@@ -1093,6 +1097,47 @@ int mainLoop(player* playerSprite)
                     exitCode = 2;
                 }
             }
+
+            if (keyStates[SDL_SCANCODE_GRAVE] && debugFlag) //~
+                {
+                    char* command = calloc(50, sizeof(char));
+                    stringInput(&command, "~", 50, "x", false);
+
+                    if (!strncmp(command, "drawpath", 8))
+                        debugDrawPath = !debugDrawPath;
+
+                    if (!strncmp(command, "invincible", 10))
+                        playerSprite->invincCounter = 600;
+
+                    if (!strncmp(command, "teleport", 8))
+                    {
+                        char* commandCpy = calloc(50, sizeof(char));
+                        strncpy(commandCpy, command, 50);
+                        playerSprite->spr.x = TILE_SIZE * strtol(strtok(commandCpy, "teleport ,"), NULL, 10);
+                        playerSprite->spr.y = TILE_SIZE * strtol(strtok(NULL, ","), NULL, 10);
+                        free(commandCpy);
+                    }
+
+                    if (!strncmp(command, "opendoors", 50))
+                    {
+                        script openDoors;
+                        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+                        executeScriptAction(&openDoors, playerSprite);
+                    }
+
+                    if (!strncmp(command, "hurt", 4))
+                    {
+                        char* commandCpy = calloc(50, sizeof(char));
+                        strncpy(commandCpy, command, 50);
+                        script hurtPlayer;
+                        initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
+                        executeScriptAction(&hurtPlayer, playerSprite);
+                        free(commandCpy);
+                    }
+
+                    free(command);
+                }
+
             {
                 bool playHitSound = false;
                 for(int i = 0; i < enemyCount; i++)
