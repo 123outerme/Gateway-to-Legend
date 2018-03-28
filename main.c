@@ -862,7 +862,7 @@ int mainLoop(player* playerSprite)
         drawOverTilemap(tilesTexture, 0, 0, 20, 15, doorFlags, false);
         {  //drawing HUD
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0x7F);
-            SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 0, .y = 0, .w = playerSprite->maxHP / 4 * TILE_SIZE, .h = TILE_SIZE}));
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 0, .y = 0, .w = playerSprite->maxHP / 4.0 * TILE_SIZE, .h = TILE_SIZE}));
             for(int i = 0; i < playerSprite->HP; i += 4)  //draw HP
                 drawATile(tilesTexture, HP_ID, TILE_SIZE * (i / 4), 0, (playerSprite->HP - i - 4 > 0 ? 4 : playerSprite->HP - i - 4 % 4) * (TILE_SIZE / 4), TILE_SIZE, 0, SDL_FLIP_NONE);
         }
