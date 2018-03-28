@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
         if (initCode != 0)
             return initCode;
         debugFlag = false;
-        if (argc > 0 && (strcmp(argv[0], "--debug") ||  strcmp(argv[0], "-d")))
+        if (argc > 1 && (!strncmp(argv[1], "--debug", 7) || !strncmp(argv[1], "-d", 2)))
             debugFlag = true;
     }
     //loading in map pack header files
@@ -1117,6 +1117,13 @@ int mainLoop(player* playerSprite)
                     }
 
                     if (!strncmp(command, "opendoors", 50))
+                    {
+                        script openDoors;
+                        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+                        executeScriptAction(&openDoors, playerSprite);
+                    }
+
+                    if (!strncmp(command, "closedoors", 50))
                     {
                         script openDoors;
                         initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
