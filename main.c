@@ -1100,57 +1100,52 @@ int mainLoop(player* playerSprite)
             }
 
             if (keyStates[SDL_SCANCODE_GRAVE] && debugFlag) //console / ~
+            {
+                bool done = false;
+                script exec;
+                initScript(&exec, script_none, 0, 0, 0, 0, 0, "");
+                char* command = calloc(50, sizeof(char));
+                char* commandCpy = calloc(50, sizeof(char));
+
+                stringInput(&command, "console ~", 50, "x", false);
+
+                strncpy(commandCpy, command, 50);
+
+                if (!strncmp(command, "invincible", 10))
+                    playerSprite->invincCounter = 600;
+
+                if (!strncmp(command, "teleport", 8))
                 {
-                    char* command = calloc(50, sizeof(char));
-                    stringInput(&command, "~", 50, "x", false);
-
-                    if (!strncmp(command, "invincible", 10))
-                        playerSprite->invincCounter = 600;
-
-                    if (!strncmp(command, "teleport", 8))
-                    {
-                        char* commandCpy = calloc(50, sizeof(char));
-                        strncpy(commandCpy, command, 50);
-                        playerSprite->spr.x = TILE_SIZE * strtol(strtok(commandCpy, "teleport ,"), NULL, 10);
-                        playerSprite->spr.y = TILE_SIZE * strtol(strtok(NULL, ","), NULL, 10);
-                        free(commandCpy);
-                    }
-
-                    if (!strncmp(command, "opendoors", 50))
-                    {
-                        script openDoors;
-                        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
-                        executeScriptAction(&openDoors, playerSprite);
-                    }
-
-                    if (!strncmp(command, "closedoors", 50))
-                    {
-                        script openDoors;
-                        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
-                        executeScriptAction(&openDoors, playerSprite);
-                    }
-
-                    if (!strncmp(command, "hurt", 4))
-                    {
-                        char* commandCpy = calloc(50, sizeof(char));
-                        strncpy(commandCpy, command, 50);
-                        script hurtPlayer;
-                        initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
-                        executeScriptAction(&hurtPlayer, playerSprite);
-                        free(commandCpy);
-                    }
-
-                    if (!strncmp(command, "execscript", 10))
-                    {
-                        char* commandCpy = calloc(50, sizeof(char));
-                        char* temp = "";
-                        strncpy(commandCpy, command, 50);
-                        script exec;
-                        readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
-                        executeScriptAction(&exec, playerSprite);
-                    }
-                    free(command);
+                    playerSprite->spr.x = TILE_SIZE * strtol(strtok(commandCpy, "teleport ,"), NULL, 10);
+                    playerSprite->spr.y = TILE_SIZE * strtol(strtok(NULL, ","), NULL, 10);
                 }
+
+                if (!strncmp(command, "opendoors", 50))
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+
+                if (!strncmp(command, "closedoors", 50))
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[1/1/1]");  //closes all doors
+
+                if (!strncmp(command, "hurt", 4))
+                    initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
+
+                if (!strncmp(command, "execscript", 10))
+                {
+                    char* temp = "";
+                    readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
+                }
+
+                done = executeScriptAction(&exec, playerSprite);
+                free(command);
+                free(commandCpy);
+                if (done)
+                {
+                    quit = true;
+                    exitCode = 2;
+                    playerSprite->xVeloc = 0;
+                    playerSprite->yVeloc = 0;
+                }
+            }
 
             {
                 bool playHitSound = false;
