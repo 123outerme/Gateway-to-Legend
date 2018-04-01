@@ -17,11 +17,7 @@
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
 
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
-
-#define MAX_SPRITE_MAPPINGS 19  //sprite defines
+#define MAX_SPRITE_MAPPINGS 20  //sprite defines
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3

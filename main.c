@@ -23,7 +23,7 @@
 #define OVERWORLDMENU_GAMECODE 4
 #define RELOAD_GAMECODE 5
 #define SAVE_GAMECODE 6
-#define MAX_COLLISIONDATA_ARRAY 13
+#define MAX_COLLISIONDATA_ARRAY MAX_SPRITE_MAPPINGS
 
 #define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
@@ -985,7 +985,7 @@ int mainLoop(player* playerSprite)
                         swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)))
+                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)) || collisionData[14])
                 {  //unwalkable tile or closed door
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;

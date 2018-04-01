@@ -1,1 +1,1 @@
-{1,0,96,96,48,48,Hello fellow people, I love you. Thanks for being alive. Yey.}
+{1,1,384,144,144,96,I must quarantine... go now...}

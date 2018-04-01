@@ -529,7 +529,7 @@ int readScript(script* scriptPtr, char* input)
     {
         intData[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
     }
-	strData = strtok(NULL, "{,}");
+	strData = strtok(NULL, "}");
 	//printf("{%d,%d,%d,%d,%d,%d,%s}\n", mapNum, x, y, w, h, (int) action, data);
 	initScript(scriptPtr, (scriptBehavior) intData[0], intData[1], intData[2], intData[3], intData[4], intData[5], strData);
 	//printf("done.\n");
@@ -576,8 +576,8 @@ void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool
     SDL_RenderFillRect(mainRenderer, &(textBoxRect));
     SDL_SetRenderDrawColor(mainRenderer, 0xB5, 0xB6, 0xAD, 0xFF);
     SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = textBoxRect.x + TILE_SIZE / 8, .y = textBoxRect.y + TILE_SIZE / 8,
-                                                  .w = textBoxRect.w -  2 * TILE_SIZE / 8, .h = textBoxRect.h - 2 * TILE_SIZE / 8}));
-    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + 2 * TILE_SIZE / 8, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0, 0xFF}, redraw);
+                                                  .w = textBoxRect.w - TILE_SIZE / 4, .h = textBoxRect.h - TILE_SIZE / 4}));
+    drawText(input, textBoxRect.x + 2 * TILE_SIZE / 8, textBoxRect.y + TILE_SIZE / 4, textBoxRect.w -  3 * TILE_SIZE / 8, textBoxRect.h -  3 * TILE_SIZE / 8, (SDL_Color){0, 0, 0, 0xFF}, redraw);
     SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 

@@ -34,7 +34,7 @@
 #define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 //^map creator defines. v map-pack wizard defines
 
-#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3.", "Pick the gold."}
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3.", "Pick the gold.", "Pick the NPC."}
 #define MAX_MAP_PACK_DATA 6 //does not include sprite defines
 
 #define MAIN_HELP_TEXT "Make map-packs using this toolchain! Create maps, scripts, and setup your files and tileset using this. To navigate, use the keys you set up in the main program."
@@ -43,12 +43,12 @@
 
 typedef struct {
     SDL_Texture* mapPackTexture;
-    char mainFilePath[MAX_PATH];
-    char name[MAX_PATH];
-    char mapFilePath[MAX_PATH];
-    char tilesetFilePath[MAX_PATH];
-    char saveFilePath[MAX_PATH];
-    char scriptFilePath[MAX_PATH];
+    char mainFilePath[MAX_FILE_PATH];
+    char name[MAX_FILE_PATH];
+    char mapFilePath[MAX_FILE_PATH];
+    char tilesetFilePath[MAX_FILE_PATH];
+    char saveFilePath[MAX_FILE_PATH];
+    char scriptFilePath[MAX_FILE_PATH];
     int initX;
     int initY;
     int initMap;
@@ -59,7 +59,7 @@ void initConfig();
 void loadConfig(char* filePath);
 
 #define MAX_LIST_OF_MAPS 30
-#define MAX_CHAR_IN_FILEPATH MAX_PATH
+#define MAX_CHAR_IN_FILEPATH MAX_FILE_PATH
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_MAPPACKS_PER_PAGE 11
 #define MAX_ENEMIES 6
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
     while(!quit)
     {
         readLine(CACHE_NAME, 0, &resumeStr);
-        resumeStr = removeChar(resumeStr, '\n', MAX_PATH, false);
+        resumeStr = removeChar(resumeStr, '\n', MAX_FILE_PATH, false);
         if (checkFile(resumeStr, 0))
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 
         if (code == 2)
         {
-            char mainFilePath[MAX_PATH];
+            char mainFilePath[MAX_FILE_PATH];
             char** listOfFilenames;
             int maxStrNum = 0;
             bool back = false;
@@ -150,8 +150,8 @@ int main(int argc, char* argv[])
 
         if (code == 3 && strcmp(resumeStr, "(No Resume)\0") != 0)
         {
-            char mainFilePath[MAX_PATH];
-            uniqueReadLine((char**) &mainFilePath, MAX_PATH, CACHE_NAME, 0);
+            char mainFilePath[MAX_FILE_PATH];
+            uniqueReadLine((char**) &mainFilePath, MAX_FILE_PATH, CACHE_NAME, 0);
             loadMapPackData(&workingPack, (char*) mainFilePath);
             proceed = true;
         }
@@ -184,9 +184,9 @@ int main(int argc, char* argv[])
 
 void createMapPack(mapPack* newPack)
 {
-    char* getString = calloc(sizeof(char), MAX_PATH);
+    char* getString = calloc(sizeof(char), MAX_FILE_PATH);
     char* message;
-    char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_FILE_PATH];
     int wizardState = 0;
     bool quit = false;
 	while (!quit)
@@ -221,7 +221,7 @@ void createMapPack(mapPack* newPack)
             message = "Initial map number? ";
             break;
         }
-        stringInput(&getString, message, MAX_PATH, "default.txt", false);
+        stringInput(&getString, message, MAX_FILE_PATH, "default.txt", false);
         switch(wizardState)
         {
         case 0:
@@ -230,7 +230,7 @@ void createMapPack(mapPack* newPack)
         case 3:
         case 4:
         case 5:
-            strncpy(mapPackData[wizardState], getString, MAX_PATH);
+            strncpy(mapPackData[wizardState], getString, MAX_FILE_PATH);
 
             if (wizardState == 0)
                 strPrepend((char*) mapPackData[0], "map-packs/");
@@ -301,17 +301,17 @@ void createMapPack(mapPack* newPack)
 
 void loadMapPackData(mapPack* loadPack, char* location)
 {
-    char buffer[MAX_PATH];
+    char buffer[MAX_FILE_PATH];
     strcpy(loadPack->mainFilePath, location);
-    uniqueReadLine((char**) &buffer, MAX_PATH, location, 0);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 0);
     strcpy(loadPack->name, buffer);
-    uniqueReadLine((char**) &buffer, MAX_PATH, location, 1);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 1);
     strcpy(loadPack->mapFilePath, buffer);
-    uniqueReadLine((char**) &buffer, MAX_PATH, location, 2);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 2);
     strcpy(loadPack->tilesetFilePath, buffer);
-    uniqueReadLine((char**) &buffer, MAX_PATH, location, 3);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 3);
     strcpy(loadPack->saveFilePath, buffer);
-    uniqueReadLine((char**) &buffer, MAX_PATH, location, 4);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 4);
     strcpy(loadPack->scriptFilePath, buffer);
     loadPack->initX = strtol(readLine(loadPack->mainFilePath, 5, (char**) &buffer), NULL, 10);
     loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
@@ -324,7 +324,7 @@ void loadMapPackData(mapPack* loadPack, char* location)
 
 void saveMapPack(mapPack* writePack)
 {
-    char mapPackData[MAX_MAP_PACK_DATA][MAX_PATH];
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_FILE_PATH];
     char* getString = "";
     strcpy(mapPackData[1], writePack->name);
     strcpy(mapPackData[2], writePack->mapFilePath);
@@ -419,29 +419,29 @@ int mainMapCreator(mapPack* workingPack)
     for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
         for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
             eventmap[dy][dx] = 0;
-    char* mainFilePath = calloc(MAX_PATH, sizeof(char));
-    char mapFilePath[MAX_PATH];
-    char tileFilePath[MAX_PATH];
+    char* mainFilePath = calloc(MAX_FILE_PATH, sizeof(char));
+    char mapFilePath[MAX_FILE_PATH];
+    char tileFilePath[MAX_FILE_PATH];
 
     int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
     if (choice != 3)
     {
         if (choice == 2)
         {
-            strncpy(mainFilePath, workingPack->mainFilePath, MAX_PATH);
+            strncpy(mainFilePath, workingPack->mainFilePath, MAX_FILE_PATH);
             if (!checkFile(mainFilePath, 0))
             {
                 printf("Invalid main file.\n");
                 return 1;
             }
-            uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
-            uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
+            uniqueReadLine((char**) &mapFilePath, MAX_FILE_PATH, mainFilePath, 1);
+            uniqueReadLine((char**) &tileFilePath, MAX_FILE_PATH, mainFilePath, 2);
         }
         if (choice == 1)
         {
             strcpy(mainFilePath, "map-packs/a.txt");
-            uniqueReadLine((char**) &mapFilePath, MAX_PATH, mainFilePath, 1);
-            uniqueReadLine((char**) &tileFilePath, MAX_PATH, mainFilePath, 2);
+            uniqueReadLine((char**) &mapFilePath, MAX_FILE_PATH, mainFilePath, 1);
+            uniqueReadLine((char**) &tileFilePath, MAX_FILE_PATH, mainFilePath, 2);
             for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
             {
                 for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
@@ -1131,7 +1131,7 @@ void editFilePaths(mapPack* workingPack)
             quit = true;
         else
         {
-            char* getString = calloc(MAX_PATH, sizeof(char));
+            char* getString = calloc(MAX_FILE_PATH, sizeof(char));
             char* message = calloc(99, sizeof(char));
             getString[0] = '\0';
             switch(choice)
