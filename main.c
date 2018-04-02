@@ -31,6 +31,10 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
+#define SPARK_COLOR_ORANGE ((SDL_Color) {0xFF, 0x8C, 0x11, 0xD0})
+#define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
+#define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
+
 void coinStore(player* playerSprite);
 void changeVolumes();
 int changeControls();
@@ -42,6 +46,7 @@ int mainLoop(player* playerSprite);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
 void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int endY, bool drawDoors[], bool rerender);
+void drawSparks(spark* s);
 
 void aMenu_drawMain();
 
@@ -57,7 +62,7 @@ void aMenu_drawMain();
 
 #define MAIN_ARROW_ID 34
 
-#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+LeftShift to maneuver various worlds. Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
+#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+LeftShift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 enemy enemies[MAX_ENEMIES];
@@ -368,13 +373,13 @@ void coinStore(player* playerSprite)
                                     if (cursor.y == TILE_SIZE * 7)
                                     {
                                         quit = true;
-                                        Mix_Volume(-1, soundVolume);
                                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
                                     if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money > 14)
                                     {
                                         playerSprite->maxHP += 2;
                                         playerSprite->money -= 15;
+                                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
                                 }
                             }
@@ -783,6 +788,9 @@ int mainLoop(player* playerSprite)
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
+    bool sparkFlag = false;
+    spark thisSpark;
+    initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
     static int bossHP = 1;
     thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
@@ -1070,6 +1078,8 @@ int mainLoop(player* playerSprite)
                             }
                     }
                     thisScript->active = found;
+                    initSpark(&thisSpark, (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
+                    sparkFlag = true;
                 }
                 if (collisionData[8] && !playerSprite->invincCounter)
                 {
@@ -1135,6 +1145,12 @@ int mainLoop(player* playerSprite)
                     readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
                 }
 
+                if (!strncmp(command, "sparks", 6))
+                {
+                    initSpark(&thisSpark, (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, FPS / 2, FPS / 4);
+                    sparkFlag = true;
+                }
+
                 done = executeScriptAction(&exec, playerSprite);
                 free(command);
                 free(commandCpy);
@@ -1169,6 +1185,8 @@ int mainLoop(player* playerSprite)
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
+                        initSpark(&thisSpark, (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                        sparkFlag = true;
                     }
 
                     if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type != type_na && !(playerSprite->invincCounter))  //player collision
@@ -1303,6 +1321,8 @@ int mainLoop(player* playerSprite)
                         }
                         bossSprite.invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
+                        initSpark(&thisSpark, (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                        sparkFlag = true;
                     }
                 }
                 executeScriptAction(&bossScript, playerSprite);
@@ -1369,6 +1389,17 @@ int mainLoop(player* playerSprite)
 
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
+
+        if (sparkFlag && thisSpark.timer)
+        {
+            drawSparks(&thisSpark);
+            if (!thisSpark.timer)
+            {
+                initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+                sparkFlag = false;
+            }
+        }
+
         SDL_RenderPresent(mainRenderer);
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
@@ -1447,13 +1478,29 @@ void drawOverTilemap(SDL_Texture* texture, int startX, int startY, int endX, int
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            searchIndex = eventmap[y][x] + 5 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots. Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
+            searchIndex = eventmap[y][x] + 5 - (eventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots-> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
             if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 15 || searchIndex == 16 || searchIndex == 17))  //8,9,10 are the door indexes
                 searchIndex = 5;  //5 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }
     if (rerender)
         SDL_RenderPresent(mainRenderer);
+}
+
+void drawSparks(spark* s)
+{
+    Uint8 oldR, oldG, oldB, oldA;
+    SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
+    SDL_SetRenderDrawColor(mainRenderer, s->color.r, s->color.g, s->color.b, s->color.a);
+    for(int i = 0; i < (s->num < 99 ? s->num : 99); i++)
+    {
+        if (s->timer % s->update == 0)
+            s->sparkRects[i] = (SDL_Rect) {.x = s->boundsRect.x + (rand() % s->boundsRect.w), .y = s->boundsRect.y + (rand() % s->boundsRect.h), .w = 1 + rand() % s->maxW, .h = 1 + rand() % s->maxH};
+        //printf("%d spark: (%d, %d) [%d, %d]\n", i, s->sparkRects[i].x, s->sparkRects[i].y, s->sparkRects[i].w, s->sparkRects[i].h);
+        SDL_RenderFillRect(mainRenderer, &(s->sparkRects[i]));
+    }
+    s->timer--;
+    SDL_SetRenderDrawColor(mainRenderer, oldR, oldG, oldB, oldA);
 }
 
 void aMenu_drawMain()

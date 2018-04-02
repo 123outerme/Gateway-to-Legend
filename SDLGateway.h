@@ -93,6 +93,18 @@ typedef struct {
     int distance;
 } node;
 
+typedef struct {
+    SDL_Rect sparkRects[99];
+    SDL_Rect boundsRect;
+    SDL_Color color;
+    int num;
+    int maxW;
+    int maxH;
+    int timer;
+    int maxTimer;
+    int update;
+} spark;
+
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int initSounds();  //inits all sounds used. Returns -5 if one can't load
@@ -103,6 +115,7 @@ void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int H
 void initConfig(char* filePath);  //resets config data
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
 void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance);  //initializes a new node
+void initSpark(spark* sparkPtr, SDL_Rect boundsRect, SDL_Color color, int num, int maxW, int maxH, int maxTimer, int update);  //initializes a new spark
 void loadConfig(char* filePath);  //loads config data into the public variables
 void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //loads from local player save file
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file

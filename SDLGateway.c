@@ -163,6 +163,22 @@ void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int dis
     nodePtr->distance = distance;
 }
 
+void initSpark(spark* sparkPtr, SDL_Rect boundsRect, SDL_Color color, int num, int maxW, int maxH, int maxTimer, int update)
+{
+    for(int i = 0; i < num; i++)
+    {
+        sparkPtr->sparkRects[i] = (SDL_Rect) {0, 0, 0, 0};
+    }
+    sparkPtr->boundsRect = boundsRect;
+    sparkPtr->color = color;
+    sparkPtr->num = num;
+    sparkPtr->maxW = maxW;
+    sparkPtr->maxH = maxH;
+    sparkPtr->timer = maxTimer;
+    sparkPtr->maxTimer = maxTimer;
+    sparkPtr->update = update;
+}
+
 void loadConfig(char* filePath)
 {
     char* buffer = "";
