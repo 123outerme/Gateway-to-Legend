@@ -72,6 +72,7 @@ void editTileEquates(mapPack* workingPack);
 void createMapPack(mapPack* newPack);
 void loadMapPackData(mapPack* loadPack, char* location);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
+void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y);
 //^ working with loading a map-pack to work on
 
 int mainMapCreator();
@@ -394,6 +395,33 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
     strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
 }
 
+void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
+{
+    *map = 0, *x = 0, *y = 0;
+    SDL_Keycode key = 0;
+    *map = chooseMap(workingPack);
+    bool inQuit = false;
+    while(!inQuit)
+    {
+        SDL_RenderClear(mainRenderer);
+        viewMap(workingPack, *map, false, false);
+        drawText("Choose x/y coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
+        key = getKey();
+        if (SC_UP == SDL_GetScancodeFromKey(key) && *y > 0)
+            *y -= TILE_SIZE;
+        if (SC_DOWN == SDL_GetScancodeFromKey(key) && *y < SCREEN_HEIGHT)
+            *y += TILE_SIZE;
+        if (SC_LEFT == SDL_GetScancodeFromKey(key) && *x > 0)
+            *x -= TILE_SIZE;
+        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && *x < SCREEN_WIDTH)
+            *x += TILE_SIZE;
+        if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
+            inQuit = true;
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = *x, .y = *y, .w = TILE_SIZE, .h = TILE_SIZE}));
+        SDL_RenderPresent(mainRenderer);
+    }
+}
+
 int subMain(mapPack* workingPack)
 {
     initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
@@ -644,28 +672,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                 {
                     script gateScript;
                     int map = 0, x = 0, y = 0;
-                    SDL_Keycode key = 0;
-                    map = chooseMap(workingPack);
-                    bool inQuit = false;
-                    while(!inQuit)
-                    {
-                        SDL_RenderClear(mainRenderer);
-                        viewMap(workingPack, map, false, false);
-                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
-                        key = getKey();
-                        if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
-                            y -= TILE_SIZE;
-                        if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
-                            y += TILE_SIZE;
-                        if (SC_LEFT == SDL_GetScancodeFromKey(key) && x > 0)
-                            x -= TILE_SIZE;
-                        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
-                            x += TILE_SIZE;
-                        if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
-                            inQuit = true;
-                        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
-                        SDL_RenderPresent(mainRenderer);
-                    }
+                    locationSelectLoop(workingPack, &map, &x, &y);
                     char* data = calloc(99, sizeof(char));
                     snprintf(data, 99, "[%d/%d/%d]", map, x, y);
                     initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
@@ -1057,16 +1064,42 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         {
             stringInput(&data, "What should be said?", 99, "Hello!", true);
         }
+
+        if (editScript->action == script_trigger_boss)
+        {
+            //ask user to select a boss
+        }
+
+        if (editScript->action == script_switch_maps)
+        {
+            int map = 0, x = 0, y = 0;
+            locationSelectLoop(workingPack, &map, &x, &y);
+            snprintf(data, 12, "[%d/%d/%d]", map, x, y);
+        }
+
+        if (editScript->action == script_toggle_door)
+        {
+            //choose which doors should be set how visually
+        }
+
+        if (editScript->action == script_animation)
+        {
+            //figure this out
+        }
+
+        if (editScript->action == script_boss_actions)
+        {
+            //visualize boss actions
+        }
+
+
+
         if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
         {
             char* message = calloc(17, sizeof(char));
             snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : (editScript->action == script_gain_exp ? "exp" : "damage"));
             stringInput(&data, message, 3, "0", false);
             free(message);
-        }
-        if (editScript->action == script_switch_maps)
-        {
-            //pick map, then x/y
         }
     }
     if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
