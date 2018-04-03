@@ -1104,19 +1104,19 @@ void editFilePaths(mapPack* workingPack)
             switch(choice)
             {
             case 1:
-                sprintf(message, "Title of map pack? (Was %s)\n", workingPack->name);
+                sprintf(message, "Title of map pack?", workingPack->name);
                 break;
             case 2:
-                sprintf(message, "Path for maps file? (Was %s)\nmaps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
+                sprintf(message, "Path for maps file? maps/", workingPack->mapFilePath + 5);  //we add numbers here to get rid of the "path/" part of the filepath
                 break;
             case 3:
-                sprintf(message, "Path for tileset file? (Was %s)\ntileset/", workingPack->tilesetFilePath + 8);
+                sprintf(message, "Path for tileset file? tileset/", workingPack->tilesetFilePath + 8);
                 break;
             case 4:
-                sprintf(message, "Path for savefile? (Was %s)\nsaves/", workingPack->saveFilePath + 6);
+                sprintf(message, "Path for savefile? saves/", workingPack->saveFilePath + 6);
                 break;
             case 5:
-                sprintf(message, "Path for scripts? (Was %s)\nscripts/", workingPack->scriptFilePath + 8);
+                sprintf(message, "Path for scripts? scripts/", workingPack->scriptFilePath + 8);
                 break;
             }
             stringInput(&getString, message, 99, "default.txt", false);
