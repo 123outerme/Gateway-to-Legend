@@ -657,7 +657,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
         {
             int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
             int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
-            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && eventmap[y][x] != 5 && eventmap[y][x] != 6 && eventmap[y][x] != 7 && eventmap[y][x] != 9 && eventmap[y][x] != 10 && eventmap[y][x] != 15) && searchList[y][x].visited == false)
+            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && (eventmap[y][x] != 5 && doorFlags[0]) && (eventmap[y][x] != 6 && doorFlags[1]) && (eventmap[y][x] != 7 && doorFlags[2])  && eventmap[y][x] != 9 && eventmap[y][x] != 10 && eventmap[y][x] != 15) && searchList[y][x].visited == false)
             {
                 queue[queueCount++] = &(searchList[y][x]);
                 searchList[y][x].visited = true;
