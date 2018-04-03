@@ -794,7 +794,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 int mainLoop(player* playerSprite)
 {
     SDL_Event e;
-	bool quit = false, debugDrawPath = false, drawFPS = false;
+	bool quit = false, drawFPS = false;
 	static bool firstBossFrame = true;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_PATH];
@@ -1157,6 +1157,8 @@ int mainLoop(player* playerSprite)
                 if (!strncmp(command, "fps", 3))
                 {
                     FPS = (int) strtol(strtok(commandCpy, "fps "), NULL, 10);
+                    if (FPS < 30 && FPS != 0)
+                        FPS = 30;
                     targetTime = calcWaitTime(FPS);
                 }
 
@@ -1166,7 +1168,7 @@ int mainLoop(player* playerSprite)
                     readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
                 }
 
-                if (!strncmp(command, "sparks", 6))
+                if (!strncmp(command, "particles", 9))
                 {
                     initSpark(&theseSparks[6], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, FPS / 2, FPS / 4);
                     sparkFlag = true;
@@ -1242,7 +1244,7 @@ int mainLoop(player* playerSprite)
                     {
                         //behavior: move quickly at player, with little HP
                         int length = 0;
-                        node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                        node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
                         /*if (enemies[i].spr.x != playerSprite->spr.x)
                             enemies[i].spr.x += 3 - 6 * (playerSprite->spr.x < enemies[i].spr.x);
                         if (enemies[i].spr.y != playerSprite->spr.y)
@@ -1287,7 +1289,7 @@ int mainLoop(player* playerSprite)
                         static node curNode;
                         if (!length || (curNode.x == enemies[i].spr.x && curNode.y == enemies[i].spr.y))
                         {
-                            node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, debugDrawPath);
+                            node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
                             if (length > 0)
                             {
                                 curNode = nodeArray[1];
@@ -1380,8 +1382,6 @@ int mainLoop(player* playerSprite)
             }
             //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
             drawFPS = keyStates[SDL_SCANCODE_F12];
-            debugDrawPath = keyStates[SDL_SCANCODE_RSHIFT];
-
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
         }
         if (swordTimer && SDL_GetTicks() >= swordTimer)

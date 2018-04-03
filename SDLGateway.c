@@ -373,6 +373,21 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                     Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
                     settingsReset = true;
                 }
+                if (isMain && ((keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_M]))
+                {
+                    if (musicVolume != 0 && soundVolume != 0)
+                    {
+                        musicVolume = 0;
+                        soundVolume = 0;
+                    }
+                    else
+                    {
+                        musicVolume = MIX_MAX_VOLUME;
+                        soundVolume = MIX_MAX_VOLUME;
+                    }
+                    Mix_Volume(-1, soundVolume);
+                    Mix_VolumeMusic(musicVolume);
+                }
             }
         }
         drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -657,7 +672,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
         {
             int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
             int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
-            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && (eventmap[y][x] != 5 && doorFlags[0]) && (eventmap[y][x] != 6 && doorFlags[1]) && (eventmap[y][x] != 7 && doorFlags[2])  && eventmap[y][x] != 9 && eventmap[y][x] != 10 && eventmap[y][x] != 15) && searchList[y][x].visited == false)
+            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && !(eventmap[y][x] == 5 && doorFlags[0]) && !(eventmap[y][x] == 6 && doorFlags[1]) && !(eventmap[y][x] == 7 && doorFlags[2]) && eventmap[y][x] != 9 && eventmap[y][x] != 10 && eventmap[y][x] != 15) && searchList[y][x].visited == false)
             {
                 queue[queueCount++] = &(searchList[y][x]);
                 searchList[y][x].visited = true;
