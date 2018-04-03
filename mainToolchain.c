@@ -25,13 +25,6 @@
 #define MAIN_TILESET "tileset/mainTileset48.png"
 
 #define MAIN_ARROW_ID 34
-
-#define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA
-#define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3
-#define AMENU_MAIN_TITLECOLOR1 0x4D, 0xD2, 0xFF
-#define AMENU_MAIN_TITLECOLOR2 0x00, 0xAC, 0xE6
-
-#define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
 //^map creator defines. v map-pack wizard defines
 
 #define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick enemy 1.", "Pick enemy 2.", "Pick enemy 3.", "Pick the gold.", "Pick the NPC."}
@@ -63,6 +56,7 @@ void loadConfig(char* filePath);
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_MAPPACKS_PER_PAGE 11
 #define MAX_ENEMIES 6
+int toolchain_main();
 int subMain(mapPack* workingPack);
 
 void editFilePaths(mapPack* workingPack);
@@ -94,7 +88,7 @@ void writeScriptData(script* mapScripts, int count);
 
 //V map-pack wizard functions
 int mainMapPackWizard();
-void mainMapPackWizardLoop(sprite* playerSprite, int* numArray);
+void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray);
 
 void strPrepend(char* input, const char* prepend);
 
@@ -102,11 +96,11 @@ void strPrepend(char* input, const char* prepend);
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* mainTilesetTexture;
 
-int main(int argc, char* argv[])
+int toolchain_main()
 {
+    SDL_SetWindowTitle(mainWindow, "Gateway to Legend Map Tools");
     mapPack workingPack;
     strcpy(workingPack.mainFilePath, "/0");
-    initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
 
     if (checkFile(CONFIG_FILEPATH, 0))
@@ -162,7 +156,7 @@ int main(int argc, char* argv[])
             int key = 0;
             while(!key)
             {
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderFillRect(mainRenderer, NULL);
                 drawText(MAIN_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                 key = getKey();
@@ -173,13 +167,8 @@ int main(int argc, char* argv[])
             quit = true;
 
         if (proceed && code < 4 && workingPack.mainFilePath[0] != '/')
-        {
-            closeSDL();
             subMain(&workingPack);
-            initSDL("Gateway to Legend Map-Pack Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
-        }
     }
-    closeSDL();
     return 0;
 }
 
@@ -284,7 +273,7 @@ void createMapPack(mapPack* newPack)
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     char* temp = "";
-    mainMapPackWizardLoop(&chooser, newPack->tilesetMaps);
+    mainMapPackWizardLoop(*newPack, &chooser, newPack->tilesetMaps);
 
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
     {
@@ -345,56 +334,6 @@ void saveMapPack(mapPack* writePack)
         appendLine(writePack->mainFilePath, intToString(writePack->tilesetMaps[i], getString));
 }
 
-void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
-{
-    bool quitMenu = false;
-    char junkArray[MAX_CHAR_IN_FILEPATH];
-    SDL_Keycode menuKeycode;
-    int menuPage = 0, selectItem = 0;
-    while(!quitMenu)
-    {
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
-        SDL_RenderClear(mainRenderer);
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
-            drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        menuKeycode = getKey();
-        if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
-        {
-            menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
-            selectItem = 0;
-        }
-
-        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
-            selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
-
-        if (maxStrNum / MAX_MAPPACKS_PER_PAGE > 0)
-        {
-            if (menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE)
-                drawATile(tilesetTexture, MAIN_ARROW_ID, 8.5 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_HORIZONTAL);
-            if (menuPage > 0)
-                drawATile(tilesetTexture, MAIN_ARROW_ID, 9.75 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        }
-
-        drawATile(tilesetTexture, MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        SDL_RenderPresent(mainRenderer);
-
-        if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
-        {
-            if (selectItem != 0)
-                selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
-            else
-                *backFlag = true;
-                quitMenu = true;
-        }
-    }
-    //loading map pack stuff
-    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_CHAR_IN_FILEPATH - 9);
-}
-
 void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
 {
     *map = 0, *x = 0, *y = 0;
@@ -405,7 +344,7 @@ void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
     {
         SDL_RenderClear(mainRenderer);
         viewMap(workingPack, *map, false, false);
-        drawText("Choose x/y coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
+        drawText("Choose x/y coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
         key = getKey();
         if (SC_UP == SDL_GetScancodeFromKey(key) && *y > 0)
             *y -= TILE_SIZE;
@@ -424,7 +363,6 @@ void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
 
 int subMain(mapPack* workingPack)
 {
-    initSDL("Gateway to Legend Map Tools", MAIN_TILESET, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     bool quit = false;
     while(!quit)
     {
@@ -500,13 +438,13 @@ int mainMapCreator(mapPack* workingPack)
         {
             writeTileData();
             writeScriptData(mapScripts, scriptCount);
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
             char* exitNote = calloc(138, sizeof(char));
             strcpy(exitNote, "Outputted to output/map.txt");
             if (scriptCount > 0)
                 strcat(exitNote, " and output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
-            drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+            drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
             waitForKey();
             free(exitNote);
         }
@@ -527,7 +465,7 @@ void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update
     drawMaps(workingPack, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
     drawMaps(workingPack, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, update ? !drawLineNum : false);
     if (drawLineNum)
-        drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF}, update);
+        drawText(intToString(thisLineNum, buffer), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, update);
 }
 
 int chooseMap(mapPack workingPack)
@@ -621,7 +559,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
         }
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         //getKey(false);  //editor freezes without this //not anymore sucka
-        if (SDL_GetTicks() - lastKeypressTime >= 80 + 48 * (keyStates[SDL_SCANCODE_LSHIFT] || keyStates[SDL_SCANCODE_Q] || keyStates[SDL_SCANCODE_E]))
+        if ((int) (SDL_GetTicks() - lastKeypressTime) >= 80 + 48 * (keyStates[SDL_SCANCODE_LSHIFT] || keyStates[SDL_SCANCODE_Q] || keyStates[SDL_SCANCODE_E]))
         {
             if (playerSprite->spr.y > 0 && keyStates[SDL_SCANCODE_W])
                 playerSprite->spr.y -= PIXELS_MOVED;
@@ -698,7 +636,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                         SDL_RenderClear(mainRenderer);
                         drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
                         drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
-                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF}, false);
+                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
                         key = getKey();
                         if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
                             y -= TILE_SIZE;
@@ -882,9 +820,9 @@ void mainScriptEdtior(mapPack* workingPack)
         if (editScript.action != script_none)
         {
             writeScriptData(&editScript, 1);
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
-            drawText("Outputted to output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+            drawText("Outputted to output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
             waitForKey();
         }
     }
@@ -977,7 +915,7 @@ int scriptSelectLoop(mapPack workingPack)
                     int key = 0;
                     while(!key)
                     {
-                        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                         SDL_RenderFillRect(mainRenderer, NULL);
                         drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                         key = getKey();
@@ -1092,8 +1030,6 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             //visualize boss actions
         }
 
-
-
         if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
         {
             char* message = calloc(17, sizeof(char));
@@ -1115,11 +1051,11 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 //start map-pack wizard code
 int mainMapPackWizard(mapPack* workingPack)
 {
-    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, TILE_SIZE * 20, TILE_SIZE * 15, 48);
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     bool quit = false;
     while (!quit)
     {
-        int choice = aMenu(tilesetTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", "Info/Help", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false, NULL);
+        int choice = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], workingPack->mainFilePath + 10, (char*[5]) {"Edit Filepaths", "Edit Init Spawn", "Edit Tile Equates", "Info/Help", "Back"}, 5, 0, AMENU_MAIN_THEME, true, false, NULL);
 
         if (choice == 1)
             editFilePaths(workingPack);
@@ -1130,8 +1066,6 @@ int mainMapPackWizard(mapPack* workingPack)
         if (choice == 3)
         {
             editTileEquates(workingPack);
-            closeSDL();
-            initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         }
 
         if (choice == 4)
@@ -1139,7 +1073,7 @@ int mainMapPackWizard(mapPack* workingPack)
             int key = 0;
             while(!key)
             {
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderFillRect(mainRenderer, NULL);
                 drawText(MAPPACK_SETUP_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                 key = getKey();
@@ -1222,7 +1156,6 @@ void editInitSpawn(mapPack* workingPack)
     SDL_RenderClear(mainRenderer);
     workingPack->initMap = chooseMap(*workingPack);
     chooseCoords(*workingPack, workingPack->initMap, &(workingPack->initX), &(workingPack->initY));
-    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
     saveMapPack(workingPack);
 }
 
@@ -1232,14 +1165,13 @@ void editInitSpawn(mapPack* workingPack)
 #define SCREEN_HEIGHT TILE_SIZE * 9
 void editTileEquates(mapPack* workingPack)
 {
-    closeSDL();
-    initSDL("Gateway to Legend Map-Pack Wizard", workingPack->tilesetFilePath, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 24);
+    loadTTFont(FONT_FILE_NAME, &mainFont, 24);
     SDL_RenderClear(mainRenderer);
     int numbers[MAX_SPRITE_MAPPINGS];
     numbers[0] = -1;
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
-    mainMapPackWizardLoop(&chooser, (int*) numbers);
+    mainMapPackWizardLoop(*workingPack, &chooser, (int*) numbers);
     if (!(numbers[0] == -1))
     {
         for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
@@ -1250,10 +1182,12 @@ void editTileEquates(mapPack* workingPack)
         printf("Outputted to your file.\n");
         saveMapPack(workingPack);
     }
+    loadTTFont(FONT_FILE_NAME, &mainFont, 48);
 }
 
-void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
+void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray)
 {
+    loadIMG(workingPack.tilesetFilePath, &(workingPack.mapPackTexture));
     int numArrayTracker = 0, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false, whiteBG = true;
@@ -1265,11 +1199,11 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
         else
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
         SDL_RenderClear(mainRenderer);
-        SDL_RenderCopy(mainRenderer, tilesetTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
+        SDL_RenderCopy(mainRenderer, workingPack.mapPackTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->x, .y= playerSprite->y, .w = playerSprite->w, .h = playerSprite->h}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG)}, true);
+        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF}, true);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -1280,7 +1214,7 @@ void mainMapPackWizardLoop(sprite* playerSprite, int* numArray)
             /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
                 doDebugDraw = !doDebugDraw;*/
         }
-        if (SDL_GetTicks() - lastKeypressTime >= 80 + 48 * checkSKInteract)
+        if ((int) (SDL_GetTicks() - lastKeypressTime) >= 80 + 48 * checkSKInteract)
         {
             if (playerSprite->y > TILE_SIZE && checkSKUp)
                 playerSprite->y -= PIXELS_MOVED;

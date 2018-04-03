@@ -46,7 +46,7 @@ void drawSparks(spark* s);
 
 void aMenu_drawMain();
 
-#define AMENU_MAIN_THEME (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF},  (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}
+int toolchain_main();
 
 #define PLAYER_ID tileIDArray[0]
 #define PLAYERWALK_ID tileIDArray[1]
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
             {
                 SDL_Texture* titlescreen;
                 loadIMG("splashscreen.png", &titlescreen);
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
                 while(!key)
                 {
@@ -136,14 +136,16 @@ int main(int argc, char* argv[])
             break;
         case START_GAMECODE:  //start menu
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[4]) {"Play", "Coin Store", "Settings", "Quit"}, 4, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Coin Store", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
                 coinStore(&person);
             if (choice == 3)
+                toolchain_main();
+            if (choice == 4)
                 gameState = OPTIONS_GAMECODE;
-            if (choice == 4 || choice == -1)
+            if (choice == 5 || choice == -1)
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
@@ -163,9 +165,9 @@ int main(int argc, char* argv[])
                 int pauseKey = 0;
                 while(!pauseKey)
                 {
-                    SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                    SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                     SDL_RenderFillRect(mainRenderer, NULL);
-                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, true);
+                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                     pauseKey = getKey(0);
                 }
             }
@@ -324,7 +326,7 @@ void coinStore(player* playerSprite)
             {
                 {
                     char textString[12];
-                    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF};
+                    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
                     sprite cursor;
                     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
                     SDL_Event e;
@@ -337,9 +339,9 @@ void coinStore(player* playerSprite)
                         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
                         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
                         //background text (drawn first)
-                        drawText("Increase Max HP", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
+                        drawText("Increase Max HP", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
                         //foreground text
-                        drawText("Increase Max HP", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
+                        drawText("Increase Max HP", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
 
                         SDL_SetRenderDrawColor(mainRenderer, titleOverColor.r, titleOverColor.g, titleOverColor.b, 0xFF);
                         SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 11.25 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = (playerSprite->maxHP - DEFAULT_PLAYER_HEALTH) * 16 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
@@ -347,16 +349,16 @@ void coinStore(player* playerSprite)
                         SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
                         SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 11.5 * TILE_SIZE, .y = 5.25 * TILE_SIZE, .w = (playerSprite->maxHP - DEFAULT_PLAYER_HEALTH) * 16, .h = TILE_SIZE / 2}));
 
-                        drawText("Increase:", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        drawText("Increase:", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
                         snprintf(textString, 12, "%.1f Hearts", playerSprite->maxHP / 4.0);
-                        drawText(textString, 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        drawText(textString, 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
-                        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
                         snprintf(textString, 12, "%d Coins", playerSprite->money);
-                        drawText(textString, 2.25 * TILE_SIZE, 9 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        drawText(textString, 2.25 * TILE_SIZE, 9 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
-                        drawText("15 Coins per half-heart", 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                        drawText("15 Coins per half-heart", 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
                         while(SDL_PollEvent(&e) != 0)
                         {
@@ -418,7 +420,7 @@ void coinStore(player* playerSprite)
 
 void changeVolumes()
 {
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF};
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     SDL_Event e;
@@ -431,9 +433,9 @@ void changeVolumes()
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         //background text (drawn first)
-        drawText("Sound Volumes", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
+        drawText("Sound Volumes", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
         //foreground text
-        drawText("Sound Volumes", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
+        drawText("Sound Volumes", 1 * TILE_SIZE + TILE_SIZE / 4 , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
 
         SDL_SetRenderDrawColor(mainRenderer, titleOverColor.r, titleOverColor.g, titleOverColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.25 * TILE_SIZE, .y = 5 * TILE_SIZE, .w = musicVolume * 4 + TILE_SIZE / 2, .h = .75 * TILE_SIZE}));
@@ -443,10 +445,10 @@ void changeVolumes()
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 5.25 * TILE_SIZE, .w = musicVolume * 4, .h = TILE_SIZE / 2}));
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 6.25 * TILE_SIZE, .w = soundVolume * 4, .h = TILE_SIZE / 2}));
 
-        drawText("Music", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        drawText("Sounds", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        drawText("Music", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+        drawText("Sounds", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
-        drawText("Back", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        drawText("Back", 2 * TILE_SIZE + TILE_SIZE / 4, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
         while(SDL_PollEvent(&e) != 0)
         {
@@ -523,8 +525,8 @@ void changeVolumes()
 int changeControls()
 {
     sprite cursor;
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF};
-    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF};
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
     initSprite(&cursor, TILE_SIZE, 4 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     int selection = -1;
     bool superQuit = false;
@@ -632,8 +634,8 @@ void changeFPS()
     const int optionsSize = 6;
     char* optionsArray[] = {"No Cap", "30", "45", "60", "80", "120"};
     int FPSchoice = 0, selection = -1;
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF};
-    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR, 0xFF};
+    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
+    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
     SDL_Event e;
     bool quit = false;
     while(!quit)
@@ -643,11 +645,11 @@ void changeFPS()
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2, 0xFF}, false);
+        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
         //foreground text
-        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1, 0xFF}, false);
+        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
 
-        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
         drawText("Select", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
         drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
@@ -735,14 +737,14 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
     int menuPage = 0, selectItem = 0;
     while(!quitMenu)
     {
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
         SDL_RenderClear(mainRenderer);
-        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+        SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
-                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                          0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+        drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         menuKeycode = getKey();
         if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
         {
@@ -1525,5 +1527,5 @@ void aMenu_drawMain()
     drawATile(tilesetTexture, TILE_ID_TILDA, 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     drawATile(tilesetTexture, TILE_ID_CUBED, TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     drawATile(tilesetTexture, TILE_ID_TILDA, 2 * TILE_SIZE - 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-    drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+    drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR}, false);
 }

@@ -393,12 +393,12 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     {
         while(SDL_PollEvent(&e) != 0)
         {
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
             SDL_RenderClear(mainRenderer);
             SDL_RenderFillRect(mainRenderer, NULL);
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-            drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
             if(e.type == SDL_QUIT)
             {
                 quit = true;
@@ -473,13 +473,13 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
 
             if (capital)
             {
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR, 0xFF);
-                drawText("/", .5 * TILE_SIZE, 13.3 * TILE_SIZE, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
-                drawText("\\", TILE_SIZE, 13.3 * TILE_SIZE, TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
+                drawText("/", .5 * TILE_SIZE, 13.3 * TILE_SIZE, 3 * TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+                drawText("\\", TILE_SIZE, 13.3 * TILE_SIZE, TILE_SIZE, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
                 SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = TILE_SIZE, .y = 13.6 * TILE_SIZE, .w = .25 * TILE_SIZE, .h = .9 * TILE_SIZE}));
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR, 0xFF);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             }
-            drawText(dispString, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR, 0xFF}, false);
+            drawText(dispString, 2 * TILE_SIZE, 3.5 * TILE_SIZE, SCREEN_WIDTH - 3.5 * TILE_SIZE, SCREEN_HEIGHT - 4 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
             SDL_RenderPresent(mainRenderer);
         }
     }

@@ -4,7 +4,6 @@
 @ROBOCOPY %cd% "%cd%\GtL-bin\stuff" *.ico *.rc
 @del %cd%\builds\binaries\GatewayToLegendbin.zip
 @del %cd%\GtL-bin\execute\GatewayToLegend.exe
-@del %cd%\GtL-bin\execute\GatewayToLegendToolchain.exe
 @del %cd%\GtL-bin\execute\GatewayToLegend.cfg
 @ROBOCOPY %cd% "%cd%\GtL\execute" *.txt *.png *.ttf *.ogg /MIR /XD dirs "%cd%\GtL" "%cd%\GtL-bin" "%cd%\.github" "%cd%\.git" "%cd%\bin" "%cd%\builds" "%cd%\documentation" "%cd%\obj" "%cd%\media" "%cd%\docs"
 @cd GtL-bin
@@ -14,7 +13,6 @@
 @cd build
 @del %cd%\..\..\builds\prebuilt\GatewayToLegend.zip
 @del %cd%\..\..\GtL\execute\GatewayToLegend.exe
-@del %cd%\GtL-bin\execute\GatewayToLegendToolchain.exe
 @del %cd%\..\..\GtL\execute\GatewayToLegend.cfg
 call a_makeWindows.bat
 @ROBOCOPY %cd%\..\execute %cd%\..\..\GtL\execute *.exe *.ico *.bat *.ttf
