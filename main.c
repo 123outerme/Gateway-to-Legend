@@ -31,10 +31,6 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-#define SPARK_COLOR_ORANGE ((SDL_Color) {0xFF, 0x8C, 0x11, 0xD0})
-#define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
-#define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
-
 void coinStore(player* playerSprite);
 void changeVolumes();
 int changeControls();
@@ -788,8 +784,7 @@ int mainLoop(player* playerSprite)
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
-    bool sparkFlag = false;
-    spark thisSpark;
+    sparkFlag = false;
     initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
     static int bossHP = 1;
     thisScript->active = false;
@@ -1081,14 +1076,14 @@ int mainLoop(player* playerSprite)
                     initSpark(&thisSpark, (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
                     sparkFlag = true;
                 }
-                if (collisionData[8] && !playerSprite->invincCounter)
+                if (collisionData[8] && !playerSprite->invincCounter)  //spikes
                 {
                     playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
                     playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
                     script hurtPlayer;
                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
                     executeScriptAction(&hurtPlayer, playerSprite);
-                    playerSprite->invincCounter = 5;  //10 frames of invincibility at 60fps, or approx. .167 of a second
+                    playerSprite->invincCounter = FPS / 6;  //10 frames of invincibility at 60fps, or approx. .167 of a second
                 }
                 if (collisionData[9])  //gateway
                 {
@@ -1301,7 +1296,6 @@ int mainLoop(player* playerSprite)
                         - 48 * (bossSprite.spr.y > playerSprite->spr.y && (abs(playerSprite->spr.y - bossSprite.spr.y) > abs(playerSprite->spr.x - bossSprite.spr.x)));
                     executeScriptAction(&hurtPlayer, playerSprite);
                     playerSprite->invincCounter = 11;  //22 frames of invincibility at 60fps, or approx. .367 of a second
-                    Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
                 }
                 if (checkRectCol(sword.x, sword.y, sword.w, sword.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h) && swordTimer > SDL_GetTicks() + 250)
                 {

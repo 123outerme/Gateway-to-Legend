@@ -816,6 +816,8 @@ bool executeScriptAction(script* scriptData, player* player)
         Mix_PlayChannel(-1, TELEPORT_SOUND, 0);
         //play animation at old & new coords?
         free(data);
+        initSpark(&thisSpark, (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 6, 6, FPS / 4, FPS / 8);
+        sparkFlag = true;
     }
     if (scriptData->action == script_toggle_door)
     {  //-1 = unchanged, 0 = open, 1 = closed
@@ -899,7 +901,9 @@ bool executeScriptAction(script* scriptData, player* player)
             player->money = 9999;
         if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
             CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
-        //play animation (?) and sound
+        initSpark(&thisSpark, (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, FPS / 4, FPS / 8);
+        sparkFlag = true;
+        //play animation and sound
     }
     if (scriptData->action == script_player_hurt && player->invincCounter <= 0)
     {
@@ -911,10 +915,16 @@ bool executeScriptAction(script* scriptData, player* player)
             player->HP = player->maxHP;
             player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
         if (dmg > 0)
+        {
             Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+            initSpark(&thisSpark, (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_RED, 4, 6, 6, FPS / 4, FPS / 8);
+            sparkFlag = true;
+        }
         else
         {
             ; //play heal sound
+            initSpark(&thisSpark, (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, FPS / 4, FPS / 8);
+            sparkFlag = true;
         }
         //play animation (?) and sound
     }
