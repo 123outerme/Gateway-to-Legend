@@ -879,8 +879,10 @@ bool executeScriptAction(script* scriptData, player* player)
         {
             if (i > 0)
                 newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
-            if (newDoorFlags[i] > -1)
+            if (newDoorFlags[i] > -1)  //set
                 doorFlags[i] = newDoorFlags[i];
+            if (newDoorFlags[i] == -2)  //flip
+                doorFlags[i] = !doorFlags[i];
         }
         Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);

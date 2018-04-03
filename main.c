@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     //loading in map pack header files
     char** listOfFilenames;
     int maxStrNum = 0;
-    listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_PATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
+    listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_FILE_PATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
     //done loading map pack header files
     player person;
     if (checkFile(GLOBALSAVE_FILEPATH, 0))
@@ -185,13 +185,13 @@ int main(int argc, char* argv[])
                 break;
             }
             //loading map pack stuff
-            uniqueReadLine((char**) &mapFilePath, MAX_PATH - 1, mainFilePath, 1);
+            uniqueReadLine((char**) &mapFilePath, MAX_FILE_PATH - 1, mainFilePath, 1);
             //printf("%s\n", mapFilePath);
-            uniqueReadLine((char**) &tileFilePath, MAX_PATH - 1, mainFilePath, 2);
+            uniqueReadLine((char**) &tileFilePath, MAX_FILE_PATH - 1, mainFilePath, 2);
             //printf("%s\n", tileFilePath);
-            uniqueReadLine((char**) &saveFilePath, MAX_PATH - 1, mainFilePath, 3);
+            uniqueReadLine((char**) &saveFilePath, MAX_FILE_PATH - 1, mainFilePath, 3);
             //printf("%s\n", saveFilePath);
-            uniqueReadLine((char**) &scriptFilePath, MAX_PATH - 1, mainFilePath, 4);
+            uniqueReadLine((char**) &scriptFilePath, MAX_FILE_PATH - 1, mainFilePath, 4);
             //printf("%s\n", scriptFilePath);
             loadIMG(tileFilePath, &tilesTexture);
             free(allScripts);
@@ -734,7 +734,7 @@ void clearData(player* playerSprite)
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag)
 {
     bool quitMenu = false;
-    char junkArray[MAX_PATH];
+    char junkArray[MAX_FILE_PATH];
     SDL_Keycode menuKeycode;
     int menuPage = 0, selectItem = 0;
     while(!quitMenu)
@@ -788,7 +788,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         }
     }
     //loading map pack stuff
-    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_PATH - 9);
+    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_FILE_PATH - 9);
 }
 
 int mainLoop(player* playerSprite)
@@ -797,7 +797,7 @@ int mainLoop(player* playerSprite)
 	bool quit = false, drawFPS = false;
 	static bool firstBossFrame = true;
 	//static bool textBoxOn = false;
-	char mapFilePath[MAX_PATH];
+	char mapFilePath[MAX_FILE_PATH];
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
@@ -868,7 +868,6 @@ int mainLoop(player* playerSprite)
             initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0]");
 
         executeScriptAction(&openDoors, playerSprite);
-
     }
     //printf("%d < %d\n", maxTheseScripts, sizeOfAllScripts);
     //doDebugDraw = false;
