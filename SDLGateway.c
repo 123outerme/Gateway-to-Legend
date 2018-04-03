@@ -417,6 +417,38 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
                         temp[0] = ' ';
                     else if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z && !capital)
                         temp[0] = (char) tolower(temp[0]);
+
+                    if (capital)  //top row, hardcoded
+                    {
+                        if (e.key.keysym.sym == SDLK_BACKQUOTE)
+                            temp[0] = '~';
+                        if (e.key.keysym.sym == SDLK_1)
+                            temp[0] = '!';
+                        if (e.key.keysym.sym == SDLK_2)
+                            temp[0] = '@';
+                        if (e.key.keysym.sym == SDLK_3)
+                            temp[0] = '#';
+                        if (e.key.keysym.sym == SDLK_4)
+                            temp[0] = '$';
+                        if (e.key.keysym.sym == SDLK_5)
+                            temp[0] = '%';
+                        if (e.key.keysym.sym == SDLK_6)
+                            temp[0] = '^';
+                        if (e.key.keysym.sym == SDLK_7)
+                            temp[0] = '&';
+                        if (e.key.keysym.sym == SDLK_8)
+                            temp[0] = '*';
+                        if (e.key.keysym.sym == SDLK_9)
+                            temp[0] = '(';
+                        if (e.key.keysym.sym == SDLK_0)
+                            temp[0] = ')';
+                        if (e.key.keysym.sym == SDLK_MINUS)
+                            temp[0] = '_';
+                        if (e.key.keysym.sym == SDLK_EQUALS)
+                            temp[0] = '+';
+                    }
+
+
                     stringData[numChar++] = temp[0];
                     hasTyped = true;
                     strncpy(dispString, stringData, numChar);
