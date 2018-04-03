@@ -233,7 +233,11 @@ int main(int argc, char* argv[])
             initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 1, type_boss);
             loadBoss = true;
             sparkFlag = false;
-            initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+            for(int i = 0; i < MAX_SPARKS; i++)
+            {
+                theseSparkFlags[i] = false;
+                initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+            }
             //done game init
             gameState = RELOAD_GAMECODE;
             break;
@@ -285,7 +289,11 @@ int main(int argc, char* argv[])
                 initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
                 executeScriptAction(&resetScript, &person);  //resets boss movement timer
                 sparkFlag = false;
-                initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+                for(int i = 0; i < MAX_SPARKS; i++)
+                {
+                    theseSparkFlags[i] = false;
+                    initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+                }
                 gameState = START_GAMECODE;
             }
             if (choice == -1)
@@ -1077,8 +1085,9 @@ int mainLoop(player* playerSprite)
                             }
                     }
                     thisScript->active = found;
-                    initSpark(&thisSpark, (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
+                    initSpark(&theseSparks[4], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
                     sparkFlag = true;
+                    theseSparkFlags[4] = true;
                 }
                 if (collisionData[8] && !playerSprite->invincCounter)  //spikes
                 {
@@ -1146,8 +1155,9 @@ int mainLoop(player* playerSprite)
 
                 if (!strncmp(command, "sparks", 6))
                 {
-                    initSpark(&thisSpark, (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, FPS / 2, FPS / 4);
+                    initSpark(&theseSparks[6], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, FPS / 2, FPS / 4);
                     sparkFlag = true;
+                    theseSparkFlags[6] = true;
                 }
 
                 done = executeScriptAction(&exec, playerSprite);
@@ -1184,8 +1194,9 @@ int mainLoop(player* playerSprite)
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
-                        initSpark(&thisSpark, (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
                         sparkFlag = true;
+                        theseSparkFlags[1] = true;
                     }
 
                     if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type != type_na && !(playerSprite->invincCounter))  //player collision
@@ -1319,8 +1330,9 @@ int mainLoop(player* playerSprite)
                         }
                         bossSprite.invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
-                        initSpark(&thisSpark, (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
                         sparkFlag = true;
+                        theseSparkFlags[1] = true;
                     }
                 }
                 executeScriptAction(&bossScript, playerSprite);
@@ -1388,13 +1400,20 @@ int mainLoop(player* playerSprite)
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
 
-        if (sparkFlag && thisSpark.timer)
+        if (sparkFlag)
         {
-            drawSparks(&thisSpark);
-            if (!thisSpark.timer)
+            for(int i = 0; i < MAX_SPARKS; i++)
             {
-                initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
-                sparkFlag = false;
+                if (theseSparks[i].timer && theseSparkFlags[i])
+                {
+                    drawSparks(&theseSparks[i]);
+                    if (!theseSparks[i].timer)
+                    {
+                        initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+                        sparkFlag = false;
+                        theseSparkFlags[i] = false;
+                    }
+                }
             }
         }
 

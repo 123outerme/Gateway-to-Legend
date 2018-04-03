@@ -207,13 +207,26 @@ etc.
 #define SPARK_COLOR_ORANGE ((SDL_Color) {0xFF, 0x8C, 0x11, 0xD0})
 #define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
 #define SPARK_COLOR_GREEN ((SDL_Color) {0x00, 0xBA, 0x34, 0xD0})
+#define SPARK_COLOR_GRAY ((SDL_Color) {0x60, 0x65, 0x70, 0xD0})
 #define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
 #define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
 
 int FPS, targetTime;
 bool doorFlags[3];
 
-bool sparkFlag;
-spark thisSpark;
+#define MAX_SPARKS 7
+bool sparkFlag, theseSparkFlags[MAX_SPARKS];
+spark theseSparks[MAX_SPARKS];
+
+/*
+Spark IDs:
+0 - ~RESERVED~
+1 - Hurt / Heal
+2 - Hit
+3 - Money
+4 - Gateway
+5 - Teleporter
+6 - Command
+*/
 
 #endif // SDLSEEKERS_H_INCLUDED
