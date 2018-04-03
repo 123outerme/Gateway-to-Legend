@@ -225,12 +225,16 @@ int main(int argc, char* argv[])
             else
                 createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
 
+            //initializing game
             char* temp = "";
             person.lastMap = strtol(readLine(saveFilePath, 4, &temp), NULL, 10);
             person.lastX = strtol(readLine(saveFilePath, 5, &temp), NULL, 10);
             person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
             initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 1, type_boss);
             loadBoss = true;
+            sparkFlag = false;
+            initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
+            //done game init
             gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
@@ -280,6 +284,8 @@ int main(int argc, char* argv[])
                 script resetScript;
                 initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
                 executeScriptAction(&resetScript, &person);  //resets boss movement timer
+                sparkFlag = false;
+                initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
                 gameState = START_GAMECODE;
             }
             if (choice == -1)
@@ -784,8 +790,6 @@ int mainLoop(player* playerSprite)
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
-    sparkFlag = false;
-    initSpark(&thisSpark, (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
     static int bossHP = 1;
     thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)

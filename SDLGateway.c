@@ -801,6 +801,8 @@ bool executeScriptAction(script* scriptData, player* player)
         player->lastMap = tempMap;
         player->lastX = tempX;
         player->lastY = tempY;
+        initSpark(&thisSpark, (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, FPS / 2, FPS / 4);
+        sparkFlag = true;
         free(data);
         exitGameLoop = true;
         Mix_HaltChannel(GATEWAY_CHANNEL);

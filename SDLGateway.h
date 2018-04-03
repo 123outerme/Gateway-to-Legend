@@ -208,6 +208,7 @@ etc.
 #define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
 #define SPARK_COLOR_GREEN ((SDL_Color) {0x00, 0xBA, 0x34, 0xD0})
 #define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
+#define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
 
 int FPS, targetTime;
 bool doorFlags[3];
