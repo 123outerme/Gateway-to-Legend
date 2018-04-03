@@ -1154,6 +1154,12 @@ int mainLoop(player* playerSprite)
                 if (!strncmp(command, "hurt", 4))
                     initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
 
+                if (!strncmp(command, "fps", 3))
+                {
+                    FPS = (int) strtol(strtok(commandCpy, "fps "), NULL, 10);
+                    targetTime = calcWaitTime(FPS);
+                }
+
                 if (!strncmp(command, "execscript", 10))
                 {
                     char* temp = "";
