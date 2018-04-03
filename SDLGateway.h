@@ -214,6 +214,7 @@ etc.
 
 int FPS, targetTime;
 bool doorFlags[3];
+bool noclip;
 
 #define MAX_SPARKS 7
 bool sparkFlag, theseSparkFlags[MAX_SPARKS];

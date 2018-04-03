@@ -234,6 +234,7 @@ int main(int argc, char* argv[])
             person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
             initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 1, type_boss);
             loadBoss = true;
+            noclip = false;
             sparkFlag = false;
             for(int i = 0; i < MAX_SPARKS; i++)
             {
@@ -290,6 +291,7 @@ int main(int argc, char* argv[])
                 script resetScript;
                 initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
                 executeScriptAction(&resetScript, &person);  //resets boss movement timer
+                noclip = false;
                 sparkFlag = false;
                 for(int i = 0; i < MAX_SPARKS; i++)
                 {
@@ -1002,7 +1004,7 @@ int mainLoop(player* playerSprite)
                         swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)) || collisionData[14])
+                if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)) || collisionData[14]))
                 {  //unwalkable tile or closed door
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
@@ -1091,7 +1093,7 @@ int mainLoop(player* playerSprite)
                     sparkFlag = true;
                     theseSparkFlags[4] = true;
                 }
-                if (collisionData[8] && !playerSprite->invincCounter)  //spikes
+                if (collisionData[8] && !playerSprite->invincCounter && !noclip)  //spikes
                 {
                     playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
                     playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
@@ -1130,6 +1132,9 @@ int mainLoop(player* playerSprite)
                 stringInput(&command, "console ~", 50, "x", false);
 
                 strncpy(commandCpy, command, 50);
+
+                 if (!strncmp(command, "noclip", 6))
+                    noclip = !noclip;
 
                 if (!strncmp(command, "invincible", 10))
                     playerSprite->invincCounter = 600;
@@ -1203,7 +1208,7 @@ int mainLoop(player* playerSprite)
 
                     if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type != type_na && !(playerSprite->invincCounter))  //player collision
                     {
-                        if (enemies[i].spr.type == type_enemy)
+                        if (enemies[i].spr.type == type_enemy && !noclip)
                         {
                             script hurtPlayer;
                             initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2");
@@ -1302,7 +1307,7 @@ int mainLoop(player* playerSprite)
             }
             if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
             {
-                if (checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
+                if (!noclip && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
                     script hurtPlayer;
                     initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "2");
@@ -1454,7 +1459,7 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
     {
         outputData[i] = 0;
     }
-    if (moveX || moveY)
+    if ((moveX || moveY) && !noclip)
     {
         int thisX = player->spr.x, thisY = player->spr.y;
         int topLeft = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE], topRight = eventmap[thisY / TILE_SIZE][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)], bottomLeft = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE], bottomRight = eventmap[thisY / TILE_SIZE + (thisY % TILE_SIZE != 0)][thisX / TILE_SIZE + (thisX % TILE_SIZE != 0)];

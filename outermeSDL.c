@@ -60,6 +60,9 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             }
             else
             {
+                /*SDL_Surface* iconSurface = SDL_LoadBMP("icon.png");
+                SDL_SetWindowIcon(mainWindow, iconSurface);
+                SDL_FreeSurface(iconSurface);*/
                 SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 SDL_RenderSetLogicalSize(mainRenderer, windowWidth, windowHeight);
