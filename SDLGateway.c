@@ -461,6 +461,19 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
                             temp[0] = '_';
                         if (e.key.keysym.sym == SDLK_EQUALS)
                             temp[0] = '+';
+
+                        if (e.key.keysym.sym == SDLK_BACKSLASH)
+                            temp[0] = '|';
+                        if (e.key.keysym.sym == SDLK_SEMICOLON)
+                            temp[0] = ':';
+                        if (e.key.keysym.sym == SDLK_QUOTE)
+                            temp[0] = '\"';
+                        if (e.key.keysym.sym == SDLK_SLASH)
+                            temp[0] = '?';
+                        if (e.key.keysym.sym == SDLK_COMMA)
+                            temp[0] = '<';
+                        if (e.key.keysym.sym == SDLK_PERIOD)
+                            temp[0] = '>';
                     }
 
 

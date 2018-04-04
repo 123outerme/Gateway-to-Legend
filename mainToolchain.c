@@ -1000,7 +1000,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
     {
         if (editScript->action == script_trigger_dialogue || editScript->action == script_trigger_dialogue_once)
         {
-            stringInput(&data, "What should be said?", 99, "Hello!", true);
+            stringInput(&data, "What should be said?", 88, "Hello!", true);
         }
 
         if (editScript->action == script_trigger_boss)
