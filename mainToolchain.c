@@ -1027,7 +1027,87 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 
         if (editScript->action == script_toggle_door)
         {
-            //choose which doors should be set how, visually
+            int newDoors[3] = {0, 0, 0};
+            char* doorGraphics[4] = {"Flip State","Leave Alone","Open","Closed"};
+            sprite cursor;
+            initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
+            SDL_Color textColor = {AMENU_MAIN_TEXTCOLOR};
+            SDL_Color bgColor = {AMENU_MAIN_BGCOLOR};
+            SDL_Color titleColorUnder = {AMENU_MAIN_TITLECOLOR2};
+            SDL_Color titleColorOver = {AMENU_MAIN_TITLECOLOR1};
+            SDL_Event e;
+            bool quit = false;
+            //While application is running
+            while(!quit)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
+
+                SDL_RenderClear(mainRenderer);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
+                SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
+                //background text (drawn first)
+                drawText("Set Doors", TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, titleColorUnder, false);
+                //foreground text
+                drawText("Set Doors", 1.25 * TILE_SIZE, 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, titleColorOver, false);
+
+                drawText(doorGraphics[newDoors[0] + 2], 4.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, textColor, false);
+                drawText(doorGraphics[newDoors[1] + 2], 4.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, textColor, false);
+                drawText(doorGraphics[newDoors[2] + 2], 4.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, textColor, false);
+
+                drawATile(workingPack.mapPackTexture, workingPack.tilesetMaps[9], 2.25 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                drawATile(workingPack.mapPackTexture, workingPack.tilesetMaps[10], 2.25 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+                drawATile(workingPack.mapPackTexture, workingPack.tilesetMaps[11], 2.25 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+
+                if (cursor.y < TILE_SIZE * 8)
+                    drawATile(workingPack.mapPackTexture, cursor.tileIndex, 15 * TILE_SIZE, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+
+                drawText("Done", 2.25 * TILE_SIZE, 8 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, textColor, false);
+
+                while(SDL_PollEvent(&e) != 0)
+                {
+                    //User requests quit
+                    if(e.type == SDL_QUIT)
+                    {
+                        quit = true;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                    //User presses a key
+                    else if(e.type == SDL_KEYDOWN)
+                    {
+                        if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
+                        {
+                            cursor.y -= TILE_SIZE;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
+
+                        if (e.key.keysym.scancode == SC_DOWN && cursor.y < 8 * TILE_SIZE)
+                        {
+                            cursor.y += TILE_SIZE;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
+
+                        if (e.key.keysym.scancode == SC_LEFT && newDoors[cursor.y / TILE_SIZE - 5] > -2)
+                        {
+                            newDoors[cursor.y / TILE_SIZE - 5]--;
+                        }
+
+                        if (e.key.keysym.scancode == SC_RIGHT && newDoors[cursor.y / TILE_SIZE - 5] < 1)
+                        {
+                            newDoors[cursor.y / TILE_SIZE - 5]++;
+                        }
+
+                        if (e.key.keysym.scancode == SC_INTERACT && cursor.y == TILE_SIZE * 8)
+                        {
+                            quit = true;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
+                    }
+                }
+                drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, (cursor.y < TILE_SIZE * 8 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
+                SDL_RenderPresent(mainRenderer);
+            }
+            snprintf(data, 9, "%d/%d/%d", newDoors[0], newDoors[1], newDoors[2]);
         }
 
         if (editScript->action == script_animation)
