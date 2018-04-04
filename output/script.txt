@@ -1,1 +1,1 @@
-{1,10,96,240,144,96,You saw it too/ Yeah, I don't know what brought us here. Some kind of spacetime anomaly/}
+{3,0,816,48,96,96,6}

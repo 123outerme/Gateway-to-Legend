@@ -83,6 +83,7 @@ void writeTileData();
 void mainScriptEdtior(mapPack* workingPack);
 int scriptSelectLoop(mapPack workingPack);
 script mainScriptLoop(mapPack workingPack, script* editScript);
+void visualLoadScript(mapPack* workingPack, script* scriptPtr);
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void writeScriptData(script* mapScripts, int count);
 
@@ -759,58 +760,13 @@ void writeScriptData(script* mapScripts, int count)
 void mainScriptEdtior(mapPack* workingPack)
 {
     int scriptNum = 0;
-    char* temp = "";
     script editScript;
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     scriptNum = scriptSelectLoop(*workingPack);
     if (scriptNum == 0)
     {
-        script loadedScript;
-        bool quit = false;
-        int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
-        readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
-        SDL_Keycode key;
-        while(!quit)
-        {
-            SDL_RenderClear(mainRenderer);
-            viewMap(*workingPack, loadedScript.mapNum, true, false);
-            key = getKey();
-            if (key == SDL_GetKeyFromScancode(SC_UP))
-            {
-                if (scriptLineNum > 9)
-                    scriptLineNum -= 10;
-                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
-            }
-
-            if (key == SDL_GetKeyFromScancode(SC_DOWN))
-            {
-                if (scriptLineNum < maxLines)
-                    scriptLineNum += 10;
-                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
-            }
-
-            if (key == SDL_GetKeyFromScancode(SC_LEFT))
-            {
-                if (scriptLineNum > 0)
-                    scriptLineNum--;
-                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
-            }
-
-            if (key == SDL_GetKeyFromScancode(SC_RIGHT))
-            {
-                if (scriptLineNum < maxLines)
-                    scriptLineNum++;
-                readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
-            }
-            if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
-                quit = true;
-
-            drawText(intToString(scriptLineNum, temp), SCREEN_WIDTH - TILE_SIZE * (!scriptLineNum ? 1 : digits(scriptLineNum)), 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
-            SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
-            SDL_RenderPresent(mainRenderer);
-        }
+        visualLoadScript(workingPack, &editScript);
         scriptNum = -1;
-        editScript = loadedScript;
     }
     if (scriptNum != 0)
     {
@@ -1006,6 +962,60 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         if (editScript->action == script_trigger_boss)
         {
             //ask user to select a boss
+            int maxScriptLines = checkFile(workingPack.scriptFilePath, -1), * bossLineArray = calloc(12, sizeof(int));
+            int bossIndex = 0, bossArraySize = 12;
+            char* temp = "";
+            for(int i = 0; i < maxScriptLines; i++)
+            {
+                script aScript;
+                readScript(&aScript, readLine(workingPack.scriptFilePath, i, &temp));
+                if (aScript.action == script_boss_actions && bossIndex < bossArraySize - 1)
+                    bossLineArray[bossIndex++] = i;
+            }
+            bossArraySize = bossIndex;
+            bool quit = false;
+            int foundIndex = 0;
+            script loadedScript;
+            SDL_Keycode key;
+            while(!quit)
+            {
+                SDL_RenderClear(mainRenderer);
+                viewMap(workingPack, loadedScript.mapNum, true, false);
+                key = getKey();
+                if (key == SDL_GetKeyFromScancode(SC_UP))
+                {
+                    if (foundIndex > 9)
+                        foundIndex -= 10;
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                }
+
+                if (key == SDL_GetKeyFromScancode(SC_DOWN))
+                {
+                    if (foundIndex < bossArraySize && bossArraySize >= 10 + foundIndex)
+                        foundIndex += 10;
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                }
+
+                if (key == SDL_GetKeyFromScancode(SC_LEFT))
+                {
+                    if (foundIndex > 0)
+                        foundIndex--;
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                }
+
+                if (key == SDL_GetKeyFromScancode(SC_RIGHT))
+                {
+                    if (foundIndex < bossArraySize)
+                        foundIndex++;
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                }
+                if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
+                    quit = true;
+
+                SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
+                SDL_RenderPresent(mainRenderer);
+            }
+            snprintf(data, 3, "%d", bossLineArray[foundIndex]);
         }
 
         if (editScript->action == script_switch_maps)
@@ -1017,7 +1027,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 
         if (editScript->action == script_toggle_door)
         {
-            //choose which doors should be set how visually
+            //choose which doors should be set how, visually
         }
 
         if (editScript->action == script_animation)
@@ -1045,6 +1055,56 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
     free(data);
     return *editScript;
 }
+
+void visualLoadScript(mapPack* workingPack, script* scriptPtr)
+{
+    script loadedScript = *scriptPtr;
+    bool quit = false;
+    char* temp = "";
+    int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
+    readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+    SDL_Keycode key;
+    while(!quit)
+    {
+        SDL_RenderClear(mainRenderer);
+        viewMap(*workingPack, loadedScript.mapNum, true, false);
+        key = getKey();
+        if (key == SDL_GetKeyFromScancode(SC_UP))
+        {
+            if (scriptLineNum > 9)
+                scriptLineNum -= 10;
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+        }
+
+        if (key == SDL_GetKeyFromScancode(SC_DOWN))
+        {
+            if (scriptLineNum < maxLines)
+                scriptLineNum += 10;
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+        }
+
+        if (key == SDL_GetKeyFromScancode(SC_LEFT))
+        {
+            if (scriptLineNum > 0)
+                scriptLineNum--;
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+        }
+
+        if (key == SDL_GetKeyFromScancode(SC_RIGHT))
+        {
+            if (scriptLineNum < maxLines)
+                scriptLineNum++;
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+        }
+        if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
+            quit = true;
+
+        drawText(intToString(scriptLineNum, temp), SCREEN_WIDTH - TILE_SIZE * (!scriptLineNum ? 1 : digits(scriptLineNum)), 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
+        SDL_RenderPresent(mainRenderer);
+    }
+}
+
 //end script editor code.
 
 
