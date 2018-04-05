@@ -189,6 +189,8 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_CHANNEL channelArray[12]
 #define TELEPORT_CHANNEL channelArray[13]
 
+#define BOSS_MUSIC_FILE "audio/bossMusic.mp3"
+
 /*
 Sound effects should play upon walking
 killing enemies [x]

@@ -12,10 +12,14 @@ int initSounds()
 
     MUSIC(2) = Mix_LoadMUS();
     if (!MUSIC(2))
+        return -5;*/
+
+    MUSIC(3) = Mix_LoadMUS(BOSS_MUSIC_FILE);
+    if (!MUSIC(3))
         return -5;
 
-    MUSIC(3) = Mix_LoadMUS();
-    if (!MUSIC(3))
+    /*MUSIC(4) = Mix_LoadMUS();
+    if (!MUSIC(4))
         return -5;*/
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
@@ -756,6 +760,7 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_trigger_boss && scriptData->data[0] != '\0')
     {
+        Mix_PlayMusic(MUSIC(3), 0);
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         for(int i = 0; i < 120; i++)
         {
