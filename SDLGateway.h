@@ -190,7 +190,11 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define TELEPORT_CHANNEL channelArray[13]
 
 #define MAIN_MUSIC_FILE "audio/mainTheme.mp3"
+#define OVERWORLD1_MUSIC_FILE "audio/.mp3"
+#define OVERWORLD2_MUSIC_FILE "audio/.mp3"
+#define OVERWORLD3_MUSIC_FILE "audio/.mp3"
 #define BOSS_MUSIC_FILE "audio/bossTheme.mp3"
+#define FANFARE_MUSIC_FILE "audio/.mp3"
 
 /*
 Sound effects should play upon walking

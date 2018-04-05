@@ -49,7 +49,7 @@
 #define ANYWHERE_QUIT -1
 
 #define MAX_SOUNDS 15
-#define MAX_MUSIC 5
+#define MAX_MUSIC 6
 #define MAX_FILE_PATH 260
 
 typedef enum

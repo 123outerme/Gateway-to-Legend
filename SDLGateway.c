@@ -2,24 +2,28 @@
 
 int initSounds()
 {
-    MUSIC(1) = Mix_LoadMUS(MAIN_MUSIC_FILE);
+    MUSIC(1) = Mix_LoadMUS(MAIN_MUSIC_FILE);  //Gateway to Legend: Main Theme by Ian Groat
     if (!MUSIC(1))
         return -5;
 
-    /*MUSIC(2) = Mix_LoadMUS();
+    /*MUSIC(2) = Mix_LoadMUS(OVERWORLD1_MUSIC_FILE);
     if (!MUSIC(2))
         return -5;
 
-    MUSIC(3) = Mix_LoadMUS();
+    MUSIC(3) = Mix_LoadMUS(OVERWORLD2_MUSIC_FILE);
     if (!MUSIC(3))
-        return -5;*/
-
-    MUSIC(4) = Mix_LoadMUS(BOSS_MUSIC_FILE);  //Gateway to Legend: Boss Theme 1 by Ian Groat
-    if (!MUSIC(4))
         return -5;
 
-    /*MUSIC(5) = Mix_LoadMUS();
+    MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
+    if (!MUSIC(4))
+        return -5;*/
+
+    MUSIC(5) = Mix_LoadMUS(BOSS_MUSIC_FILE);  //Gateway to Legend: Boss Theme 1 by Ian Groat
     if (!MUSIC(5))
+        return -5;
+
+    /*MUSIC(6) = Mix_LoadMUS();
+    if (!MUSIC(6))
         return -5;*/
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
@@ -774,7 +778,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_Delay(7);
         }
         Mix_HaltMusic();
-        Mix_PlayMusic(MUSIC(4), -1);
+        Mix_PlayMusic(MUSIC(5), -1);
         char* temp = "", * data = calloc(99, sizeof(char));
         script theBoss;
         readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));

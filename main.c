@@ -245,6 +245,7 @@ int main(int argc, char* argv[])
                 initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
             }
             //done game init
+            //Mix_PlayMusic(MUSIC(2 + rand() % 3), -1);
             gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
