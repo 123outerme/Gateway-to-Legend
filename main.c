@@ -136,6 +136,8 @@ int main(int argc, char* argv[])
             gameState = START_GAMECODE;
             break;
         case START_GAMECODE:  //start menu
+            if (!Mix_PlayingMusic())
+                Mix_PlayMusic(MUSIC(1), -1);
             person.mapScreen = 0;
             choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Coin Store", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
@@ -259,11 +261,13 @@ int main(int argc, char* argv[])
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             Mix_HaltChannel(-1);
+            Mix_PauseMusic();
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 2 || choice == 3 || choice == -1)
                 gameState = SAVE_GAMECODE;
+            Mix_ResumeMusic();
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;
@@ -549,9 +553,9 @@ void soundTestMenu()
         SDL_RenderFillRect(mainRenderer, NULL);
         SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText("Script Type?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
+        drawText("Sound Test", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
         //foreground text
-        drawText("Script Type?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
+        drawText("Sound Test", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
 
         drawText(optionsArray[soundIndex], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
@@ -609,7 +613,7 @@ void soundTestMenu()
                             Mix_HaltChannel(-1);
 
                             if (soundIndex < 6)
-                                Mix_PlayMusic(MUSIC(soundIndex - 1), 0);
+                                Mix_PlayMusic(MUSIC(soundIndex), 0);
                             else
                                 Mix_PlayChannel(-1, audioArray[soundIndex - 5], 0);
                         }

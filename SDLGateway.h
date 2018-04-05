@@ -150,7 +150,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_MENU CUSTOM_SCANCODES[5]
 #define SC_ATTACK CUSTOM_SCANCODES[6]
 
-#define MUSIC(x) musicArray[x > 4 ? 1 : x - 1]
+#define MUSIC(x) musicArray[x > MAX_MUSIC ? 0 : x - 1]
 #define UNSHEATH_SOUND audioArray[1]
 #define OPTION_SOUND audioArray[2]
 #define PING_SOUND audioArray[3]
@@ -189,7 +189,8 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_CHANNEL channelArray[12]
 #define TELEPORT_CHANNEL channelArray[13]
 
-#define BOSS_MUSIC_FILE "audio/bossMusic.mp3"
+#define MAIN_MUSIC_FILE "audio/mainTheme.mp3"
+#define BOSS_MUSIC_FILE "audio/bossTheme.mp3"
 
 /*
 Sound effects should play upon walking

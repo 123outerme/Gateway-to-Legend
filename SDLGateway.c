@@ -2,24 +2,24 @@
 
 int initSounds()
 {
-    /*MUSIC(0) = Mix_LoadMUS();
-    if (!MUSIC(0))
-        return -5;*/
-
-    /*MUSIC(1) = Mix_LoadMUS();
+    MUSIC(1) = Mix_LoadMUS(MAIN_MUSIC_FILE);
     if (!MUSIC(1))
         return -5;
 
-    MUSIC(2) = Mix_LoadMUS();
+    /*MUSIC(2) = Mix_LoadMUS();
     if (!MUSIC(2))
-        return -5;*/
-
-    MUSIC(3) = Mix_LoadMUS(BOSS_MUSIC_FILE);
-    if (!MUSIC(3))
         return -5;
 
-    /*MUSIC(4) = Mix_LoadMUS();
+    MUSIC(3) = Mix_LoadMUS();
+    if (!MUSIC(3))
+        return -5;*/
+
+    MUSIC(4) = Mix_LoadMUS(BOSS_MUSIC_FILE);  //Gateway to Legend: Boss Theme 1 by Ian Groat
     if (!MUSIC(4))
+        return -5;
+
+    /*MUSIC(5) = Mix_LoadMUS();
+    if (!MUSIC(5))
         return -5;*/
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
@@ -760,7 +760,7 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     if (scriptData->action == script_trigger_boss && scriptData->data[0] != '\0')
     {
-        Mix_PlayMusic(MUSIC(3), 0);
+        Mix_FadeOutMusic(920);
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         for(int i = 0; i < 120; i++)
         {
@@ -773,6 +773,8 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_RenderPresent(mainRenderer);
             SDL_Delay(7);
         }
+        Mix_HaltMusic();
+        Mix_PlayMusic(MUSIC(4), -1);
         char* temp = "", * data = calloc(99, sizeof(char));
         script theBoss;
         readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));
