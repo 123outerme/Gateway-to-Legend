@@ -22,8 +22,12 @@ int initSounds()
     if (!MUSIC(5))
         return -5;
 
-    /*MUSIC(6) = Mix_LoadMUS();
+    /*MUSIC(6) = Mix_LoadMUS(FANFARE_MUSIC_FILE);
     if (!MUSIC(6))
+        return -5;
+
+    MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);
+    if (!MUSIC(7))
         return -5;*/
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
@@ -37,18 +41,16 @@ int initSounds()
     PING_SOUND = Mix_LoadWAV(PING_FILE);
     if (!PING_SOUND)
         return -5;
-    {
-        char* buffer = "";
 
-        for(int i = 1; i < 4; i++)
-        {
-            char filepath[15] = STEP_FILE;
-            strcat(filepath, intToString(i, buffer));
-            STEP_SOUND(i) = Mix_LoadWAV(strcat(filepath, ".ogg\0"));
-            if (!STEP_SOUND(i))
-                return -5;
-        }
+    for(int i = 1; i < 4; i++)
+    {
+        char filepath[16] = STEP_FILE;
+        snprintf(filepath, 16, "%s%d.ogg", STEP_FILE, i);
+        STEP_SOUND(i) = Mix_LoadWAV(filepath);
+        if (!STEP_SOUND(i))
+            return -5;
     }
+
     SWING_SOUND = Mix_LoadWAV(SWING_FILE);
     if (!SWING_SOUND)
         return -5;

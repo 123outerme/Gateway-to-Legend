@@ -193,8 +193,9 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define OVERWORLD1_MUSIC_FILE "audio/.mp3"
 #define OVERWORLD2_MUSIC_FILE "audio/.mp3"
 #define OVERWORLD3_MUSIC_FILE "audio/.mp3"
-#define BOSS_MUSIC_FILE "audio/bossTheme.mp3"
+#define BOSS_MUSIC_FILE "audio/gatewayIntoAction.mp3"
 #define FANFARE_MUSIC_FILE "audio/.mp3"
+#define GAMEOVER_MUSIC_FILE "audio/.mp3"
 
 /*
 Sound effects should play upon walking
