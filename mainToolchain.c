@@ -9,7 +9,7 @@
 #define checkSKRight keyStates[SC_RIGHT]
 #define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKMenu keyStates[SC_MENU]
-#define checkSKAttack keyStates[SC_ATTACK]
+#define checkSKAttack keyStates[SC_SPECIAL]
 //SDL_SCANCODE_W
 //SDL_SCANCODE_S
 //SDL_SCANCODE_A
@@ -917,13 +917,13 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         viewMap(workingPack, map, false, false);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? x1 : cursor.x, .y = !editXY ? y1 : cursor.y, .w = !editXY ? cursor.x - x1 : cursor.w, .h = !editXY ? cursor.y - y1 : cursor.h}));
         key = getKey();
-        if (SC_ATTACK == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
+        if (SC_SPECIAL == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
         {
             intervalSize = 48;
             bigIntervalSize = true;
         }
         else
-        if (!editXY && bigIntervalSize == true && SC_ATTACK == SDL_GetScancodeFromKey(key))
+        if (!editXY && bigIntervalSize == true && SC_SPECIAL == SDL_GetScancodeFromKey(key))
         {
             intervalSize = 6;
             bigIntervalSize = false;

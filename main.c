@@ -5,7 +5,7 @@
 #define checkSKDown keyStates[SC_DOWN]
 #define checkSKLeft keyStates[SC_LEFT]
 #define checkSKRight keyStates[SC_RIGHT]
-#define checkSKAttack keyStates[SC_ATTACK]
+#define checkSKSpecial keyStates[SC_SPECIAL]
 #define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKMenu keyStates[SC_MENU]
 #define TILE_ID_PLAYER 16
@@ -31,7 +31,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-void coinStore(player* playerSprite);
+void upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
 int changeControls();
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
-                coinStore(&person);
+                upgradeShop(&person);
             if (choice == 3)
                 toolchain_main();
             if (choice == 4)
@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void coinStore(player* playerSprite)
+void upgradeShop(player* playerSprite)
 {
     bool quit = false;
     while(!quit)
@@ -673,7 +673,7 @@ int changeControls()
             drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
             strcpy(keyText, "Attack: ");  //note to self: change the key name later
-            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_ATTACK))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
+            drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_SPECIAL))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
             drawText("Back", 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
             drawText("Default is W/S/A/D, Space, LShift, Esc", .75 * TILE_SIZE, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, false);
@@ -1016,7 +1016,7 @@ int mainLoop(player* playerSprite)
 
             playerSprite->animationCounter--;
 
-            if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKAttack || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
+            if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpecial || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
             {
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
@@ -1033,13 +1033,13 @@ int mainLoop(player* playerSprite)
                 if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight /*&& !playerSprite->xVeloc*/)
                     playerSprite->xVeloc += PIXELS_MOVED;
 
-                /*if (checkSKAttack && !textBoxOn && frame > targetTime / 2)
+                /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
                 {
                     initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
                     textBoxOn = true;
                 }*/
 
-                if (((checkSKUp && !checkSKDown) || (!checkSKUp && checkSKDown) || (checkSKLeft && !checkSKRight) || (!checkSKLeft && checkSKRight)) && !checkSKAttack)
+                if (((checkSKUp && !checkSKDown) || (!checkSKUp && checkSKDown) || (checkSKLeft && !checkSKRight) || (!checkSKLeft && checkSKRight)) && !checkSKSpecial)
                     playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft+ 8 * checkSKRight;
 
                 if (playerSprite->lastDirection / 4 == 1)
