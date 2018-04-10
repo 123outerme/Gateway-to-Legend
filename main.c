@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
             if (!Mix_PlayingMusic())
                 Mix_PlayMusic(MUSIC(1), -1);
             person.mapScreen = 0;
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Coin Store", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
+            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Upgrade Shop", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
@@ -325,8 +325,8 @@ void coinStore(player* playerSprite)
     bool quit = false;
     while(!quit)
     {
-        char title[18];
-        snprintf(title, 18, "Store: %d Coins", playerSprite->money);
+        char title[17];
+        snprintf(title, 17, "Shop: %d Coins", playerSprite->money);
         int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
         switch(choice)
         {
