@@ -1,4 +1,5 @@
-﻿>> Legal Stuff <<
+ Gateway-to-Legend
+ >> Legal Stuff <<
 
 The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.
 I did not write or modify the graphics library, SDL2, any of its extensions or previous versions, or any
@@ -7,27 +8,30 @@ I did not create the font file PX_437_ITT_BIOS_X.ttf. However, I did slightly mo
 character.
 I originally wrote the code behind Gateway to Legend.
 
-> Gateway to Legend <
+ > Gateway to Legend <
 MIT License
 
 Copyright (c) 2017 TildeCubed
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-associated documentation files (the "Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the
-following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial
-portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
-EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-> Font <
+ > Font <
 The font file used is a slightly modified version of a font that is © 2016 VileR,
 and his fonts are licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
 
@@ -45,12 +49,12 @@ No warranties are given - whatever you do, I will not be held liable
 
 (and yes, I stole the TL;DR version from the font pack readme)
 
-> Sounds <
+ > Sounds <
 All sounds used are royalty-free. Some sounds have different licenses, so I added the specific author and
 license information into the metadata of each sound file. They all have links to the type of license, or
 no license, in the case of those that are in Public Domain.
 
-> SDL2 <
+ > SDL2 <
 This software, SDL2.0, is provided 'as-is', without any express or implied warranty. In no event will the
 authors be held liable for any damages arising from the use of this software.
 
