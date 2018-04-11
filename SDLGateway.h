@@ -151,6 +151,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_SPECIAL CUSTOM_SCANCODES[6]
 
 #define MUSIC(x) musicArray[x > MAX_MUSIC ? 0 : x - 1]
+#define RESERVED_SOUND audioArray[0]
 #define UNSHEATH_SOUND audioArray[1]
 #define OPTION_SOUND audioArray[2]
 #define PING_SOUND audioArray[3]
@@ -164,6 +165,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_SOUND audioArray[13]
 #define TELEPORT_SOUND audioArray[14]
 
+#define RESERVED_FILE "audio/.ogg"
 #define UNSHEATH_FILE "audio/unsheath.ogg"
 #define OPTION_FILE "audio/unsheath_bass.ogg"
 #define PING_FILE "audio/menu.ogg"
@@ -177,6 +179,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_FILE "audio/enemyHurt.ogg"
 #define TELEPORT_FILE "audio/teleport.ogg"
 
+#define RESERVED_CHANNEL channelArray[0]
 #define UNSHEATH_CHANNEL channelArray[1]
 #define OPTION_CHANNEL channelArray[2]
 #define PING_CHANNEL channelArray[3]

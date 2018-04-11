@@ -539,8 +539,8 @@ void soundTestMenu()
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 19;
-    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Music 2", "Music 3", "Boss Music", "Music 5", "Music 6", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
+    const int optionsSize = 23;
+    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Boss Music", "Music 5", "Music 6", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
     int soundIndex = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -613,10 +613,10 @@ void soundTestMenu()
                         {
                             Mix_HaltChannel(-1);
 
-                            if (soundIndex < 7)
+                            if (soundIndex < 8)
                                 Mix_PlayMusic(MUSIC(soundIndex), 0);
                             else
-                                Mix_PlayChannel(-1, audioArray[soundIndex - 6], 0);
+                                Mix_PlayChannel(-1, audioArray[soundIndex - 8], 0);
                         }
                     }
                     else
