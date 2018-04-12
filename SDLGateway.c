@@ -780,7 +780,7 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_Delay(7);
         }
         Mix_HaltMusic();
-        Mix_PlayMusic(MUSIC(5), -1);
+        Mix_PlayMusic(MUSIC((musicIndex = 5)), -1);
         char* temp = "", * data = calloc(99, sizeof(char));
         script theBoss;
         readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));
@@ -1012,4 +1012,14 @@ bool executeScriptAction(script* scriptData, player* player)
     }
     scriptData->active = false;
     return exitGameLoop;  //returns whether or not it wants to exit the game loop
+}
+
+void SDLCALL playMainMusic()
+{
+	Mix_PlayMusic(MUSIC((musicIndex = 1)), -1);
+}
+
+void SDLCALL playOverworldMusic()
+{
+	Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);
 }

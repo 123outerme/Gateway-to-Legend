@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
             break;
         case START_GAMECODE:  //start menu
             if (!Mix_PlayingMusic())
-                Mix_PlayMusic(MUSIC(1), -1);
+                playMainMusic();
             person.mapScreen = 0;
             choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Upgrade Shop", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
                 initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
             }
             //done game init
-            //Mix_PlayMusic(MUSIC(2 + rand() % 3), -1);
+            //playOverworldMusic();
             gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop

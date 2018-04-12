@@ -31,7 +31,7 @@
 
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
-typedef struct {
+typedef struct _player {
     sprite spr;  //?
     char name[MAX_PLAYER_NAME + 1];  //9 bytes
     int level;  //
@@ -52,13 +52,13 @@ typedef struct {
     char* extraData;
 } player;
 
-typedef struct {
+typedef struct _enemy {
     sprite spr;
     int invincTimer;
     int HP;
 } enemy;
 
-typedef enum {
+typedef enum  _scriptBehavior {
     script_none,                   //0 default, do nothing
     script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
     script_trigger_dialogue_once,  //2 same as above, but just once.
@@ -75,7 +75,7 @@ typedef enum {
     script_placeholder,            //13 ?
 } scriptBehavior;
 
-typedef struct {
+typedef struct _script {
     int mapNum;
     int x;
     int y;
@@ -86,7 +86,7 @@ typedef struct {
     bool active;
 } script;
 
-typedef struct {
+typedef struct _node {
     int x;
     int y;
     void* lastNode;
@@ -94,7 +94,7 @@ typedef struct {
     int distance;
 } node;
 
-typedef struct {
+typedef struct _spark {
     SDL_Rect sparkRects[99];
     SDL_Rect boundsRect;
     SDL_Color color;
@@ -135,6 +135,9 @@ char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int*
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script
+
+void SDLCALL playMainMusic();  //play main theme callback
+void SDLCALL playOverworldMusic();  //play an overworld theme callback
 
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
@@ -226,6 +229,8 @@ etc.
 int FPS, targetTime;
 bool doorFlags[3];
 bool noclip;
+
+int musicIndex;
 
 #define MAX_SPARKS 7
 bool sparkFlag, theseSparkFlags[MAX_SPARKS];
