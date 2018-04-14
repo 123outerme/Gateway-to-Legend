@@ -567,9 +567,9 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     Mix_PlayChannel(-1, OPTION_SOUND, 0);
 
     if (!hasTyped || !strlen(stringData))
-        strncpy(*data, defaultStr, maxChar);
+        strncpy(*data, defaultStr, strlen(defaultStr));
     else
-        strncpy(*data, stringData, maxChar);
+        strncpy(*data, stringData, numChar);
     free(stringData);
     free(dispString);
 }
