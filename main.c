@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
                 initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
             }
             //done game init
-            //playOverworldMusic();
+            playOverworldMusic();
             gameState = RELOAD_GAMECODE;
             break;
         case MAINLOOP_GAMECODE:  //main game loop
@@ -540,7 +540,7 @@ void soundTestMenu()
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 23;
-    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Boss Music", "Music 5", "Music 6", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
+    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Gateway to Action", "Fanfare", "Game Over", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
     int soundIndex = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -614,7 +614,7 @@ void soundTestMenu()
                             Mix_HaltChannel(-1);
 
                             if (soundIndex < 8)
-                                Mix_PlayMusic(MUSIC(soundIndex), 0);
+                                Mix_PlayMusic(MUSIC((musicIndex = soundIndex)), (soundIndex != 6 ? -1 : 0));
                             else
                                 Mix_PlayChannel(-1, audioArray[soundIndex - 8], 0);
                         }
@@ -1110,13 +1110,22 @@ int mainLoop(player* playerSprite)
                         swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true)) || collisionData[14]))
-                {  //unwalkable tile or closed door
+                if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true))  || collisionData[8] || collisionData[14]))
+                {  //unwalkable tile or closed door or spikes
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
                     playerSprite->xVeloc = 0;
                     playerSprite->yVeloc = 0;
                     //printf("%d\n", exitCode);
+                    if (collisionData[8] && !playerSprite->invincCounter && !noclip)  //spikes
+                    {
+                        playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
+                        playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
+                        script hurtPlayer;
+                        initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
+                        executeScriptAction(&hurtPlayer, playerSprite);
+                        playerSprite->invincCounter = FPS / 6;  //10 frames of invincibility at 60fps, or approx. .167 of a second
+                    }
                 }
 
                 if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
@@ -1198,15 +1207,6 @@ int mainLoop(player* playerSprite)
                     initSpark(&theseSparks[4], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
                     sparkFlag = true;
                     theseSparkFlags[4] = true;
-                }
-                if (collisionData[8] && !playerSprite->invincCounter && !noclip)  //spikes
-                {
-                    playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
-                    playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
-                    script hurtPlayer;
-                    initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
-                    executeScriptAction(&hurtPlayer, playerSprite);
-                    playerSprite->invincCounter = FPS / 6;  //10 frames of invincibility at 60fps, or approx. .167 of a second
                 }
                 if (collisionData[9])  //gateway
                 {
@@ -1451,7 +1451,8 @@ int mainLoop(player* playerSprite)
                             initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, FPS / 2, FPS / 4);
                             sparkFlag = true;
                             theseSparkFlags[7] = true;
-                            //play boss defeat fanfare
+                            Mix_PlayMusic(MUSIC(6), 0);  //fanfare
+                            Mix_HookMusicFinished(playOverworldMusic);
                         }
                         else
                         {
@@ -1493,6 +1494,7 @@ int mainLoop(player* playerSprite)
                 quit = true;
                 exitCode = 1;
             }
+
             //printf("%d / %f == %d\n", frame, (SDL_GetTicks() - startTime) / 1000.0, framerate);
             drawFPS = keyStates[SDL_SCANCODE_F12];
             //printf("Framerate: %d\n", frame / ((int) now - (int) startTime));
@@ -1548,7 +1550,7 @@ int mainLoop(player* playerSprite)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         lastFrame = SDL_GetTicks();
         if (thisScript->active)
-            quit = executeScriptAction(thisScript, playerSprite);
+            quit = quit | executeScriptAction(thisScript, playerSprite);
     }
 
     if (playerSprite->HP < 1)

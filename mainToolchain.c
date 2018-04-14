@@ -83,7 +83,7 @@ void writeTileData();
 void mainScriptEdtior(mapPack* workingPack);
 int scriptSelectLoop(mapPack workingPack);
 script mainScriptLoop(mapPack workingPack, script* editScript);
-void visualLoadScript(mapPack* workingPack, script* scriptPtr);
+script visualLoadScript(mapPack* workingPack);
 void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
 void writeScriptData(script* mapScripts, int count);
 
@@ -759,29 +759,25 @@ void writeScriptData(script* mapScripts, int count)
 //start script editor code
 void mainScriptEdtior(mapPack* workingPack)
 {
-    int scriptNum = 0;
     script editScript;
     loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
-    scriptNum = scriptSelectLoop(*workingPack);
+    int scriptNum = scriptSelectLoop(*workingPack);
     if (scriptNum == 0)
+        editScript = visualLoadScript(workingPack);
+
+    if (scriptNum > 0)
+        initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "");
+
+    if (scriptNum >= 0)
     {
-        visualLoadScript(workingPack, &editScript);
-        scriptNum = -1;
-    }
-    if (scriptNum != 0)
-    {
-        if (scriptNum > 0)
+        mainScriptLoop(*workingPack, &editScript);
+        if (editScript.action != script_none)
         {
-            initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "");
-            mainScriptLoop(*workingPack, &editScript);
-            if (editScript.action != script_none)
-            {
-                writeScriptData(&editScript, 1);
-                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
-                SDL_RenderClear(mainRenderer);
-                drawText("Outputted to output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                waitForKey();
-            }
+            writeScriptData(&editScript, 1);
+            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+            SDL_RenderClear(mainRenderer);
+            drawText("Outputted to output/script.txt\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+            waitForKey();
         }
     }
 }
@@ -871,19 +867,18 @@ int scriptSelectLoop(mapPack workingPack)
                     selection = cursor.y / TILE_SIZE - 4;
                     if (selection == 2 || selection == 4)
                         quit = true;
+                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     if (selection == 3)
                     {
-                        int key = 0;
-                        while(!key)
+                        while(!getKey())
                         {
                             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                             SDL_RenderFillRect(mainRenderer, NULL);
                             drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                            key = getKey();
                         }
                         selection = 0;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
-                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
                 }
             }
         }
@@ -1143,9 +1138,9 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
     return *editScript;
 }
 
-void visualLoadScript(mapPack* workingPack, script* scriptPtr)
+script visualLoadScript(mapPack* workingPack)
 {
-    script loadedScript = *scriptPtr;
+    script loadedScript;
     bool quit = false;
     char* temp = "";
     int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
@@ -1190,6 +1185,7 @@ void visualLoadScript(mapPack* workingPack, script* scriptPtr)
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
         SDL_RenderPresent(mainRenderer);
     }
+    return loadedScript;
 }
 
 //end script editor code.

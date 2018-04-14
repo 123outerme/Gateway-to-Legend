@@ -2,19 +2,20 @@
 
 int initSounds()
 {
+    musicIndex = -1;
     MUSIC(1) = Mix_LoadMUS(MAIN_MUSIC_FILE);  //Gateway to Legend: Main Theme by Ian Groat
     if (!MUSIC(1))
         return -5;
 
-    /*MUSIC(2) = Mix_LoadMUS(OVERWORLD1_MUSIC_FILE);
+    MUSIC(2) = Mix_LoadMUS(OVERWORLD1_MUSIC_FILE);  //Gateway to Legend: GtL3 by _iPhoenix_
     if (!MUSIC(2))
         return -5;
 
-    MUSIC(3) = Mix_LoadMUS(OVERWORLD2_MUSIC_FILE);
+    MUSIC(3) = Mix_LoadMUS(OVERWORLD2_MUSIC_FILE);  //Gateway to Legend: GtL5 by _iPhoenix_
     if (!MUSIC(3))
         return -5;
 
-    MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
+    /*MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
     if (!MUSIC(4))
         return -5;*/
 
@@ -22,11 +23,11 @@ int initSounds()
     if (!MUSIC(5))
         return -5;
 
-    /*MUSIC(6) = Mix_LoadMUS(FANFARE_MUSIC_FILE);
+    MUSIC(6) = Mix_LoadMUS(FANFARE_MUSIC_FILE);  //Gateway to Legend: GtL4 by _iPhoenix_
     if (!MUSIC(6))
         return -5;
 
-    MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);
+    /*MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);
     if (!MUSIC(7))
         return -5;*/
 
@@ -899,6 +900,7 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_toggle_door)
     {  //-1 = unchanged, 0 = open, 1 = closed
         char* data = calloc(99, sizeof(char));
+        bool oldDoorFlags[3] = {doorFlags[0], doorFlags[1], doorFlags[2]};
         bool newDoorFlags[3] = {-1, -1, -1};
         newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
         for(int i = 0; i < 3; i++)
@@ -910,7 +912,8 @@ bool executeScriptAction(script* scriptData, player* player)
             if (newDoorFlags[i] == -2)  //flip
                 doorFlags[i] = !doorFlags[i];
         }
-        Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
+        if (oldDoorFlags[0] != doorFlags[0] || oldDoorFlags[1] != doorFlags[1] || oldDoorFlags[2] != doorFlags[2])
+            Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }
     if (scriptData->action == script_boss_actions)
@@ -969,8 +972,6 @@ bool executeScriptAction(script* scriptData, player* player)
         player->experience += strtol(scriptData->data, NULL, 10);
         if (player->experience > 9999)
             player->experience = 9999;
-        if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
-            CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
         //play animation (?) and sound
     }
     if (scriptData->action == script_gain_money)
@@ -978,8 +979,7 @@ bool executeScriptAction(script* scriptData, player* player)
         player->money += strtol(scriptData->data, NULL, 10);
         if (player->money > 9999)
             player->money = 9999;
-        if (CASH_SOUND != Mix_GetChunk(CASH_CHANNEL))
-            CASH_CHANNEL = Mix_PlayChannel(-1, CASH_SOUND, 0);
+            Mix_PlayChannel(-1, CASH_SOUND, 0);
         initSpark(&theseSparks[3], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, FPS / 4, FPS / 8);
         sparkFlag = true;
         theseSparkFlags[3] = true;
@@ -1021,5 +1021,6 @@ void SDLCALL playMainMusic()
 
 void SDLCALL playOverworldMusic()
 {
-	Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);
+    if (musicIndex < 2 || musicIndex > 4)
+        Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);
 }
