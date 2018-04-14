@@ -18,6 +18,7 @@
 #define MAX_LIST_OF_MAPS 30
 
 #define MAX_SPRITE_MAPPINGS 20  //sprite defines
+#define MAX_MAP_PACK_DATA 6 //does not include sprite defines
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA, 0xFF
 #define AMENU_MAIN_BGCOLOR 0xE4, 0xE9, 0xF3, 0xFF
@@ -30,6 +31,21 @@
 #define TILE_ID_CUBED 124
 
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
+
+typedef struct _mapPack {
+    SDL_Texture* mapPackTexture;
+    char mainFilePath[MAX_FILE_PATH];
+    char name[MAX_FILE_PATH];
+    char mapFilePath[MAX_FILE_PATH];
+    char tilesetFilePath[MAX_FILE_PATH];
+    char saveFilePath[MAX_FILE_PATH];
+    char scriptFilePath[MAX_FILE_PATH];
+    int initX;
+    int initY;
+    int initMap;
+    int tilesetMaps[MAX_SPRITE_MAPPINGS];
+    int numBosses;
+} mapPack;
 
 typedef struct _player {
     sprite spr;  //?
@@ -49,6 +65,7 @@ typedef struct _player {
     int lastX;
     int lastY;
     bool movementLocked;  // 1 byte
+    int defeatedBosses[10];
     char* extraData;
 } player;
 
@@ -109,6 +126,7 @@ typedef struct _spark {
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 
 int initSounds();  //inits all sounds used. Returns -5 if one can't load
+void loadMapPackData(mapPack* loadPack, char* location);  //loads map pack data
 void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
 void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
@@ -124,6 +142,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain, void (*extraDrawing)(void));  //draws a menu using the colors and options presented
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps);   //gets string input
+void saveMapPack(mapPack* writePack);  //saves map pack data to the file
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file
 void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to global player save file

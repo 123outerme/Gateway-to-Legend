@@ -86,6 +86,46 @@ int initSounds()
     return 0;
 }
 
+void loadMapPackData(mapPack* loadPack, char* location)
+{
+    char buffer[MAX_FILE_PATH];
+    strcpy(loadPack->mainFilePath, location);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 0);
+    strcpy(loadPack->name, buffer);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 1);
+    strcpy(loadPack->mapFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 2);
+    strcpy(loadPack->tilesetFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 3);
+    strcpy(loadPack->saveFilePath, buffer);
+    uniqueReadLine((char**) &buffer, MAX_FILE_PATH, location, 4);
+    strcpy(loadPack->scriptFilePath, buffer);
+    loadPack->initX = strtol(readLine(loadPack->mainFilePath, 5, (char**) &buffer), NULL, 10);
+    loadPack->initY = strtol(readLine(loadPack->mainFilePath, 6, (char**) &buffer), NULL, 10);
+    loadPack->initMap = strtol(readLine(loadPack->mainFilePath, 7, (char**) &buffer), NULL, 10);
+    for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
+        loadPack->tilesetMaps[i] = strtol(readLine(loadPack->mainFilePath, i + 8, (char**) &buffer), NULL, 10);
+
+    loadPack->numBosses = strtol(readLine(loadPack->mainFilePath, MAX_SPRITE_MAPPINGS, (char**) &buffer), NULL, 10);
+
+    int countBosses = 0;
+    for(int i = 0; i < checkFile(loadPack->scriptFilePath, -1); i++)
+    {
+        char* temp = "";
+        script aScript;
+        readScript(&aScript, readLine(loadPack->scriptFilePath, i, &temp));
+        if (aScript.action == script_boss_actions)
+            countBosses++;
+    }
+    if (countBosses != loadPack->numBosses)
+    {
+        loadPack->numBosses = countBosses;
+        saveMapPack(loadPack);
+    }
+
+    loadIMG(loadPack->tilesetFilePath, &(loadPack->mapPackTexture));
+}
+
 void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
 {
     initSprite(&(player->spr), x, y, w, h, tileIndex, angle, flip, type_player);
@@ -216,6 +256,9 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->spr.x = strtol(readLine(filePath, 1, &buffer), NULL, 10);
     playerSprite->spr.y = strtol(readLine(filePath, 2, &buffer), NULL, 10);
     playerSprite->HP = strtol(readLine(filePath, 3, &buffer), NULL, 10);
+    playerSprite->lastMap = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+    playerSprite->lastX = strtol(readLine(filePath, 5, &buffer), NULL, 10);
+    playerSprite->lastY = strtol(readLine(filePath, 6, &buffer), NULL, 10);
     playerSprite->spr.tileIndex = tileIndex;
     playerSprite->spr.w = TILE_SIZE;
     playerSprite->spr.h = TILE_SIZE;
@@ -237,8 +280,7 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->name[strnlen(playerSprite->name, 10) - 1] = 0;  //removes \n
     playerSprite->maxHP = strtol(readLine(filePath, 1, &buffer), NULL, 10);
     playerSprite->level = strtol(readLine(filePath, 2, &buffer), NULL, 10);
-    playerSprite->experience = strtol(readLine(filePath, 3, &buffer), NULL, 10);
-    playerSprite->money = strtol(readLine(filePath, 4, &buffer), NULL, 10);
+    playerSprite->money = strtol(readLine(filePath, 3, &buffer), NULL, 10);
     playerSprite->movementLocked = false;
     playerSprite->xVeloc = 0;
     playerSprite->yVeloc = 0;
@@ -536,19 +578,39 @@ void saveConfig(char* filePath)
 {
     char* buffer = "";
     createFile(filePath);
-    appendLine(filePath, intToString(SC_UP, buffer));
-    appendLine(filePath, intToString(SC_DOWN, buffer));
-    appendLine(filePath, intToString(SC_LEFT, buffer));
-    appendLine(filePath, intToString(SC_RIGHT, buffer));
-    appendLine(filePath, intToString(SC_INTERACT, buffer));
-    appendLine(filePath, intToString(SC_MENU, buffer));
-    appendLine(filePath, intToString(SC_SPECIAL, buffer));
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        appendLine(filePath, intToString(CUSTOM_SCANCODES[i], buffer));
+    }
     char newBuffer[8];
-    strcpy(newBuffer, "FPS=");
-    appendLine(filePath, strcat(newBuffer, intToString(FPS, buffer)));
+    snprintf(newBuffer, 8, "FPS=%d", FPS);
+    appendLine(filePath, newBuffer);
     appendLine(filePath, intToString(soundVolume, buffer));
     appendLine(filePath, intToString(musicVolume, buffer));
-    //alternatively, we could iterate through all of CUSTOM_SCANCODES[].
+}
+
+void saveMapPack(mapPack* writePack)
+{
+    char mapPackData[MAX_MAP_PACK_DATA][MAX_FILE_PATH];
+    char* getString = "";
+    strcpy(mapPackData[1], writePack->name);
+    strcpy(mapPackData[2], writePack->mapFilePath);
+    strcpy(mapPackData[3], writePack->tilesetFilePath);
+    strcpy(mapPackData[4], writePack->saveFilePath);
+    strcpy(mapPackData[5], writePack->scriptFilePath);
+    createFile(writePack->mainFilePath);
+
+    for(int i = 1; i < 6; i++)
+        appendLine(writePack->mainFilePath, mapPackData[i]);
+
+    appendLine(writePack->mainFilePath, intToString(writePack->initX, getString));
+    appendLine(writePack->mainFilePath, intToString(writePack->initY, getString));
+    appendLine(writePack->mainFilePath, intToString(writePack->initMap, getString));
+
+    for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
+        appendLine(writePack->mainFilePath, intToString(writePack->tilesetMaps[i], getString));
+
+    appendLine(writePack->mainFilePath, intToString(writePack->numBosses, getString));
 }
 
 void saveLocalPlayer(const player playerSprite, char* filePath)
@@ -562,6 +624,12 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.lastMap, buffer));
     appendLine(filePath, intToString(playerSprite.lastX, buffer));
     appendLine(filePath, intToString(playerSprite.lastY, buffer));
+    char* beatBosses = calloc(0, sizeof(char));
+    beatBosses[0] = '{';
+    for(int i = 0; i < 0; i++)
+    {
+        //create string of defeated boss map ids.
+    }
     //saves: map, x, y, current HP
 }
 
@@ -572,7 +640,6 @@ void saveGlobalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, (char*) playerSprite.name);
     appendLine(filePath, intToString(playerSprite.maxHP, buffer));
     appendLine(filePath, intToString(playerSprite.level, buffer));
-    appendLine(filePath, intToString(playerSprite.experience, buffer));
     appendLine(filePath, intToString(playerSprite.money, buffer));
     //saves: name, max HP, level, exp, money
 }

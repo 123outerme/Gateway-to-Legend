@@ -420,12 +420,14 @@ char* intToString(int value, char* result)
 	//printf("%s\n",result);
 	return result;
 }
+
 int digits(int num)
 {
     if (num < 0)
         num *= -1;
 	return 1 + log10(num);
 }
+
 int toPowerOf10(int power)
 {
 	int val = 1;
