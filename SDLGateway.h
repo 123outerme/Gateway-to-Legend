@@ -225,6 +225,7 @@ etc.
 #define SPARK_COLOR_GRAY ((SDL_Color) {0x60, 0x65, 0x70, 0xD0})
 #define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
 #define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
+#define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
 int FPS, targetTime;
 bool doorFlags[3];
@@ -232,7 +233,7 @@ bool noclip;
 
 int musicIndex;
 
-#define MAX_SPARKS 7
+#define MAX_SPARKS 8
 bool sparkFlag, theseSparkFlags[MAX_SPARKS];
 spark theseSparks[MAX_SPARKS];
 
@@ -245,6 +246,7 @@ Spark IDs:
 4 - Gateway
 5 - Teleporter
 6 - Command
+7 - Boss Defeat
 */
 
 #endif // SDLSEEKERS_H_INCLUDED

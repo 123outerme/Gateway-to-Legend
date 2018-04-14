@@ -1448,12 +1448,19 @@ int mainLoop(player* playerSprite)
                             executeScriptAction(&bossDeadScript, playerSprite);
                             initScript(&bossDeadScript, script_gain_exp, 0, 0, 0, 0, 0, "50");
                             executeScriptAction(&bossDeadScript, playerSprite);
+                            initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, FPS / 2, FPS / 4);
+                            sparkFlag = true;
+                            theseSparkFlags[7] = true;
+                            //play boss defeat fanfare
+                        }
+                        else
+                        {
+                            initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                            sparkFlag = true;
+                            theseSparkFlags[1] = true;
                         }
                         bossSprite.invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
-                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
-                        sparkFlag = true;
-                        theseSparkFlags[1] = true;
                     }
                 }
                 executeScriptAction(&bossScript, playerSprite);
@@ -1627,9 +1634,12 @@ void drawSparks(spark* s)
 {
     Uint8 oldR, oldG, oldB, oldA;
     SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
-    SDL_SetRenderDrawColor(mainRenderer, s->color.r, s->color.g, s->color.b, s->color.a);
     for(int i = 0; i < (s->num < 99 ? s->num : 99); i++)
     {
+        if (s->color.r == 0)
+            s->color = (SDL_Color) {.r = rand() % 256, .g = rand() % 256, .b = rand() % 256, .a = 0xFF};
+        SDL_SetRenderDrawColor(mainRenderer, s->color.r, s->color.g, s->color.b, s->color.a);
+
         if (s->timer % s->update == 0)
             s->sparkRects[i] = (SDL_Rect) {.x = s->boundsRect.x + (rand() % s->boundsRect.w), .y = s->boundsRect.y + (rand() % s->boundsRect.h), .w = 1 + rand() % s->maxW, .h = 1 + rand() % s->maxH};
         //printf("%d spark: (%d, %d) [%d, %d]\n", i, s->sparkRects[i].x, s->sparkRects[i].y, s->sparkRects[i].w, s->sparkRects[i].h);
