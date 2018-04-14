@@ -131,7 +131,6 @@ void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int a
     initSprite(&(player->spr), x, y, w, h, tileIndex, angle, flip, type_player);
     strcpy(player->name, "");
     player->level = 1;
-    player->experience = 0;
     player->money = 0;
     player->HP = DEFAULT_PLAYER_HEALTH;
     player->maxHP = DEFAULT_PLAYER_HEALTH;
@@ -164,7 +163,6 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
     free(newName);
     playerSprite->maxHP = 12;
     playerSprite->level = 1;
-    playerSprite->experience = 0;
     playerSprite->money = 0;
 	saveGlobalPlayer(*playerSprite, filePath);
     //saves: name, max HP, level, exp, money
@@ -1033,13 +1031,6 @@ bool executeScriptAction(script* scriptData, player* player)
             moveFrame++;
         }
         free(data);
-    }
-    if (scriptData->action == script_gain_exp)
-    {
-        player->experience += strtol(scriptData->data, NULL, 10);
-        if (player->experience > 9999)
-            player->experience = 9999;
-        //play animation (?) and sound
     }
     if (scriptData->action == script_gain_money)
     {

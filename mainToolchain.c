@@ -1069,10 +1069,10 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             //visualize boss actions
         }
 
-        if (editScript->action == script_gain_money || editScript->action == script_gain_exp || editScript->action == script_player_hurt)
+        if (editScript->action == script_gain_money || editScript->action == script_player_hurt)
         {
             char* message = calloc(17, sizeof(char));
-            snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : (editScript->action == script_gain_exp ? "exp" : "damage"));
+            snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
             stringInput(&data, message, 3, "0", false);
             free(message);
         }

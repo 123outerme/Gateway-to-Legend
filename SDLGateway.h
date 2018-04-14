@@ -51,7 +51,6 @@ typedef struct _player {
     sprite spr;  //?
     char name[MAX_PLAYER_NAME + 1];  //9 bytes
     int level;  //
-    int experience;  //
     int money;  //
     int HP;  //
     int maxHP;  //
@@ -86,7 +85,6 @@ typedef enum  _scriptBehavior {
     script_toggle_door,            //7 if player steps in coords or other action occurs, open a door
     script_animation,              //8 if player steps in coords, do animation
     script_boss_actions,           //9 if boss is still alive, execute boss actions
-    script_gain_exp,               //19 gives player some EXP. Don't abuse please
     script_gain_money,             //11 gives player some money. Please don't abuse also
     script_player_hurt,            //12 hurts the player by <data> amount
     script_placeholder,            //13 ?

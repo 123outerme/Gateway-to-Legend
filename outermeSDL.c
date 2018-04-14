@@ -163,11 +163,11 @@ void initSprite(sprite* spr, int x, int y, int w, int h, int tileIndex, int angl
 	spr->type = type;
 }
 
-void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int hideTileNumOf, bool updateScreen)
+void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, int hideTileNumOf, bool updateScreen)
 {
     for(int dy = startY; dy < endY; dy++)
         for(int dx = startX; dx < endX; dx++)
-            drawATile(texture, map[dy][dx] == hideTileNumOf ? 0 : map[dy][dx], dx * TILE_SIZE, dy * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+            drawATile(texture, map[dy][dx] == hideTileNumOf ? 0 : map[dy][dx], dx * TILE_SIZE + xOffset, dy * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     if (updateScreen)
         SDL_RenderPresent(mainRenderer);
 }

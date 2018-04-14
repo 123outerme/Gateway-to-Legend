@@ -81,9 +81,7 @@ bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file i
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text
 void initSprite(sprite* spr, int x, int y, int w, int h, int tileIndex, int angle, SDL_RendererFlip flip, entityType type);  //initializes a new sprite
-void drawTilemap(int startX, int startY, int endX, int endY, bool updateScreen);  //draws a tilemap to the screen
-void drawTile(int id, int xCoord, int yCoord, int width, int angle, SDL_RendererFlip flip);  //draws a tile to the screen
-void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int hideTileNumOf, bool updateScreen);  //draws a tilemap from a given tileset texture.
+void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, int hideTileNumOf, bool updateScreen);  //draws a tilemap from a given tileset texture.
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
 SDL_Keycode getKey();  //gets a keycode that was pressed, or none if none was pressed during collection
