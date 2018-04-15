@@ -13,9 +13,49 @@
 	  <link rel="icon" type="image/ico" href="favicon.ico">
   </head>
   <body>
+	<div class="navbar">
+			<a href="index.html">Home</a>
+			<a href="screenshots.html">Screenshots</a>
+			<a href="mappacks.html">Map-Packs</a>
+			<div class="dropdown"><button class="dropparent">Create <i class="fa fa-caret-down"></i></button>
+			<div class="dropdown-content">
+				<a href="creation.html">Getting Started</a>
+				<a href="map-coords.html">Map Coord Tool</a>
+				<a class="active" href="scripts.html">Scripts</a>
+			</div></div>
+			<a href="faq.html">FAQ</a>
+			<a href="https://github.com/123outerme/Gateway-to-Legend">Github</a>
+			<a href="https://github.com/123outerme/Gateway-to-Legend/releases">Download</a>
+			<a href="contact.html">Contact</a>
+		</div>
     <h1>Scripts, Script Files, and the Script Editor</h1>
-    <p>Give me a minute to add stuff here.</p>
-    <br />
+	<h2>What Are Scripts?</h2>
+    <p>A script is a line of data that corresponds to a certain action. This allows you to customize your experience with text boxes, bosses, teleporting, etc., further livening up your map-pack. A script looks something like this: <br />
+	<strong><code>{5,0,864,48,48,48,[1/48/48]}</code></strong> or <strong><code>{scriptID, mapID, x, y, w, h, extraData}</code></strong> <br / >
+	<strong><code>scriptID</code></strong> designates what action should be taken when the script is triggered. <strong><code>mapID, x, y, w, h</code></strong> designate in what map, at what (x,y) coordinate, and within an area (w,h) wide, is the script triggered. <strong><code>extraData</code></strong> is essentially the arguments passed to execution when the script is run. <br /> In the example, a script type 5, or gateway script, is run when the player gets within (48,48) of (864,48) on map 0. If they do, they are teleported to map 1, with an x/y of (48,48).</p>
+	<h2>What Is A Script File?</h2>
+	<p>A script file is the file that holds all of your scripts. Each script only uses one line (or two in the case of a boss). These scripts are bundled together for your map-pack in the script file. Note that only one script per line will be read. If you have two stacked next to each other, they won't be read, and could perhaps cause errors with your scripts running.</p>
+	<h2>How Do I Make Scripts?</h2>
+    <p>To create a script, pick the Script Editor option in the Tools menu. Select which type of action you would like to program and hit start. Maneuver the cursor using <strong><kbd>Up/Down/Left/Right</kbd></strong> <em>(default WASD)</em>, and place the X,Y coordinate of your script using <strong><kbd>Interact</kbd></strong> <em>(default Space)</em>. <wbr />
+		Then, you must set the width and height of your script. To change the amount your w/h increment and decrement by from a 1/8 of a tile to a full tile, press <strong><kbd>Attack</kbd></strong> <em>(default Left Shift)</em>. To switch back, press it again. This option is especially useful for defining the size of a boss. <wbr />
+		Press <strong><kbd>Interact</kbd></strong> again to place your width and height. Depending on what script you chose, you'll have to input extra data. After that, it'll append your script to your script file. If you loaded a script instead of creating a new one, remember to remove the old script from your file. <strong>If the second number, the <code>mapID</code>, is -1, change that number to the map ID of the map it's occuring on. The map ID is equal to the line number of the map - 1.</strong></p>
+	<h2>What Are All The Script Types And What Do They Do?</h2>
+	<ol start="0">
+		<li>script_none - Default, do nothing</li>
+		<li>script_trigger_dialogue - If player steps in coords & presses Interact, triggers a dialogue/text box</li>
+		<li>script_trigger_dialogue_once - Same as above, but just once.</li>
+		<li>script_trigger_boss - If player steps in coords, spawn boss</li>
+		<li>script_switch_maps - Triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter</li>
+		<li>script_use_gateway - Triggers a playing of an animation followed by a switching of rooms. Only activated when on top of a gateway.</li>
+		<li>script_use_teleporter - Teleports to a location in the same map. Also only activated when on top of a teleporter.</li>
+		<li>script_toggle_door - If player steps in coords, open/close doors</li>
+		<li>script_animation - If player steps in coords, do animation</li>
+		<li>script_boss_actions - if boss is still alive, execute boss actions. This also holds boss data.</li>
+		<li>script_gain_money - gives player some money. Please don't abuse this.</li>
+		<li>script_player_hurt - hurts the player by <strong><code>extraData</code></strong> amount</li>
+		<li>script_placeholder - TBD</li>
+	</ol>
+	<br />
     <a href="index.html" class="center" style="max-width: 250px;">Go back to the main page.</a>
     <a href="screenshots.html">See my screenshots and videos.</a> <br />
 	  <a href="mappacks.html">See the standard map-pack set.</a> <br />
