@@ -547,7 +547,7 @@ void soundTestMenu()
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 23;
-    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Gateway to Action", "Fanfare", "Game Over", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
+    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Boss Theme", "Fanfare", "Game Over", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
     int soundIndex = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
