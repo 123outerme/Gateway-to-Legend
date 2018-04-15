@@ -444,12 +444,13 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                 }
                 if (isMain && ((keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_M]))
                 {
-                    static int prevMusicVolume = musicVolume;
-                    static int prevSoundVolume = soundVolume;
+                    static int prevMusicVolume = 0;
+                    static int prevSoundVolume = 0;
                     if (musicVolume != 0 && soundVolume != 0)
                     {
-                        prevMusicVolume = musicVolume;
-                        prevSoundVolume = soundVolume;
+
+                        prevMusicVolume = (musicVolume ? musicVolume : MIX_MAX_VOLUME);
+                        prevSoundVolume = (soundVolume ? soundVolume : MIX_MAX_VOLUME);
                         musicVolume = 0;
                         soundVolume = 0;
                     }
