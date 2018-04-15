@@ -1491,7 +1491,8 @@ int mainLoop(player* playerSprite)
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
                             || (thisScript->action == script_trigger_boss && (thisScript->data[0] == '\0' || !tryLoadBoss)) || thisScript->action == script_none)
                             thisScript->active = false;
-                        break;
+                        else
+                            break;
                     }
                 }
             }

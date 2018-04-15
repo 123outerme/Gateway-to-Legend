@@ -733,8 +733,8 @@ int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 14;
-    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
+    const int optionsSize = 13;
+    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -887,7 +887,6 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 y1 = cursor.y;
                 cursor.x = x1 + cursor.w;
                 cursor.y = y1 + cursor.h;
-                intervalSize = 6;
                 editXY = false;
             }
             else
