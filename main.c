@@ -215,6 +215,7 @@ int main(int argc, char* argv[])
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
             }
+            maxBosses = strtol(readLine(mainFilePath, 8 + MAX_SPRITE_MAPPINGS, &buffer), NULL, 10);
             quitGame = aMenu(tilesTexture, CURSOR_ID, readLine(mainFilePath, 0, &buffer), (char*[3]) {"New Game", "Load Game", "Back"}, 3, 2, AMENU_MAIN_THEME, true, false, NULL);
             if (quitGame == 3 || quitGame == -1)
             {
@@ -946,25 +947,35 @@ int mainLoop(player* playerSprite)
         }
     }
     enemyFlags[MAX_ENEMIES] = false;
-    for(int i = 0; i < maxTheseScripts; i++)
-    {
-        if (theseScripts[i]->action == script_boss_actions)
-        {
-            bossScript = *theseScripts[i];
-            char* data = calloc(99, sizeof(char));
-            bossSprite.spr.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
-            if (!loadBoss)
-            {
-                bossScript.x = bossSprite.spr.x;
-                bossScript.y = bossSprite.spr.y;
-            }
-            else
-                bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
 
-            initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
-            loadBoss = false;
-            free(data);
-            break;
+    bool tryLoadBoss = true;
+    for(int i = 0; i < playerSprite->nextBossPos; i++)
+    {
+        if (playerSprite->defeatedBosses[i] == playerSprite->mapScreen)
+            tryLoadBoss = false;
+    }
+    if (tryLoadBoss)
+    {
+        for(int i = 0; i < maxTheseScripts; i++)
+        {
+            if (theseScripts[i]->action == script_boss_actions)
+            {
+                bossScript = *theseScripts[i];
+                char* data = calloc(99, sizeof(char));
+                bossSprite.spr.tileIndex = strtol(strtok(strcpy(data, bossScript.data), "[/]"), NULL, 10);
+                if (!loadBoss)
+                {
+                    bossScript.x = bossSprite.spr.x;
+                    bossScript.y = bossSprite.spr.y;
+                }
+                else
+                    bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
+
+                initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
+                loadBoss = false;
+                free(data);
+                break;
+            }
         }
     }
     checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
@@ -1449,7 +1460,8 @@ int mainLoop(player* playerSprite)
                             initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, FPS / 2, FPS / 4);
                             sparkFlag = true;
                             theseSparkFlags[7] = true;
-                            Mix_PlayMusic(MUSIC(6), 0);  //fanfare
+                            playerSprite->defeatedBosses[playerSprite->nextBossPos++] = playerSprite->mapScreen;
+                            Mix_PlayMusic(MUSIC((musicIndex = 6)), 0);  //fanfare
                             Mix_HookMusicFinished(playOverworldMusic);
                         }
                         else
@@ -1477,7 +1489,7 @@ int mainLoop(player* playerSprite)
                         thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && (thisScript->data[0] == '\0')) || thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && (thisScript->data[0] == '\0' || !tryLoadBoss)) || thisScript->action == script_none)
                             thisScript->active = false;
                         break;
                     }
@@ -1685,7 +1697,7 @@ void drawSparks(spark* s)
     SDL_GetRenderDrawColor(mainRenderer, &oldR, &oldG, &oldB, &oldA);
     for(int i = 0; i < (s->num < 99 ? s->num : 99); i++)
     {
-        if (s->color.r == 0)
+        if (s->color.a == 0)
             s->color = (SDL_Color) {.r = rand() % 256, .g = rand() % 256, .b = rand() % 256, .a = 0xFF};
         SDL_SetRenderDrawColor(mainRenderer, s->color.r, s->color.g, s->color.b, s->color.a);
 

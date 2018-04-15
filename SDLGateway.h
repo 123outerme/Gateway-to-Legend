@@ -65,6 +65,7 @@ typedef struct _player {
     int lastY;
     bool movementLocked;  // 1 byte
     int defeatedBosses[10];
+    int nextBossPos;
     char* extraData;
 } player;
 
@@ -85,9 +86,9 @@ typedef enum  _scriptBehavior {
     script_toggle_door,            //7 if player steps in coords or other action occurs, open a door
     script_animation,              //8 if player steps in coords, do animation
     script_boss_actions,           //9 if boss is still alive, execute boss actions
-    script_gain_money,             //11 gives player some money. Please don't abuse also
-    script_player_hurt,            //12 hurts the player by <data> amount
-    script_placeholder,            //13 ?
+    script_gain_money,             //10 gives player some money. Please don't abuse also
+    script_player_hurt,            //11 hurts the player by <data> amount
+    script_placeholder,            //12 ?
 } scriptBehavior;
 
 typedef struct _script {
@@ -247,6 +248,11 @@ etc.
 int FPS, targetTime;
 bool doorFlags[3];
 bool noclip;
+
+char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
+saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
+
+int maxBosses;
 
 int musicIndex;
 

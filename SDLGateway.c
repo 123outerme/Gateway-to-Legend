@@ -152,6 +152,11 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 {
     initPlayer(playerSprite, x, y, w, h, mapScreen, angle, flip, tileIndex);
     playerSprite->HP = playerSprite->maxHP;
+    for(int i = 0; i < maxBosses; i++)
+    {
+        playerSprite->defeatedBosses[i] = -1;
+    }
+    playerSprite->nextBossPos = 0;
     saveLocalPlayer(*playerSprite, filePath);
 }
 
@@ -257,6 +262,19 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->lastMap = strtol(readLine(filePath, 4, &buffer), NULL, 10);
     playerSprite->lastX = strtol(readLine(filePath, 5, &buffer), NULL, 10);
     playerSprite->lastY = strtol(readLine(filePath, 6, &buffer), NULL, 10);
+    char* data = readLine(filePath, 7, &data);
+    char* dataCpy = calloc(3 * maxBosses, sizeof(data));
+    strcpy(dataCpy, data);
+    playerSprite->defeatedBosses[0] = strtol(strtok(dataCpy, "{,}"), NULL, 10);
+    playerSprite->nextBossPos = -1;
+    if (playerSprite->defeatedBosses[0] == -1)
+            playerSprite->nextBossPos = 0;
+    for(int i = 1; i < maxBosses; i++)
+    {
+        playerSprite->defeatedBosses[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
+        if (playerSprite->defeatedBosses[i] == -1 && playerSprite->nextBossPos == -1)
+            playerSprite->nextBossPos = i;
+    }
     playerSprite->spr.tileIndex = tileIndex;
     playerSprite->spr.w = TILE_SIZE;
     playerSprite->spr.h = TILE_SIZE;
@@ -622,12 +640,15 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.lastMap, buffer));
     appendLine(filePath, intToString(playerSprite.lastX, buffer));
     appendLine(filePath, intToString(playerSprite.lastY, buffer));
-    char* beatBosses = calloc(0, sizeof(char));
+    char* beatBosses = calloc(maxBosses * 3, sizeof(char));
     beatBosses[0] = '{';
-    for(int i = 0; i < 0; i++)
+    for(int i = 0; i < maxBosses; i++)
     {
-        //create string of defeated boss map ids.
+        strcat(beatBosses, intToString(playerSprite.defeatedBosses[i], buffer));
+        strcat(beatBosses, (i < maxBosses - 1) ?  "," : "}");
     }
+    appendLine(filePath, beatBosses);
+    free(beatBosses);
     //saves: map, x, y, current HP
 }
 
@@ -1080,5 +1101,5 @@ void SDLCALL playMainMusic()
 void SDLCALL playOverworldMusic()
 {
     if (musicIndex < 2 || musicIndex > 4)
-        Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);
+        Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);\
 }
