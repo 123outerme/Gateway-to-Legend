@@ -150,6 +150,10 @@ th, td {
     text-align: left;
 }
 
+.dropdown-content a.active {
+	background-color: #a3a3a3;
+}
+
 .dropdown-content a:hover {
     background-color: #ddd;
 }
