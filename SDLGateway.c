@@ -27,9 +27,9 @@ int initSounds()
     if (!MUSIC(6))
         return -5;
 
-    /*MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);
+    MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);  //Gateway to Legend: Gateway to Retry by Ian Groat
     if (!MUSIC(7))
-        return -5;*/
+        return -5;
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
     if (!UNSHEATH_SOUND)
