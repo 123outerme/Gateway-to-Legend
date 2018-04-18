@@ -384,7 +384,7 @@ int mainMapCreator(mapPack* workingPack)
 
         if (newChoice == 1)
         {
-            writeTileData(*workingPack, creator.mapScreen);
+            writeTileData(*workingPack, -1);
             writeScriptData(*workingPack, mapScripts, scriptCount);
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
@@ -683,12 +683,17 @@ void writeTileData(mapPack workingPack, int line)
     }
     //printf(">%s\n", output);
 
-    if (line > 0)
+    if (line > 0)  //note: not working  //adds into file
     {
         int lines = checkFile(workingPack.mapFilePath, -1);
         char** entireFile = calloc(lines, sizeof(char*));
+        printf("%d\n", lines);
         for(int i = 0; i < lines; i++)  //alloc
-            uniqueReadLine(&(entireFile[i]), 1200, workingPack.mapFilePath, i);
+        {
+            entireFile[i] = calloc(1200, sizeof(char));
+            uniqueReadLine((char**) &(entireFile[i]), 1200, workingPack.mapFilePath, i);
+            printf("-%d - %s\n", i, entireFile[i]);
+        }
 
         strncpy(entireFile[line], output, 1200);
 
