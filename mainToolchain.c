@@ -62,7 +62,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 void viewMap(mapPack workingPack, int thisLineNum, bool drawLineNum, bool update);
 int chooseMap(mapPack workingPack);
 void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
-void writeTileData();
+void writeTileData(mapPack workingPack, int line);
 //^map creator functions.
 
 //V script editor functions
@@ -364,7 +364,10 @@ int mainMapCreator(mapPack* workingPack)
         loadIMG(MAIN_TILESET, &mainTilesetTexture);
         player creator;
         initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
-        creator.mapScreen = -1;
+        if (choice == 1)
+        {
+            creator.mapScreen = chooseMap(*workingPack);
+        }
         if (choice == 2)
         {
             creator.mapScreen = chooseMap(*workingPack);
@@ -375,11 +378,13 @@ int mainMapCreator(mapPack* workingPack)
         int scriptCount = 0;
         script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
 
-        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL);
+        int newChoice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL);
 
-        if (choice == 1)
+
+
+        if (newChoice == 1)
         {
-            writeTileData();
+            writeTileData(*workingPack, creator.mapScreen);
             writeScriptData(*workingPack, mapScripts, scriptCount);
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
@@ -659,10 +664,8 @@ void drawMaps(mapPack workingPack, int thisTilemap[][WIDTH_IN_TILES], int startX
         SDL_RenderPresent(mainRenderer);
 }
 
-void writeTileData()
+void writeTileData(mapPack workingPack, int line)
 {
-    char* outputFile = "output/map.txt";
-    createFile(outputFile);
     char input[2];
     char output[1201];
     input[0] = '\0';
@@ -679,7 +682,29 @@ void writeTileData()
         }
     }
     //printf(">%s\n", output);
-    appendLine("output/map.txt", output);
+
+    if (line > 0)
+    {
+        int lines = checkFile(workingPack.mapFilePath, -1);
+        char** entireFile = calloc(lines, sizeof(char*));
+        for(int i = 0; i < lines; i++)  //alloc
+            uniqueReadLine(&(entireFile[i]), 1200, workingPack.mapFilePath, i);
+
+        strncpy(entireFile[line], output, 1200);
+
+        createFile(workingPack.mapFilePath);
+        for(int i = 0; i < lines; i++)
+            appendLine(workingPack.mapFilePath, entireFile[i]);
+
+        for(int i = 0; i < lines; i++)  //dealloc
+            entireFile[i] = freeThisMem((void*) entireFile[i]);
+    }
+    else
+    {
+        char* outputFile = "output/map.txt";
+        createFile(outputFile);
+        appendLine("output/map.txt", output);
+    }
 }
 
 

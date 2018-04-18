@@ -1572,6 +1572,8 @@ int mainLoop(player* playerSprite)
     {
         exitCode = 1;
         playerSprite->HP = playerSprite->maxHP;
+        Mix_PlayMusic(MUSIC(7), -1);
+        Mix_HookMusicFinished(playMainMusic);
     }
     if (theseScripts)
         free(theseScripts);
