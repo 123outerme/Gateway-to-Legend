@@ -887,8 +887,9 @@ bool executeScriptAction(script* scriptData, player* player)
             SDL_Delay(5);
         }
         //fade to white while displaying boss
-        free(data);
-        scriptData->data[0] = '\0';
+        bossLoaded = true;
+		free(data);
+		strncpy(scriptData->data, "-1", 2);
     }
     if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')
     {
@@ -1094,7 +1095,7 @@ bool executeScriptAction(script* scriptData, player* player)
         }
         //play animation (?) and sound
     }
-    scriptData->active = false;
+		scriptData->active = false;
     return exitGameLoop;  //returns whether or not it wants to exit the game loop
 }
 
@@ -1106,5 +1107,5 @@ void SDLCALL playMainMusic()
 void SDLCALL playOverworldMusic()
 {
     if (musicIndex < 2 || musicIndex > 4)
-        Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);\
+        Mix_PlayMusic(MUSIC((musicIndex = 2 + rand() % 3)), -1);
 }

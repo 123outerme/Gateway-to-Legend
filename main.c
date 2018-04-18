@@ -547,7 +547,7 @@ void soundTestMenu()
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
     const int optionsSize = 23;
-    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Boss Theme", "Fanfare", "Game Over", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
+    char* optionsArray[] = {"Cancel Playback", "Main Theme", "Overworld 1", "Overworld 2", "Overworld 3", "Boss Theme", "Fanfare", "Gateway to Retry", "Reserved", "Unsheath", "Option", "Cursor", "Step 1", "Step 2", "Step 3", "Sword Swing", "Gateway In", "Gateway Out", "Door", "Coins", "Player Hurt", "Enemy Hurt", "Teleport"};
     int soundIndex = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -949,6 +949,7 @@ int mainLoop(player* playerSprite)
     enemyFlags[MAX_ENEMIES] = false;
 
     bool tryLoadBoss = true;
+	bossLoaded = false;
     for(int i = 0; i < playerSprite->nextBossPos; i++)
     {
         if (playerSprite->defeatedBosses[i] == playerSprite->mapScreen)
@@ -970,9 +971,10 @@ int mainLoop(player* playerSprite)
                 }
                 else
                     bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
-
+				
                 initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
                 loadBoss = false;
+				//bossScript.active = false;
                 free(data);
                 break;
             }
@@ -1430,7 +1432,7 @@ int mainLoop(player* playerSprite)
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
-            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
+            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && bossLoaded)
             {
                 if (!noclip && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
@@ -1489,7 +1491,7 @@ int mainLoop(player* playerSprite)
                         thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && (thisScript->data[0] == '\0' || !tryLoadBoss)) || thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && !strncmp(thisScript->data, "-1", 2)) || thisScript->action == script_none)
                             thisScript->active = false;
                         else
                             break;
@@ -1527,7 +1529,7 @@ int mainLoop(player* playerSprite)
             if (enemies[i].spr.type != type_na)
                 drawATile(tilesTexture, enemies[i].spr.tileIndex, enemies[i].spr.x, enemies[i].spr.y, enemies[i].spr.w, enemies[i].spr.h, 0, enemies[i].spr.flip);
         }
-        if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && !firstBossFrame)
+        if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && bossLoaded)
         {
             drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
             /*for(int i = 0; i < bossTiles; i++)

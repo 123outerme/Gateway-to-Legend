@@ -104,6 +104,8 @@ SDL_Surface* mainScreen;
 SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
+char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
+saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 Mix_Chunk* audioArray[MAX_SOUNDS];
 Mix_Music* musicArray[MAX_MUSIC];

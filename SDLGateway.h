@@ -4,7 +4,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
-#define VERSION_NUMBER "1.0.0a"
+#define VERSION_NUMBER "1.0.1a"
 
 #define SAVE_FILE_LINES 0
 #define MAX_PLAYER_NAME 8
@@ -253,7 +253,7 @@ char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[M
 saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 
 int maxBosses;
-
+bool bossLoaded;
 int musicIndex;
 
 #define MAX_SPARKS 8

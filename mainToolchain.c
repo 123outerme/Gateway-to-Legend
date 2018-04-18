@@ -28,7 +28,7 @@
 //^map creator defines. v map-pack wizard defines
 
 #define MAX_SPRITE_MAPPINGS 20
-#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the Gateway.", "Pick the weak enemy.", "Pick the ghost enemy.", "Pick the strong enemy.", "Pick the gold.", "Pick the NPC."}
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the weak enemy.", "Pick the ghost enemy.", "Pick the strong enemy.", "Pick the gold.", "Pick the NPC."}
 
 #define MAIN_HELP_TEXT "Make map-packs using this toolchain! Create maps, scripts, and setup your files and tileset using this. To navigate, use the keys you set up in the main program."
 #define SCRIPT_HELP_TEXT "Use your movement keys to maneuver between maps and to the tile you want. Press Confirm to \"drop the anchor\" there. Set the width and height next. Toggle interval between 1/8 tile and a full tile using Attack."
@@ -105,7 +105,7 @@ int toolchain_main()
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Back"}, 5, 1, AMENU_MAIN_THEME, true, false, NULL);
+        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false, NULL);
         if (code == 1)
         {
             createMapPack(&workingPack);
@@ -156,6 +156,7 @@ int toolchain_main()
         if (proceed && code < 4 && workingPack.mainFilePath[0] != '/')
             subMain(&workingPack);
     }
+	SDL_SetWindowTitle(mainWindow, "Gateway to Legend");
     return 0;
 }
 
@@ -278,10 +279,9 @@ void createMapPack(mapPack* newPack)
 
 void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
 {
-    *x = 0, *y = 0;
-    if (*map == -1)
-        *map = chooseMap(workingPack);
+    *map = 0, *x = 0, *y = 0;
     SDL_Keycode key = 0;
+    *map = chooseMap(workingPack);
     bool inQuit = false;
     while(!inQuit)
     {
@@ -549,7 +549,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                 else
                     eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
 
-            if (playerSprite->spr.tileIndex == 10)  //gateway
+            if (playerSprite->spr.tileIndex == 10)  //warp gate
                 {
                     script gateScript;
                     int map = 0, x = 0, y = 0;
@@ -724,9 +724,7 @@ void mainScriptEdtior(mapPack* workingPack)
 
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
-            char* text = calloc(150, sizeof(char));
-            snprintf(text, 150, "Appended to your script file.%s\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", (scriptNum == 0 ? " Please delete the old script." : ""));
-            drawText(text, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+            drawText("Appended to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
             waitForKey();
         }
     }
@@ -736,8 +734,8 @@ int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 13;
-    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainMoney", "HurtPlayer", "placeholder"};
+    const int optionsSize = 14;
+    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -890,6 +888,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 y1 = cursor.y;
                 cursor.x = x1 + cursor.w;
                 cursor.y = y1 + cursor.h;
+                intervalSize = 6;
                 editXY = false;
             }
             else
@@ -969,16 +968,11 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             snprintf(data, 3, "%d", bossLineArray[foundIndex]);
         }
 
-        if (editScript->action == script_switch_maps || editScript->action == script_use_teleporter || editScript->action == script_use_gateway)
+        if (editScript->action == script_switch_maps)
         {
-            int map = -1, x = 0, y = 0;
-            if (editScript->action == script_use_teleporter)
-                map = editScript->mapNum;
+            int map = 0, x = 0, y = 0;
             locationSelectLoop(workingPack, &map, &x, &y);
-            if (editScript->action != script_use_teleporter)
-                snprintf(data, 14, "[%d/%d/%d]", map, x, y);
-            else
-                snprintf(data, 10, "[%d/%d]", x, y);
+            snprintf(data, 12, "[%d/%d/%d]", map, x, y);
         }
 
         if (editScript->action == script_toggle_door)
@@ -1283,11 +1277,6 @@ void editTileEquates(mapPack* workingPack)
     }
     loadTTFont(FONT_FILE_NAME, &mainFont, 48);
 }
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
-#define SCREEN_WIDTH TILE_SIZE * 20
-#define SCREEN_HEIGHT TILE_SIZE * 15
 
 void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray)
 {
