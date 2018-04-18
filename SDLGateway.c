@@ -145,6 +145,7 @@ void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int a
     player->lastX = -1;
     player->lastY = -1;
     player->lastDirection = 8; //facing right
+    player->nextBossPos = 0;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -156,7 +157,6 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
     {
         playerSprite->defeatedBosses[i] = -1;
     }
-    playerSprite->nextBossPos = 0;
     saveLocalPlayer(*playerSprite, filePath);
 }
 
@@ -889,7 +889,6 @@ bool executeScriptAction(script* scriptData, player* player)
         //fade to white while displaying boss
         bossLoaded = true;
 		free(data);
-		strncpy(scriptData->data, "-1", 2);
     }
     if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')
     {

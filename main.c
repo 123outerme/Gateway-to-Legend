@@ -283,6 +283,7 @@ int main(int argc, char* argv[])
                 enemyFlags[i] = true;
             person.invincCounter = 0;
             loadBoss = true;
+            bossLoaded = false;
             if (choice == 2)
                 smoothScrolling(&person, person.mapScreen, (person.mapScreen - lastMap) % 10, (person.mapScreen - lastMap) / 10);
             break;
@@ -909,7 +910,6 @@ int mainLoop(player* playerSprite)
 {
     SDL_Event e;
 	bool quit = false, drawFPS = false;
-	static bool firstBossFrame = true;
 	//static bool textBoxOn = false;
 	char mapFilePath[MAX_FILE_PATH];
 	strcpy(mapFilePath, playerSprite->extraData);
@@ -948,14 +948,13 @@ int mainLoop(player* playerSprite)
     }
     enemyFlags[MAX_ENEMIES] = false;
 
-    bool tryLoadBoss = true;
-	bossLoaded = false;
+    bool bossUndefeated = true;
     for(int i = 0; i < playerSprite->nextBossPos; i++)
     {
         if (playerSprite->defeatedBosses[i] == playerSprite->mapScreen)
-            tryLoadBoss = false;
+            bossUndefeated = false;
     }
-    if (tryLoadBoss)
+    if (bossUndefeated)
     {
         for(int i = 0; i < maxTheseScripts; i++)
         {
@@ -971,7 +970,7 @@ int mainLoop(player* playerSprite)
                 }
                 else
                     bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
-				
+
                 initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
                 loadBoss = false;
 				//bossScript.active = false;
@@ -1491,7 +1490,7 @@ int mainLoop(player* playerSprite)
                         thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && !strncmp(thisScript->data, "-1", 2)) || thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)) || thisScript->action == script_none)
                             thisScript->active = false;
                         else
                             break;
@@ -1535,8 +1534,6 @@ int mainLoop(player* playerSprite)
             /*for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);*/
         }
-        else
-            firstBossFrame = false;
 
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
