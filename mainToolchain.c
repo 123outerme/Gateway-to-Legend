@@ -105,7 +105,7 @@ int toolchain_main()
             resumeStr += 10;  //pointer arithmetic to get rid of the "map-packs/" part of the string (use 9 instead to include the /)
         else
             resumeStr = "(No Resume)\0";
-        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, false, NULL);
+        int code = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend Toolchain", (char*[5]) {"New Map-Pack", "Load Map-Pack", resumeStr, "Info/Help", "Back"}, 5, 1, AMENU_MAIN_THEME, true, false, NULL);
         if (code == 1)
         {
             createMapPack(&workingPack);
