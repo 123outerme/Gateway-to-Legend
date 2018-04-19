@@ -3,7 +3,7 @@
 // ++ outermeSDL version 1.2 - last update 1/1/2018 ++
 
 
-int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int windowWidth, int windowHeight, int fontSize)
+int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, char* iconPath, int windowWidth, int windowHeight, int fontSize)
 {
     int done = 0;
     mainWindow = NULL;
@@ -60,7 +60,7 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int win
             }
             else
             {
-                SDL_Surface* iconSurface = IMG_Load("icon.png");
+                SDL_Surface* iconSurface = IMG_Load(iconPath);
                 SDL_SetWindowIcon(mainWindow, iconSurface);
                 SDL_FreeSurface(iconSurface);
                 SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);

@@ -17,8 +17,7 @@
 //SDL_SCANCODE_SPACE
 //SDL_SCANCODE_ESCAPE
 
-#define CACHE_NAME "GtLToolchainCache.cfg"
-#define CONFIG_FILEPATH "GatewayToLegend.cfg"
+#define CACHE_NAME "assets/GtLToolchainCache.cfg"
 
 #define drawSprite(spr, flip) drawTile(spr.tileIndex, spr.x, spr.y, spr.w, flip)
 #define WINDOW_NAME "Gateway to Legend Map Creator"

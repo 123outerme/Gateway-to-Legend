@@ -11,7 +11,7 @@
 #define MAX_PLAYER_HEALTH 32
 #define DEFAULT_PLAYER_HEALTH 12
 #define GAME_WINDOW_NAME "Gateway to Legend"
-#define CONFIG_FILEPATH "GatewayToLegend.cfg"
+#define CONFIG_FILEPATH "assets/GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
 #define GLOBALSAVE_FILEPATH "saves/GATEWAY_MAIN.txt"
 #define MAP_PACKS_SUBFOLDER "map-packs/"
@@ -186,19 +186,19 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_SOUND audioArray[13]
 #define TELEPORT_SOUND audioArray[14]
 
-#define RESERVED_FILE "audio/.ogg"
-#define UNSHEATH_FILE "audio/unsheath.ogg"
-#define OPTION_FILE "audio/unsheath_bass.ogg"
-#define PING_FILE "audio/menu.ogg"
-#define SWING_FILE "audio/swing.ogg"
-#define STEP_FILE "audio/step"  //this is like this on purpose, for some strcat() stuff
-#define GATEWAYSTART_FILE "audio/gateway1.ogg"
-#define GATEWAYEND_FILE "audio/gateway2.ogg"
-#define DOOROPEN_FILE "audio/doorOpen.ogg"
-#define CASH_FILE "audio/coin.ogg"
-#define PLAYERHURT_FILE "audio/playerHurt.ogg"
-#define ENEMYHURT_FILE "audio/enemyHurt.ogg"
-#define TELEPORT_FILE "audio/teleport.ogg"
+#define RESERVED_FILE "assets/audio/.ogg"
+#define UNSHEATH_FILE "assets/audio/unsheath.ogg"
+#define OPTION_FILE "assets/audio/unsheath_bass.ogg"
+#define PING_FILE "assets/audio/menu.ogg"
+#define SWING_FILE "assets/audio/swing.ogg"
+#define STEP_FILE "assets/audio/step"  //this is like this on purpose, for some strcat() stuff
+#define GATEWAYSTART_FILE "assets/audio/gateway1.ogg"
+#define GATEWAYEND_FILE "assets/audio/gateway2.ogg"
+#define DOOROPEN_FILE "assets/audio/doorOpen.ogg"
+#define CASH_FILE "assets/audio/coin.ogg"
+#define PLAYERHURT_FILE "assets/audio/playerHurt.ogg"
+#define ENEMYHURT_FILE "assets/audio/enemyHurt.ogg"
+#define TELEPORT_FILE "assets/audio/teleport.ogg"
 
 #define RESERVED_CHANNEL channelArray[0]
 #define UNSHEATH_CHANNEL channelArray[1]
@@ -213,13 +213,13 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_CHANNEL channelArray[12]
 #define TELEPORT_CHANNEL channelArray[13]
 
-#define MAIN_MUSIC_FILE "audio/mainTheme.mp3"
-#define OVERWORLD1_MUSIC_FILE "audio/GtL3.mp3"
-#define OVERWORLD2_MUSIC_FILE "audio/GtL5.mp3"
-#define OVERWORLD3_MUSIC_FILE "audio/.mp3"
-#define BOSS_MUSIC_FILE "audio/gatewayIntoAction.mp3"
-#define FANFARE_MUSIC_FILE "audio/GtL4.mp3"
-#define GAMEOVER_MUSIC_FILE "audio/gatewayToRetry.mp3"
+#define MAIN_MUSIC_FILE "assets/audio/mainTheme.mp3"
+#define OVERWORLD1_MUSIC_FILE "assets/audio/GtL3.mp3"
+#define OVERWORLD2_MUSIC_FILE "assets/audio/GtL5.mp3"
+#define OVERWORLD3_MUSIC_FILE "assets/audio/.mp3"
+#define BOSS_MUSIC_FILE "assets/audio/gatewayIntoAction.mp3"
+#define FANFARE_MUSIC_FILE "assets/audio/GtL4.mp3"
+#define GAMEOVER_MUSIC_FILE "assets/audio/gatewayToRetry.mp3"
 
 /*
 Sound effects should play upon walking

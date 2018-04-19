@@ -76,7 +76,7 @@ typedef struct
     entityType type;
 } sprite;
 
-int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, int windowWidth, int windowHeight, int fontSize);  //inits SDL and related stuff
+int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, char* iconPath, int windowWidth, int windowHeight, int fontSize);  //inits SDL and related stuff
 bool loadIMG(char* imgPath, SDL_Texture** dest);  //loads an image from a file into a texture
 bool loadTTFont(char* filePath, TTF_Font** dest, int sizeInPts);  //loads a .ttf file into an SDL font
 int* loadTextTexture(char* text, SDL_Texture** dest, int maxW, SDL_Color color, int isBlended);  //loads a texture from inputted text

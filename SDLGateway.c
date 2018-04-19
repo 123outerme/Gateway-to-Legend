@@ -45,8 +45,8 @@ int initSounds()
 
     for(int i = 1; i < 4; i++)
     {
-        char filepath[16] = STEP_FILE;
-        snprintf(filepath, 16, "%s%d.ogg", STEP_FILE, i);
+        char filepath[23] = STEP_FILE;
+        snprintf(filepath, 23, "%s%d.ogg", STEP_FILE, i);
         STEP_SOUND(i) = Mix_LoadWAV(filepath);
         if (!STEP_SOUND(i))
             return -5;

@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 {
     //setting up default values
     {
-        int initCode = initSDL(GAME_WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, SCREEN_WIDTH, SCREEN_HEIGHT, 48);
+        int initCode = initSDL(GAME_WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, "assets/icon.png", SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
             return initCode;
         initCode = initSounds();
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
         case TITLESCREEN_GAMECODE:
             {
                 SDL_Texture* titlescreen;
-                loadIMG("splashscreen.png", &titlescreen);
+                loadIMG("assets/splashscreen.png", &titlescreen);
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
                 while(!(key == SDL_GetKeyFromScancode(SC_INTERACT) || key == ANYWHERE_QUIT))
