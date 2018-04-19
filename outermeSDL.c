@@ -174,7 +174,9 @@ void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, i
 
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip)
 {
-    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / 8) * TILE_SIZE, .y = (id % 8) * TILE_SIZE, .w = width, .h = height}),
+    int w, h;
+    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+    SDL_RenderCopyEx(mainRenderer, texture, &((SDL_Rect) {.x = (id / (h / TILE_SIZE)) * TILE_SIZE, .y = (id % (h / TILE_SIZE)) * TILE_SIZE, .w = width, .h = height}),
                      &((SDL_Rect) {.x = xCoord, .y = yCoord, .w = width, .h = height}), angle,
                      &((SDL_Point) {.x = width / 2, .y = height / 2}), flip);
 }
@@ -261,7 +263,7 @@ void closeSDL()
     SDL_Quit();
 }
 
-int checkArrayForIVal(int value, int array[], size_t arraySize)
+int intSeqSearch(int value, int array[], size_t arraySize)
 {
     int found = -1;
     for(int i = 0; i < (int) arraySize; i++)
