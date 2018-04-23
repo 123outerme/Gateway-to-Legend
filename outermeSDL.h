@@ -33,12 +33,12 @@
 #define false 0
 #define true 1
 
-#define printBool(bool) bool ? "true" : "false"
+#define printBool(bool) (bool ? "true" : "false")
 
 //#define SAVE_FILE_NAME "SAVUVUTU.bin"
 //#define SAVE_FILE_LINES 54
 //#define CONFIG_FILE_NAME "sorceryConfig.ini"
-#define FONT_FILE_NAME "Px437_ITT_BIOS_X.ttf"
+#define FONT_FILE_NAME "assets/Px437_ITT_BIOS_X.ttf"
 #define FRAMERATE 60
 #define SCREEN_WIDTH TILE_SIZE * 20
 #define SCREEN_HEIGHT TILE_SIZE * 15

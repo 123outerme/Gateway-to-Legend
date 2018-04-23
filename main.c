@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
                 loadIMG("assets/splashscreen.png", &titlescreen);
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
-                while(!(key == SDL_GetKeyFromScancode(SC_INTERACT) || key == ANYWHERE_QUIT))
+                while(!key)
                 {
                     SDL_RenderClear(mainRenderer);
                     SDL_RenderCopy(mainRenderer, titlescreen, NULL, NULL);
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
             loadBoss = true;
             bossLoaded = false;
             if (choice == 2)
-                smoothScrolling(&person, person.mapScreen, (person.mapScreen - lastMap) % 10, (person.mapScreen - lastMap) / 10);
+                smoothScrolling(&person, person.mapScreen, 2 * ((person.mapScreen - lastMap) % 10), 2 * ((person.mapScreen - lastMap) / 10));
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
