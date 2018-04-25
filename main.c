@@ -322,6 +322,7 @@ int main(int argc, char* argv[])
     Mix_HaltChannel(-1);
     saveGlobalPlayer(person, GLOBALSAVE_FILEPATH);
     SDL_DestroyTexture(tilesTexture);
+    SDL_DestroyTexture(tilesetTexture);
     free(allScripts);
 	free(listOfFilenames);
     closeSDL();

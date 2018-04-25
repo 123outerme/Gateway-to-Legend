@@ -4,7 +4,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
-#define VERSION_NUMBER "1.0.1a"
+#define VERSION_NUMBER "1.0.2a"
 
 #define SAVE_FILE_LINES 0
 #define MAX_PLAYER_NAME 8

@@ -319,6 +319,7 @@ int subMain(mapPack* workingPack)
         if (code == 4 || code == -1)
             quit = true;
     }
+    SDL_DestroyTexture(workingPack->mapPackTexture);
     return 0;
 }
 
