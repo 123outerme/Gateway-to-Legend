@@ -155,6 +155,7 @@ int toolchain_main()
         if (proceed && code < 4 && workingPack.mainFilePath[0] != '/')
             subMain(&workingPack);
     }
+    SDL_DestroyTexture(mainTilesetTexture);
 	SDL_SetWindowTitle(mainWindow, "Gateway to Legend");
     return 0;
 }
@@ -306,9 +307,9 @@ void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
 int subMain(mapPack* workingPack)
 {
     bool quit = false;
+    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
     while(!quit)
     {
-        loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //for some reason we need to load twice??
         int code = aMenu(workingPack->mapPackTexture, workingPack->tilesetMaps[2], "Map-Pack Tools", (char*[4]) {"Map Creator", "Script Editor", "Map-Pack Wizard", "Back"}, 4, 1, AMENU_MAIN_THEME, true, false, NULL);
         if (code == 1)
             mainMapCreator(workingPack);
@@ -360,8 +361,6 @@ int mainMapCreator(mapPack* workingPack)
                 }
             }
         }
-        loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));  //We have to load again because we closed the renderer
-        loadIMG(MAIN_TILESET, &mainTilesetTexture);
         player creator;
         initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
         if (choice == 1)
@@ -730,9 +729,8 @@ void writeScriptData(mapPack workingPack, script* mapScripts, int count)
 void mainScriptEdtior(mapPack* workingPack)
 {
     script editScript;
-    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     int scriptNum = scriptSelectLoop(*workingPack);
-    if (scriptNum == 0)
+    if (scriptNum == 0 && checkFile(workingPack->scriptFilePath, -1) > 0)
         editScript = visualLoadScript(workingPack);
 
     if (scriptNum > 0)
@@ -1172,7 +1170,6 @@ script visualLoadScript(mapPack* workingPack)
 //start map-pack wizard code
 int mainMapPackWizard(mapPack* workingPack)
 {
-    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     bool quit = false;
     while (!quit)
     {
@@ -1273,7 +1270,6 @@ void editFilePaths(mapPack* workingPack)
 
 void editInitSpawn(mapPack* workingPack)
 {
-    loadIMG(workingPack->tilesetFilePath, &(workingPack->mapPackTexture));
     SDL_RenderClear(mainRenderer);
     workingPack->initMap = chooseMap(*workingPack);
     chooseCoords(*workingPack, workingPack->initMap, &(workingPack->initX), &(workingPack->initY));
@@ -1310,7 +1306,6 @@ void editTileEquates(mapPack* workingPack)
 
 void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray)
 {
-    loadIMG(workingPack.tilesetFilePath, &(workingPack.mapPackTexture));
     int numArrayTracker = 0, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
     char* text[] = PICK_MESSAGES_ARRAY;
     bool quit = false, whiteBG = true;
