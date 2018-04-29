@@ -31,6 +31,8 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
+#define ALL_TECHNIQUES {"Dash", "Spin Attack", "Illusion", "Barrier", "Charge"}
+
 void upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
@@ -47,6 +49,7 @@ void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int
 void drawSparks(spark* s);
 
 void aMenu_drawMain();
+void aMenu_drawMoney();
 
 int toolchain_main();
 
@@ -68,6 +71,8 @@ enemy bossSprite;
 bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
+
+int _globalInt1, _globalInt2, _globalInt3;
 
 bool debugFlag;
 Sint64 gameTicks;
@@ -92,6 +97,7 @@ int main(int argc, char* argv[])
     listOfFilenames = getListOfFiles(MAX_LIST_OF_MAPS, MAX_FILE_PATH - 9, MAP_PACKS_SUBFOLDER, &maxStrNum);
     //done loading map pack header files
     player person;
+    initPlayer(&person, 0, 0, 0, 0, 0, 0, SDL_FLIP_NONE, 0);
     if (checkFile(GLOBALSAVE_FILEPATH, 0))
         loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
     else
@@ -423,13 +429,60 @@ void upgradeShop(player* playerSprite)
             break;
         case 2:  //techniques
             {
+                bool tQuit = false;
+                while(!tQuit)
                 {
-                    //
+                    int a = aMenu(tilesetTexture, MAIN_ARROW_ID, "Techniques", (char*[3]) {"Equip", "Buy", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
+                    if (a == 1)
+                    {
+                        char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
+                        char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
+                        int nextPos = 0;
+                        for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                        {
+                            if (playerSprite->techUnlocks[i])
+                                techniqueArray[nextPos++] = literalsArray[i];
+                        }
+                        techniqueArray[nextPos++] = "Back";
+                    }
+                    if (a == 2)
+                    {
+                        char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
+                        char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
+                        int nextPos = 0;
+                        for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                        {
+                            if (!playerSprite->techUnlocks[i])
+                                techniqueArray[nextPos++] = literalsArray[i];
+                        }
+                        techniqueArray[nextPos++] = "Back";
+                        _globalInt1 = playerSprite->money;
+                        _globalInt2 = 50;
+                        int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Techniques", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
+                        if (retCode < nextPos && playerSprite->money >= 50)
+                        {
+                            playerSprite->money -= 50;
+                            int position = 0;
+                            for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                            {
+                                if (strcmp(techniqueArray[retCode - 1], literalsArray[i]) == 0)
+                                {
+                                    position = i;
+                                    break;
+                                }
+                            }
+                            playerSprite->techUnlocks[position] = true;
+                            saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
+                        }
+                    }
+                    if (a == 3 || a == -1)
+                        tQuit = true;
                 }
             }
             break;
         case 3:
         case -1:
+        default:
             quit = true;
             break;
         }
@@ -1002,7 +1055,7 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks();
-    Uint32 swordTimer = SDL_GetTicks() + 250;
+    Uint32 swordTimer = SDL_GetTicks() + 250, lastXPress = 0, lastYPress = 0;
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
@@ -1041,17 +1094,33 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (playerSprite->spr.y > 0 && checkSKUp /*&& !playerSprite->yVeloc */)  //leave damage boosting in?
+                if (lastXPress < (Uint32) lastUpdateTime - 32 && lastXPress + 125 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0])
+                {
+                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
+                    playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
+                }
+                if (lastYPress < (Uint32) lastUpdateTime - 32 &&  lastYPress + 125 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0])
+                {
+                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
+                    playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
+                }
+
+                if (playerSprite->spr.y > 0 && checkSKUp && !playerSprite->yVeloc)
                     playerSprite->yVeloc -= PIXELS_MOVED;
 
-                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown /*&& !playerSprite->yVeloc*/)
+                if (playerSprite->spr.y < SCREEN_HEIGHT - playerSprite->spr.h && checkSKDown && !playerSprite->yVeloc)
                     playerSprite->yVeloc += PIXELS_MOVED;
 
-                if (playerSprite->spr.x > 0 && checkSKLeft /*&& !playerSprite->xVeloc*/)
+                if (playerSprite->spr.x > 0 && checkSKLeft && !playerSprite->xVeloc)
                     playerSprite->xVeloc -= PIXELS_MOVED;
 
-                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight /*&& !playerSprite->xVeloc*/)
+                if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && checkSKRight && !playerSprite->xVeloc)
                     playerSprite->xVeloc += PIXELS_MOVED;
+
+                if (checkSKRight - checkSKLeft)
+                    lastXPress = SDL_GetTicks();
+                if (checkSKDown - checkSKUp)
+                    lastYPress = SDL_GetTicks();
 
                 /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
                 {
@@ -1720,4 +1789,18 @@ void aMenu_drawMain()
     drawATile(tilesetTexture, TILE_ID_CUBED, TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     drawATile(tilesetTexture, TILE_ID_TILDA, 2 * TILE_SIZE - 2, 0, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
     drawText(VERSION_NUMBER, 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, (SDL_Color){AMENU_MAIN_TEXTCOLOR}, false);
+}
+
+void aMenu_drawMoney()
+{
+    char* moneyStr = calloc(10, sizeof(char));
+    strcpy(moneyStr, intToString(_globalInt1, moneyStr));
+    strcat(moneyStr, " Coins");
+    drawText(moneyStr, 2.25 * TILE_SIZE, 11.5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+    char* moneyEachStr = calloc(15, sizeof(char));
+    strcpy(moneyEachStr, intToString(_globalInt2, moneyEachStr));
+    strcat(moneyEachStr, " Coins Each");
+    drawText(moneyEachStr, 2.25 * TILE_SIZE, 13.5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+    free(moneyStr);
+    free(moneyEachStr);
 }

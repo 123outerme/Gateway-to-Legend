@@ -7,9 +7,6 @@
 #define VERSION_NUMBER "1.0.2a"
 
 #define SAVE_FILE_LINES 0
-#define MAX_PLAYER_NAME 8
-#define MAX_PLAYER_HEALTH 32
-#define DEFAULT_PLAYER_HEALTH 12
 #define GAME_WINDOW_NAME "Gateway to Legend"
 #define CONFIG_FILEPATH "assets/GatewayToLegend.cfg"
 #define GLOBALTILES_FILEPATH "tileset/mainTileset48.png"
@@ -47,6 +44,11 @@ typedef struct _mapPack {
     int numBosses;
 } mapPack;
 
+#define MAX_PLAYER_NAME 8
+#define MAX_PLAYER_HEALTH 32
+#define DEFAULT_PLAYER_HEALTH 12
+#define MAX_PLAYER_TECHNIQUES 5
+
 typedef struct _player {
     sprite spr;  //?
     char name[MAX_PLAYER_NAME + 1];  //9 bytes
@@ -63,10 +65,11 @@ typedef struct _player {
     int lastMap;
     int lastX;
     int lastY;
+    bool techUnlocks[MAX_PLAYER_TECHNIQUES];  // 5 bytes
     bool movementLocked;  // 1 byte
-    int defeatedBosses[10];
-    int nextBossPos;
-    char* extraData;
+    int defeatedBosses[10]; //
+    int nextBossPos;  //
+    char* extraData;  //
 } player;
 
 typedef struct _enemy {

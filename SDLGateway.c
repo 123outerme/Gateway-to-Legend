@@ -146,6 +146,8 @@ void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int a
     player->lastY = -1;
     player->lastDirection = 8; //facing right
     player->nextBossPos = 0;
+    for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+        player->techUnlocks[i] = false;
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
@@ -170,7 +172,7 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->level = 1;
     playerSprite->money = 0;
 	saveGlobalPlayer(*playerSprite, filePath);
-    //saves: name, max HP, level, exp, money
+    //saves: name, max HP, level, money, techniques
 }
 
 void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type)
@@ -303,6 +305,11 @@ void loadGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->lastDirection = 8;
     playerSprite->invincCounter = 0;
     playerSprite->animationCounter = 0;
+    char* thing;
+    readLine(filePath, 4, &thing);
+    playerSprite->techUnlocks[0] = strtol(strtok(thing, "{,}"), NULL, 10);
+    for(int i = 1; i < MAX_PLAYER_TECHNIQUES; i++)
+        playerSprite->techUnlocks[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
     //loads: name, max HP, level, exp, money
 }
 
@@ -665,6 +672,19 @@ void saveGlobalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.maxHP, buffer));
     appendLine(filePath, intToString(playerSprite.level, buffer));
     appendLine(filePath, intToString(playerSprite.money, buffer));
+    {  //saving skills
+        const int maxStrSize = MAX_PLAYER_TECHNIQUES * 2 + 2;
+        char* skillsArray = calloc(maxStrSize, sizeof(char));
+        strncpy(skillsArray, "{", maxStrSize);
+        for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+        {
+            strncat(skillsArray, (playerSprite.techUnlocks[i] ? "1" : "0"), maxStrSize);
+            if (i < MAX_PLAYER_TECHNIQUES - 1)
+                strncat(skillsArray, ",", maxStrSize);
+        }
+        strncat(skillsArray, "}", maxStrSize);
+        appendLine(filePath, skillsArray);
+    }
     //saves: name, max HP, level, exp, money
 }
 
