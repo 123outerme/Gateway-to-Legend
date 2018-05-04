@@ -444,6 +444,7 @@ void upgradeShop(player* playerSprite)
                                 techniqueArray[nextPos++] = literalsArray[i];
                         }
                         techniqueArray[nextPos++] = "Back";
+                        //make menu
                     }
                     if (a == 2)
                     {
@@ -1094,12 +1095,12 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (lastXPress < (Uint32) lastUpdateTime - 32 && lastXPress + 125 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0])
+                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 150 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0])
                 {
                     //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
                 }
-                if (lastYPress < (Uint32) lastUpdateTime - 32 &&  lastYPress + 125 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0])
+                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 150 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0])
                 {
                     //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
@@ -1118,9 +1119,9 @@ int mainLoop(player* playerSprite)
                     playerSprite->xVeloc += PIXELS_MOVED;
 
                 if (checkSKRight - checkSKLeft)
-                    lastXPress = SDL_GetTicks();
+                    lastXPress = SDL_GetTicks() * (checkSKRight - checkSKLeft);
                 if (checkSKDown - checkSKUp)
-                    lastYPress = SDL_GetTicks();
+                    lastYPress = SDL_GetTicks() * (checkSKDown - checkSKUp);
 
                 /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
                 {
