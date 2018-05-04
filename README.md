@@ -54,10 +54,10 @@ Link to the fonts I used: https://int10h.org/oldschool-pc-fonts/
 
 TL;DR version (which is not a substitute for the license):
 
-You may freely share and alter the font for any purpose
-You must give appropriate credit (which includes the author's name and a link to the original material)
-If you distribute your own adaptations, do so under a compatible license
-No warranties are given - whatever you do, I will not be held liable
+1. You may freely share and alter the font for any purpose
+2. You must give appropriate credit (which includes the author's name and a link to the original material)
+3. If you distribute your own adaptations, do so under a compatible license
+4. No warranties are given - whatever you do, I will not be held liable
 
 (and yes, I stole the TL;DR version from the font pack readme)
 
