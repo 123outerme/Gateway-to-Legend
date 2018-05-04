@@ -2,6 +2,15 @@
 A Puzzle-RPG hybrid game. More details soon, but in a nutshell it started as a remake of an earlier game I made
 that became it's own thing with its own ideas. The core gameplay involves solving puzzles, collecting money, and defeating bosses.
 
+## >> Gameplay <<
+Gameplay includes solving puzzles and defeating enemies. Small enemies can be defeated fairly easily, and provide a small amount of loot. Bosses are complex, difficult to fight, and provide large rewards!
+
+## >> Coins, Techniques, and the Upgrade Shop <<
+You can collect coins by defeating enemies and bosses. You can use these coins to buy health upgrades and special techniques in the Upgrade Shop. Equip these powers to use new abilities like the Dash Dodge, 
+
+## >>  <<
+
+
 ## >> Legal Stuff <<
 
 The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.
@@ -14,7 +23,7 @@ I originally wrote the code behind Gateway to Legend.
 ### > Gateway to Legend <
 MIT License
 
-Copyright (c) 2017 TildeCubed
+Copyright (c) 2017 TildaCubed
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
