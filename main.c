@@ -1056,7 +1056,7 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
         frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks();
-    Uint32 swordTimer = SDL_GetTicks() + 250, lastXPress = 0, lastYPress = 0;
+    Uint32 swordTimer = SDL_GetTicks() + 250, lastXPress = 0, lastYPress = 0, lastBoostTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
@@ -1095,15 +1095,17 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 150 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0])
+                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 150 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] && lastBoostTime + 250 < SDL_GetTicks())
                 {
                     //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
+					lastBoostTime = SDL_GetTicks();
                 }
-                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 150 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0])
+                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 150 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] && lastBoostTime + 250 < SDL_GetTicks())
                 {
                     //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
+					lastBoostTime = SDL_GetTicks();
                 }
 
                 if (playerSprite->spr.y > 0 && checkSKUp && !playerSprite->yVeloc)
