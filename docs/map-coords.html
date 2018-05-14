@@ -47,15 +47,10 @@
         <p>Use this tool to convert the (x, y) position you want your map to appear at, with the origin being at the top left of the world, to the line number you should put it on.</p>
         </div>
         <form class="center" style="width: 1000px">
-            <span>
-			(
-			<input type="number" id="mapx" min="1" max="10" size="4" />
-            ,
-			<input type="number" id="mapy" min="1" size="4" />
-            )
-			<input type="button" value="Submit" onclick="calcMapCoords();" size="4" />
-			</span>
-		</form>
+            <input type="number" id="mapx" min="1" max="10" size="4" />
+            <input type="number" id="mapy" min="1" size="4" />
+            <input type="button" value="Submit" onclick="calcMapCoords();" size="4" />
+        </form>
         <div class="center" style="width: 800px;">
             <p id="return"></p>
         </div>

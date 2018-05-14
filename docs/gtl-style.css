@@ -54,10 +54,6 @@ th, td {
   padding: 10px;
 }
 
-input[type=number] {
-	width: 80px;
-}
-
 .center {
   display: block;
   margin-left: auto;
