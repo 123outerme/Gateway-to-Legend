@@ -7,7 +7,9 @@
 		<meta name="author" content="Stephen Policelli">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Gateway to Legend</title>
-		<link rel = "stylesheet" type = "text/css" href = "gtl-style.css" />
+		<link rel = "stylesheet"
+		 type = "text/css"
+		 href = "gtl-style.css" />
 		<link rel="icon" type="image/ico" href="favicon.ico">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	</head>
@@ -36,15 +38,23 @@
 		This is, of course, nothing new. However, integrated directly into the core of the game is the ability to <strong>create your own adventures through the map-pack feature!</strong> <br />
 		Map-packs are sets of maps, save files, spritesheets, and scripts that allow deep customization of user-generated experiences. <strong>Creating maps is easy with the map-pack toolchain program</strong>, included in the download.</p>
 		</div>
-		<p>In Gateway to Legend, you:</p>
-		<ul>
-			<li>Fight enemies</li>
-			<li>Defeat bosses</li>
-			<li>Solve puzzles</li>
-			<li>Upgrade your arsenal of techniques</li>
-			<li>Make your own experiences (<a href="creation.html">more information here</a>)</li>
-		</ul>
-		<br />
-		<img src="img/title.png" alt="The Gateway to Legend title screen." class="center" width="50%"/> <br />
+			<img style="width: 50%; float: right;" src="img/title.png" alt="The Gateway to Legend title screen." class="center" usemap="#titlemap"/>
+		<span style="margin-right: 200px;">
+			<p>In Gateway to Legend, you:</p>
+			<ul>
+				<li>Fight enemies</li>
+				<li>Defeat bosses</li>
+				<li>Solve puzzles</li>
+				<li>Upgrade your arsenal of techniques</li>
+				<li>Make your own experiences (<a href="creation.html">more information here</a>)</li>
+			</ul>
+		</span>
+		<map name="titlemap" id="titlemap">
+			<area shape="rect" coords="70,160,190,190" href="mappacks.html" alt="Play" />
+			<area shape="rect" coords="70,194,444,224" href="screenshots.html" alt="Upgrade" />
+			<area shape="rect" coords="70,228,528,256" href="creation.html" alt="Toolchain" />
+			<area shape="rect" coords="70,260,480,292" href="faq.html" alt="Settings->Help" />
+			<area shape="rect" coords="70,293,288,326" href="contact.html" alt="Quit" />
+		</map>
 	</body>
 </html>
