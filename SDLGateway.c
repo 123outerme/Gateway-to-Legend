@@ -1032,7 +1032,14 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_boss_actions)
     {
         static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
-        int x = 0, y = 0, frames = 0, totalFrames = 0;
+		static int startX = 0;
+		static int startY = 0;
+		if (startX == 0)
+		{
+			startX = scriptData->x;
+			startY =  scriptData->y;
+        }
+		int x = 0, y = 0, frames = 0, totalFrames = 0;
         char* data = calloc(99, sizeof(char));
         char* dataCopy = calloc(99, sizeof(char));  //strtok messes with the data, so this is necessary to use a clean copy when end of string is reached (quick fix)
         strncpy(data, scriptData->data, 99);
@@ -1061,9 +1068,17 @@ bool executeScriptAction(script* scriptData, player* player)
                         found = true;
                 }
             }
-            //printf("%d, %d for %d f. On frame %d\n", x, y, frames, moveFrame);
-            scriptData->x += x;
-            scriptData->y += y;
+            //printf("%d, %d for %d f. On frame %d. s(%d, %d) d(%d, %d)\n", (x - startX), (y - startY), frames, moveFrame, startX, startY, x, y);
+            scriptData->x += (x - startX) / frames;
+            scriptData->y += (y - startY) / frames;
+			
+			if (moveFrame == totalFrames)
+			{
+				scriptData->x = x;
+				scriptData->y = y;
+				startX = x;
+				startY = y;
+			}
 
             if (scriptData->x < 0)
                 scriptData->x = 0;
