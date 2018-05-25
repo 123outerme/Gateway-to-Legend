@@ -144,7 +144,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
 void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain, void (*extraDrawing)(void));  //draws a menu using the colors and options presented
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps);   //gets string input
-int intInput(char* prompt, int maxDigits, int defaultNum);  //gets int input
+int intInput(char* prompt, int maxDigits, int defaultVal, int minVal, int maxVal, bool allowNeg);  //gets int input
 void saveMapPack(mapPack* writePack);  //saves map pack data to the file
 void saveConfig(char* filePath);  //saves config data to the file
 void saveLocalPlayer(const player playerSprite, char* filePath);  //saves to local player save file

@@ -38,7 +38,7 @@ void changeVolumes();
 void soundTestMenu();
 int changeControls();
 void changeName();
-void changeFPS();
+void changeFPS(int newFPS);
 void clearData(player* playerSprite);
 
 int mainLoop(player* playerSprite);
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
             if (choice == 3)
                 changeName(&person);
             if (choice == 4)
-                changeFPS();
+                changeFPS(intInput("New FPS? 0 -> No Cap", 3, 60, 30, 500, false));
             if (choice == 5)
                 clearData(&person);
             if (choice == 6)
@@ -800,92 +800,10 @@ void changeName(player* playerSprite)
     free(newName);
 }
 
-void changeFPS()
+void changeFPS(int newFPS)
 {
-    sprite cursor;
-    initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 6;
-    char* optionsArray[] = {"No Cap", "30", "45", "60", "80", "120"};
-    int FPSchoice = 0, selection = -1;
-    SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
-    SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
-    SDL_Event e;
-    bool quit = false;
-    while(!quit)
-    {
-        SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
-        SDL_RenderClear(mainRenderer);
-        SDL_RenderFillRect(mainRenderer, NULL);
-        SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
-        SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
-        drawText("FPS Setting?", 1 * TILE_SIZE + 3 * TILE_SIZE / 8, 11 * SCREEN_HEIGHT / 128, SCREEN_WIDTH, 119 * SCREEN_HEIGHT / 128, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
-        //foreground text
-        drawText("FPS Setting?", 1.25 * TILE_SIZE , 5 * SCREEN_HEIGHT / 64, SCREEN_WIDTH, 55 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TITLECOLOR1}, false);
-
-        drawText(optionsArray[FPSchoice], 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 5) * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-
-        drawText("Select", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 6) * TILE_SIZE, textColor, false);
-        drawText("Back", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 7) * TILE_SIZE, textColor, false);
-        //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-        //Handle events on queue
-        while(SDL_PollEvent(&e) != 0)
-        {
-            //User requests quit
-            if(e.type == SDL_QUIT)
-            {
-                quit = true;
-                FPSchoice = ANYWHERE_QUIT;
-            }
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
-            {
-                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
-                {
-                    cursor.y -= TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
-                {
-                    cursor.y += TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_LEFT && cursor.y == 5 * TILE_SIZE && FPSchoice > 0)
-                {
-                    FPSchoice--;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_RIGHT && cursor.y == 5 * TILE_SIZE && FPSchoice < optionsSize - 1)
-                {
-                    FPSchoice++;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_INTERACT)
-                {
-                    selection = cursor.y / TILE_SIZE - 4;
-                    if (selection != 1)
-                        quit = true;
-                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
-                }
-            }
-        }
-        if (cursor.y / TILE_SIZE - 4 == 1)
-            drawATile(tilesetTexture, cursor.tileIndex, 8 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, cursor.y / TILE_SIZE - 4 == 1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-
-        SDL_RenderPresent(mainRenderer);
-    }
-    if (selection != 3)
-    {
-        if (FPSchoice > 0)
-            FPS = strtol(optionsArray[FPSchoice], NULL, 10);
-	else
-            FPS = 0;
+    FPS = newFPS;
     targetTime = calcWaitTime(FPS);
-    }
     saveConfig(CONFIG_FILEPATH);
 }
 
@@ -1349,12 +1267,7 @@ int mainLoop(player* playerSprite)
                     initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
 
                 if (!strncmp(command, "fps", 3))
-                {
-                    FPS = (int) strtol(strtok(commandCpy, "fps "), NULL, 10);
-                    if (FPS < 30 && FPS != 0)
-                        FPS = 30;
-                    targetTime = calcWaitTime(FPS);
-                }
+                    changeFPS((int) strtol(strtok(commandCpy, "fps "), NULL, 10));
 
                 if (!strncmp(command, "execscript", 10))
                 {

@@ -1168,7 +1168,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 			//get health
 
 			char* dataStr = calloc(10, sizeof(char));
-			snprintf(dataStr, 10, "[%d/%d]", startingTile, intInput("How many hits to kill?", 2, 5));
+			snprintf(dataStr, 10, "[%d/%d]", startingTile, intInput("How many hits to kill?", 2, 5, 1, 60, false));
 			char* moveStr;
 			//visualize boss actions
 			quit = false;
@@ -1241,7 +1241,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 {
                     xCoords[coords] = cursor.x;
                     yCoords[coords] = cursor.y;
-                    frameCoords[coords++] = intInput("Gets there in how many frames?", 3, 15);
+                    frameCoords[coords++] = intInput("Gets there in how many frames?", 3, 15, 1, 999, false);
                 }
 				//printf("%s, %s, %d\n(%d, %d) for %d\n", printBool(quit), printBool(select), coords, xCoords[coords - 1], yCoords[coords - 1], frameCoords[coords - 1]);
 				//get num of frames, add into array
@@ -1273,23 +1273,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         {
             char* message = calloc(17, sizeof(char)), * temp = "";
             snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
-            int intData = intInput(message, 3 - (editScript->action == script_gain_money), 1);
-            if (editScript->action == script_gain_money)
-            {
-                if (intData > 20)
-                    intData = 20;
-
-                if (intData < 1)
-                    intData = 1;
-            }
-            else
-            {
-                if (intData > 4)
-                    intData = 4;
-
-                if (intData < -4)
-                    intData = -4;
-            }
+            int intData = intInput(message, 3 - (editScript->action == script_gain_money), 1, 1, 20 - 16 * (editScript->action == script_player_hurt), editScript->action == script_player_hurt);
             strcpy(data, intToString(intData, temp));
             free(message);
         }

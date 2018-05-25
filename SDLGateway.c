@@ -165,7 +165,7 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
-    stringInput(&newName, "Change name to:", MAX_PLAYER_NAME, "Player", true);
+    stringInput(&newName, "Your name?", MAX_PLAYER_NAME, "Player", true);
     strncpy(playerSprite->name, newName, strlen(newName));
     free(newName);
     playerSprite->maxHP = 12;
@@ -481,7 +481,7 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
 {
     char* stringData = calloc(maxChar + 1, sizeof(char)), * dispString = calloc(maxChar + 2, sizeof(char));
     stringData[0] = ' ';
-    dispString[0] = ' ';
+    dispString[0] = '_';
     bool quit = false, hasTyped = false, capital = startCaps;
     int numChar = 0, frame = 0;
     SDL_Event e;
@@ -602,11 +602,11 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     free(dispString);
 }
 
-int intInput(char* prompt, int maxDigits, int defaultNum)
+int intInput(char* prompt, int maxDigits, int defaultNum, int minVal, int maxVal, bool allowNeg)
 {
     char* stringData = calloc(maxDigits + 1, sizeof(char)), * dispString = calloc(maxDigits + 2, sizeof(char));
     stringData[0] = ' ';
-    dispString[0] = ' ';
+    dispString[0] = '_';
     bool quit = false, hasTyped = false;
     int numDigits = 0, frame = 0;
     SDL_Event e;
@@ -630,7 +630,7 @@ int intInput(char* prompt, int maxDigits, int defaultNum)
                 frame++;
             else
             {
-                if (((e.key.keysym.sym >= SDLK_0 && e.key.keysym.sym <= SDLK_9) || e.key.keysym.sym == SDLK_MINUS) && numDigits < maxDigits)
+                if (((e.key.keysym.sym >= SDLK_0 && e.key.keysym.sym <= SDLK_9) || (e.key.keysym.sym == SDLK_MINUS && (allowNeg && minVal < 0))) && numDigits < maxDigits)
                 {
                     char* temp = calloc(1, sizeof(char));
                     strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);
@@ -664,6 +664,12 @@ int intInput(char* prompt, int maxDigits, int defaultNum)
         retVal = defaultNum;
     else
         retVal = strtol(stringData, NULL, 10);
+
+    if (retVal < minVal)
+        retVal = minVal;
+
+    if (retVal > maxVal)
+        retVal = maxVal;
 
     free(stringData);
     free(dispString);
