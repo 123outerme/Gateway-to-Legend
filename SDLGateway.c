@@ -630,7 +630,7 @@ int intInput(char* prompt, int maxDigits, int defaultNum)
                 frame++;
             else
             {
-                if ((e.key.keysym.sym >= SDLK_0 && e.key.keysym.sym <= SDLK_9) && numDigits < maxDigits)
+                if (((e.key.keysym.sym >= SDLK_0 && e.key.keysym.sym <= SDLK_9) || e.key.keysym.sym == SDLK_MINUS) && numDigits < maxDigits)
                 {
                     char* temp = calloc(1, sizeof(char));
                     strncpy(temp, SDL_GetKeyName(e.key.keysym.sym), 1);

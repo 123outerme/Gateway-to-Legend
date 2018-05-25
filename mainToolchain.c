@@ -762,8 +762,8 @@ int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 14;
-    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainExp", "GainMoney", "HurtPlayer", "placeholder"};
+    const int optionsSize = 13;
+    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -1271,17 +1271,26 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 
         if (editScript->action == script_gain_money || editScript->action == script_player_hurt)
         {
-            char* message = calloc(17, sizeof(char));
+            char* message = calloc(17, sizeof(char)), * temp = "";
             snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
-            stringInput(&data, message, 3, "1", false);
+            int intData = intInput(message, 3 - (editScript->action == script_gain_money), 1);
             if (editScript->action == script_gain_money)
             {
-                if (strtol(data, NULL, 10) > 20)
-                    strcpy(data, "20");
+                if (intData > 20)
+                    intData = 20;
 
-                if (strtol(data, NULL, 10) < 1)
-                    strcpy(data, "1");
+                if (intData < 1)
+                    intData = 1;
             }
+            else
+            {
+                if (intData > 4)
+                    intData = 4;
+
+                if (intData < -4)
+                    intData = -4;
+            }
+            strcpy(data, intToString(intData, temp));
             free(message);
         }
 	}
