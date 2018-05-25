@@ -34,6 +34,7 @@
 #define true 1
 
 #define printBool(bool) (bool ? "true" : "false")
+#define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
 
 //#define SAVE_FILE_NAME "SAVUVUTU.bin"
 //#define SAVE_FILE_LINES 54

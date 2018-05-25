@@ -1189,17 +1189,48 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 				bool select = false;
                 SDL_Event e;
                 Uint32 lastKeypressTime = SDL_GetTicks(), lastFrame = lastKeypressTime;
-                int sleepFor = 0, frame = 0;
+                int sleepFor = 0, frame = 0, bossMoveFrames = 0, bossMoveSegment = 0, startX = toolchain_min(x1, x2), startY = toolchain_min(y1, y2);
+                sprite bossSpr;
+                initSprite(&bossSpr, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), startingTile, 0, SDL_FLIP_NONE, type_boss);
 				while(!select)
 				{
 					SDL_RenderClear(mainRenderer);
 					viewMap(workingPack, map, false, false);
                     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
-                    drawATile(workingPack.mapPackTexture, startingTile, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), 0, SDL_FLIP_NONE);
                     SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = toolchain_min(x1, x2), .y = toolchain_min(y1, y2), .w = abs(x2 - x1), .h = abs(y2 - y1)}));
                     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
-					drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
+					if (coords > 0)
+                    {
+                        int totalFrames = 0;
+                        for(int i = 0; i <= bossMoveSegment; i++)
+                        {
+                            totalFrames += frameCoords[bossMoveSegment];
+                        }
+                        bossSpr.x += (xCoords[bossMoveSegment] - startX) / frameCoords[bossMoveSegment];
+                        bossSpr.y += (yCoords[bossMoveSegment] - startY) / frameCoords[bossMoveSegment];
+                        bossMoveFrames++;
+                        if (bossMoveFrames == totalFrames)
+                        {
+                            bossSpr.x = xCoords[bossMoveSegment];
+                            bossSpr.y = yCoords[bossMoveSegment];
+                            startX = xCoords[bossMoveSegment];
+                            startY = yCoords[bossMoveSegment];
+                            if (coords > bossMoveSegment + 1)
+                                bossMoveSegment++;
+                            else
+                            {
+                                bossMoveSegment = 0;
+                                bossMoveFrames = 0;
+                                bossSpr.x = toolchain_min(x1, x2);
+                                bossSpr.y = toolchain_min(y1, y2);
+                                startX = toolchain_min(x1, x2);
+                                startY = toolchain_min(y1, y2);
+                            }
+                        }
+                    }
+                    drawASprite(workingPack.mapPackTexture, bossSpr);
+                    drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
 					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
 					{
@@ -1241,7 +1272,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 {
                     xCoords[coords] = cursor.x;
                     yCoords[coords] = cursor.y;
-                    frameCoords[coords++] = intInput("Gets there in how many frames?", 3, 15, 1, 999, false);
+                    frameCoords[coords++] = intInput("Get there in how many frames?", 3, 15, 1, 999, false);
                 }
 				//printf("%s, %s, %d\n(%d, %d) for %d\n", printBool(quit), printBool(select), coords, xCoords[coords - 1], yCoords[coords - 1], frameCoords[coords - 1]);
 				//get num of frames, add into array

@@ -25,8 +25,6 @@
 #define SAVE_GAMECODE 6
 #define MAX_COLLISIONDATA_ARRAY MAX_SPRITE_MAPPINGS
 
-#define drawASprite(tileset, spr) drawATile(tileset, spr.tileIndex, spr.x, spr.y, spr.w, spr.h, spr.angle, spr.flip)
-
 #define checkSquareCol(x1, y1, x2, y2, w) ((abs(abs(x1) - abs(x2)) < w) && (abs(abs(y1) - abs(y2)) < w))
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
@@ -1013,15 +1011,15 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 150 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] && lastBoostTime + 250 < SDL_GetTicks())
+                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 120 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] && lastBoostTime + 500 < SDL_GetTicks())
                 {
-                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
+                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 120, SDL_GetTicks());
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
 					lastBoostTime = SDL_GetTicks();
                 }
-                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 150 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] && lastBoostTime + 250 < SDL_GetTicks())
+                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 120 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] && lastBoostTime + 500 < SDL_GetTicks())
                 {
-                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 100, SDL_GetTicks());
+                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 120, SDL_GetTicks());
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
 					lastBoostTime = SDL_GetTicks();
                 }
@@ -1039,9 +1037,15 @@ int mainLoop(player* playerSprite)
                     playerSprite->xVeloc += PIXELS_MOVED;
 
                 if (checkSKRight - checkSKLeft)
+                {
                     lastXPress = SDL_GetTicks() * (checkSKRight - checkSKLeft);
+                    lastYPress = (SDL_GetTicks() - 121) * (checkSKDown - checkSKUp);
+                }
                 if (checkSKDown - checkSKUp)
+                {
                     lastYPress = SDL_GetTicks() * (checkSKDown - checkSKUp);
+                    lastXPress = (SDL_GetTicks() - 121) * (checkSKRight - checkSKLeft);;
+                }
 
                 /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
                 {
