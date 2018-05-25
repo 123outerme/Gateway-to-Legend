@@ -916,6 +916,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 y1 = cursor.y;
                 cursor.x = x1 + cursor.w;
                 cursor.y = y1 + cursor.h;
+                bigIntervalSize = false;
                 intervalSize = 6;
                 editXY = false;
             }
@@ -1107,7 +1108,6 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 				sprite cursor;
 				initSprite(&cursor, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
 				int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
-				char* text[] = PICK_MESSAGES_ARRAY;
 				bool quit = false, whiteBG = true;
 				SDL_Event e;
 				while(!quit)
@@ -1166,45 +1166,116 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 			}
 			loadTTFont(FONT_FILE_NAME, &mainFont, 48);
 			//get health
-			char* healthStr = calloc(4, sizeof(char));
-			stringInput(&healthStr, "How many hits to kill?", 3, "4", false);
+
 			char* dataStr = calloc(10, sizeof(char));
-			snprintf(dataStr, 10, "[%d/%s]", startingTile, healthStr);
-			free(healthStr);
+			snprintf(dataStr, 10, "[%d/%d]", startingTile, intInput("How many hits to kill?", 2, 5));
 			char* moveStr;
 			//visualize boss actions
 			quit = false;
 			int coords = 0;
-			const int maxCoords = 1;
+			const int maxCoords = 10;
 			int xCoords[maxCoords];
 			int yCoords[maxCoords];
 			int frameCoords[maxCoords];
-			char* frameStr = calloc(4, sizeof(char));
-			while(!quit || coords > maxCoords)
+			for(int i = 0; i < maxCoords; i++)
+            {
+                xCoords[i] = 0;
+                yCoords[i] = 0;
+                frameCoords[i] = 0;
+            }
+			initSprite(&cursor, toolchain_min(x1, x2), toolchain_min(y1, y2), TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+			while(!quit && coords < maxCoords)
 			{
 				bool select = false;
-				
+                SDL_Event e;
+                Uint32 lastKeypressTime = SDL_GetTicks(), lastFrame = lastKeypressTime;
+                int sleepFor = 0, frame = 0;
 				while(!select)
 				{
-					//display map, choose coords
+					SDL_RenderClear(mainRenderer);
+					viewMap(workingPack, map, false, false);
+                    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+                    drawATile(workingPack.mapPackTexture, startingTile, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), 0, SDL_FLIP_NONE);
+                    SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = toolchain_min(x1, x2), .y = toolchain_min(y1, y2), .w = abs(x2 - x1), .h = abs(y2 - y1)}));
+                    SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
+					drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
+					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
+					{
+						if (e.type == SDL_QUIT)
+						{
+						    select = true;
+							quit = true;
+						}
+						if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
+						{
+							if (cursor.y > TILE_SIZE && checkSKUp)
+								cursor.y -= PIXELS_MOVED;
+							if (cursor.y < SCREEN_HEIGHT - cursor.h && checkSKDown)
+								cursor.y += PIXELS_MOVED;
+							if (cursor.x > 0 && checkSKLeft)
+								cursor.x -= PIXELS_MOVED;
+							if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
+								cursor.x += PIXELS_MOVED;
+							if (checkSKInteract)
+								select = true;
+							lastKeypressTime = SDL_GetTicks();
+
+                            if (checkSKMenu || keyStates[SDL_SCANCODE_RETURN])
+                            {
+                                select = true;
+                                quit = true;
+                            }
+						}
+					}
+
+					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
+					if (sleepFor > 0)
+						SDL_Delay(sleepFor);
+					lastFrame = SDL_GetTicks();
+					frame++;
+					//SDL_RenderPresent(mainRenderer);
 				}
-				stringInput(&frameStr, "Gets there in how many frames?", 3, "15", false);
-				frameCoords[coords++] = strtol(frameStr, NULL, 10);
-				//get num of frames, add into array, then make it a string
+				if (!quit)
+                {
+                    xCoords[coords] = cursor.x;
+                    yCoords[coords] = cursor.y;
+                    frameCoords[coords++] = intInput("Gets there in how many frames?", 3, 15);
+                }
+				//printf("%s, %s, %d\n(%d, %d) for %d\n", printBool(quit), printBool(select), coords, xCoords[coords - 1], yCoords[coords - 1], frameCoords[coords - 1]);
+				//get num of frames, add into array
 			}
+			//then make it all a string
+			moveStr = calloc(coords * 4 + 2, sizeof(char));
+			moveStr[0] = '(';
+			char* temp = "";
+			for(int i = 0; i < coords; i++)
+            {
+                strcat(moveStr, intToString(xCoords[i], temp));
+                strcat(moveStr, "|");
+                strcat(moveStr, intToString(yCoords[i], temp));
+                strcat(moveStr, "|");
+                strcat(moveStr, intToString(frameCoords[i], temp));
+                if (i < coords - 1)
+                    strcat(moveStr, "|");
+                    //printf("%s\n", moveStr);
+            }
+            strcat(moveStr, ")");
 			strcat(dataStr, moveStr);
 			free(moveStr);
-			strcpy(editScript->data, dataStr);
+			strcpy(data, dataStr);
 			free(dataStr);
+			//printf("%s\n", data);
 		}
 
-			if (editScript->action == script_gain_money || editScript->action == script_player_hurt)
-			{
-				char* message = calloc(17, sizeof(char));
-				snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
-				stringInput(&data, message, 3, "0", false);
-				free(message);
-			}
+        if (editScript->action == script_gain_money || editScript->action == script_player_hurt)
+        {
+            char* message = calloc(17, sizeof(char));
+            snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
+            stringInput(&data, message, 3, "0", false);
+            free(message);
+        }
 	}
 	if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
 		initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");
