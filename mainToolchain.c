@@ -1273,7 +1273,15 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         {
             char* message = calloc(17, sizeof(char));
             snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
-            stringInput(&data, message, 3, "0", false);
+            stringInput(&data, message, 3, "1", false);
+            if (editScript->action == script_gain_money)
+            {
+                if (strtol(data, NULL, 10) > 20)
+                    strcpy(data, "20");
+
+                if (strtol(data, NULL, 10) < 1)
+                    strcpy(data, "1");
+            }
             free(message);
         }
 	}
