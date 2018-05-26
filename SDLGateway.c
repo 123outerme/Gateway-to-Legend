@@ -752,7 +752,7 @@ void saveGlobalPlayer(const player playerSprite, char* filePath)
         strncpy(skillsArray, "{", maxStrSize);
         for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
         {
-            strncat(skillsArray, (playerSprite.techUnlocks[i] ? "1" : "0"), maxStrSize);
+            strncat(skillsArray, intToString(playerSprite.techUnlocks[i], buffer), maxStrSize);
             if (i < MAX_PLAYER_TECHNIQUES - 1)
                 strncat(skillsArray, ",", maxStrSize);
         }

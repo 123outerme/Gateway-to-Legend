@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             Mix_HaltChannel(-1);
-            Mix_PauseMusic();
+            //Mix_PauseMusic();
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
@@ -435,14 +435,32 @@ void upgradeShop(player* playerSprite)
                     {
                         char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
                         char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
+                        int posArray[MAX_PLAYER_TECHNIQUES];
                         int nextPos = 0;
                         for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
                         {
                             if (playerSprite->techUnlocks[i])
-                                techniqueArray[nextPos++] = literalsArray[i];
+                            {
+                                techniqueArray[nextPos] = calloc(23, sizeof(char));
+                                posArray[nextPos] = i;
+                                strncpy(techniqueArray[nextPos++], literalsArray[i], 11);
+                                if (playerSprite->techUnlocks[i] > 1)
+                                    strncat(techniqueArray[nextPos - 1], " - Un-Equip", 22); //11 + 11
+                                else
+                                    strncat(techniqueArray[nextPos - 1], " - Equip", 19); //11 + 8
+                            }
                         }
                         techniqueArray[nextPos++] = "Back";
-                        //make menu
+                        int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
+                        if (selection == nextPos)
+                            tQuit = true;
+                        else
+                            playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
+                        for(int i = 0; i <= nextPos; i++)
+                        {
+                            free(techniqueArray[i]);
+                        }
+                        saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
                     }
                     if (a == 2)
                     {
@@ -971,8 +989,8 @@ int mainLoop(player* playerSprite)
     int exitCode = 2;
     char whatever[5] = "    \0";
     int startTime = SDL_GetTicks(), lastFrame = startTime,
-        frame = 0, framerate = 0, sleepFor = 0, lastUpdateTime = SDL_GetTicks();
-    Uint32 swordTimer = SDL_GetTicks() + 250, lastXPress = 0, lastYPress = 0, lastBoostTime = SDL_GetTicks();
+        frame = 0, framerate = 0, sleepFor = 0, lastXPress = 0, lastYPress = 0;
+    Uint32 swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
@@ -1003,7 +1021,6 @@ int mainLoop(player* playerSprite)
         if (SDL_GetTicks() - lastUpdateTime >= 32)
         {
             const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-
             playerSprite->animationCounter--;
 
             if (!playerSprite->movementLocked && (checkSKUp || checkSKDown || checkSKLeft || checkSKRight || checkSKSpecial || checkSKInteract || playerSprite->xVeloc || playerSprite->yVeloc))
@@ -1011,17 +1028,19 @@ int mainLoop(player* playerSprite)
                 int lastY = playerSprite->spr.y;
                 int lastX = playerSprite->spr.x;
 
-                if (lastXPress * (checkSKRight - checkSKLeft) < (Uint32) lastUpdateTime - 32 && lastXPress + 120 > SDL_GetTicks() && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] && lastBoostTime + 500 < SDL_GetTicks())
+                Uint32 curTime = SDL_GetTicks();
+
+                if ((Uint32) (lastXPress * (checkSKRight - checkSKLeft)) < lastUpdateTime - 32 && (Uint32) (lastXPress * (checkSKRight - checkSKLeft)) + 120 > curTime && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
-                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 120, SDL_GetTicks());
+                    //printf("boost: %d, now %d\n", lastXPress, curTime);
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
-					lastBoostTime = SDL_GetTicks();
+					lastBoostTime = curTime;
                 }
-                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 &&  lastYPress + 120 > SDL_GetTicks() && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] && lastBoostTime + 500 < SDL_GetTicks())
+                if ((Uint32) (lastYPress * (checkSKDown - checkSKUp)) < (Uint32) lastUpdateTime - 32 && (Uint32) (lastYPress * (checkSKDown - checkSKUp)) + 120 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
-                    //printf("boost: %d < %d && %d > %d\n", lastXPress, lastUpdateTime, lastXPress + 120, SDL_GetTicks());
+                    //printf("boost: %d, now %d\n", lastYPress, curTime);
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
-					lastBoostTime = SDL_GetTicks();
+					lastBoostTime = curTime;
                 }
 
                 if (playerSprite->spr.y > 0 && checkSKUp && !playerSprite->yVeloc)
@@ -1039,12 +1058,13 @@ int mainLoop(player* playerSprite)
                 if (checkSKRight - checkSKLeft)
                 {
                     lastXPress = SDL_GetTicks() * (checkSKRight - checkSKLeft);
-                    lastYPress = (SDL_GetTicks() - 121) * (checkSKDown - checkSKUp);
+                    lastYPress = (SDL_GetTicks() - 121) * (checkSKDown - checkSKUp);  //disqualify y-dash
                 }
+
                 if (checkSKDown - checkSKUp)
                 {
                     lastYPress = SDL_GetTicks() * (checkSKDown - checkSKUp);
-                    lastXPress = (SDL_GetTicks() - 121) * (checkSKRight - checkSKLeft);;
+                    lastXPress = (SDL_GetTicks() - 121) * (checkSKRight - checkSKLeft);  //disqualify x-dash
                 }
 
                 /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
