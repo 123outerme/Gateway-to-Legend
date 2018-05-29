@@ -167,7 +167,12 @@ int main(int argc, char* argv[])
             if (choice == 3)
                 changeName(&person);
             if (choice == 4)
-                changeFPS(intInput("New FPS? 0 -> No Cap", 3, 60, 30, 500, false));
+            {
+                int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);
+                if (newFPS > 0 && newFPS < 30)
+                    newFPS = 30;
+                changeFPS(newFPS);
+            }
             if (choice == 5)
                 clearData(&person);
             if (choice == 6)
