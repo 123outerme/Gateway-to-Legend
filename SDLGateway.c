@@ -1103,6 +1103,37 @@ bool executeScriptAction(script* scriptData, player* player)
             Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }
+	
+	if (scriptData->action == script_animation)
+	{
+		char* data;
+		strcpy(data, scriptData->data);
+		static int moveFrame = 1;
+		static char* animationData = strtok(data, "[]");
+		int totalFrames = 0;
+		char* dataCopy;
+		strcpy(dataCopy, scriptData->data);
+		bool found = false;
+		while(!found)
+		{
+			char* xStr = strtok(NULL, "(|)");
+			if (!xStr)  //no more data
+			{
+				moveFrame = 1;  //repeat; has to be 1 to reset to the way it is init'ed
+				strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
+			}
+			else
+			{
+				x = strtol(xStr, NULL, 10);
+				y = strtol(strtok(NULL, "(|)"), NULL, 10);
+				frames = strtol(strtok(NULL, "(|)"), NULL, 10);
+				totalFrames += frames;
+				if (moveFrame <= totalFrames)
+					found = true;
+			}
+		}
+	}
+	
     if (scriptData->action == script_boss_actions)
     {
         static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
