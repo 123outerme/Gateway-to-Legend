@@ -82,16 +82,17 @@ typedef enum  _scriptBehavior {
     script_none,                   //0 default, do nothing
     script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
     script_trigger_dialogue_once,  //2 same as above, but just once.
-    script_trigger_boss,           //3 if player steps in coords, spawn boss
-    script_switch_maps,            //4 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
-    script_use_gateway,            //5 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
-    script_use_teleporter,         //6 teleports to a specified matching teleporter
-    script_toggle_door,            //7 if player steps in coords or other action occurs, open a door
-    script_animation,              //8 if player steps in coords, do animation
-    script_boss_actions,           //9 if boss is still alive, execute boss actions
-    script_gain_money,             //10 gives player some money. Please don't abuse also
-    script_player_hurt,            //11 hurts the player by <data> amount
-    script_placeholder,            //12 ?
+    script_force_dialogue,         //3 force a dialog popup
+    script_trigger_boss,           //4 if player steps in coords, spawn boss
+    script_switch_maps,            //5 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
+    script_use_gateway,            //6 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
+    script_use_teleporter,         //7 teleports to a specified matching teleporter
+    script_toggle_door,            //8 if player steps in coords or other action occurs, open a door
+    script_animation,              //9 if player steps in coords, do animation
+    script_boss_actions,           //10 if boss is still alive, execute boss actions
+    script_gain_money,             //11 gives player some money. Please don't abuse also
+    script_player_hurt,            //12 hurts the player by <data> amount
+    script_placeholder,            //13 ?
 } scriptBehavior;
 
 typedef struct _script {
