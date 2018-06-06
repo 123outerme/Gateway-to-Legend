@@ -1225,8 +1225,9 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 			loadTTFont(FONT_FILE_NAME, &mainFont, 48);
             //figure this out
 			quit = false;
+			targetTime = calcWaitTime(60);
 			int coords = 0;
-			const int maxCoords = 10;
+			const int maxCoords = 10;  //because we use 1 not really in use
 			int xCoords[maxCoords];
 			int yCoords[maxCoords];
 			int frameCoords[maxCoords];
@@ -1236,15 +1237,15 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 yCoords[i] = 0;
                 frameCoords[i] = 0;
             }
-			initSprite(&cursor, toolchain_min(x1, x2), toolchain_min(y1, y2), TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+			initSprite(&cursor, toolchain_min(x1, x2), toolchain_min(y1, y2), bounding.w, bounding.h, 0, 0, SDL_FLIP_NONE, type_na);
 			while(!quit && coords < maxCoords)
 			{
 				bool select = false;
                 SDL_Event e;
                 Uint32 lastKeypressTime = SDL_GetTicks(), lastFrame = lastKeypressTime;
-                int sleepFor = 0, frame = 0, animationMoveFrames = 0, animationMoveSegment = 0, startX = toolchain_min(x1, x2), startY = toolchain_min(y1, y2);
+                int sleepFor = 0, frame = 0, animationMoveFrames = 0, animationMoveSegment = 0, startX = bounding.x, startY = bounding.y;
                 sprite animationSpr;
-                initSprite(&animationSpr, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), startingTile, 0, SDL_FLIP_NONE, type_boss);
+                initSprite(&animationSpr, bounding.x, bounding.y, bounding.w, bounding.h, startingTile, 0, SDL_FLIP_NONE, type_boss);
 				while(!select)
 				{
 					SDL_RenderClear(mainRenderer);
@@ -1253,7 +1254,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                     SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = toolchain_min(x1, x2), .y = toolchain_min(y1, y2), .w = abs(x2 - x1), .h = abs(y2 - y1)}));
                     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
-					drawATile(workingPack.mapPackTexture, animationSpr.tileIndex, bounding.x, bounding.y, bounding.w, bounding.h, cursor.angle, cursor.flip);
+					drawATile(workingPack.mapPackTexture, animationSpr.tileIndex, cursor.x, cursor.y, bounding.w, bounding.h, cursor.angle, cursor.flip);
 					if (coords > 0)
                     {
                         int totalFrames = 0;
@@ -1276,14 +1277,14 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                             {
                                 animationMoveSegment = 0;
                                 animationMoveFrames = 0;
-                                animationSpr.x = toolchain_min(x1, x2);
-                                animationSpr.y = toolchain_min(y1, y2);
-                                startX = toolchain_min(x1, x2);
-                                startY = toolchain_min(y1, y2);
+                                animationSpr.x = bounding.x;
+                                animationSpr.y = bounding.y;
+                                startX = bounding.x;
+                                startY = bounding.y;
                             }
                         }
                     }
-                    drawATile(workingPack.mapPackTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, bounding.w, bounding.h, animationSpr.angle, animationSpr.flip);
+                    drawASprite(workingPack.mapPackTexture, animationSpr);
                     drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
 					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
@@ -1318,6 +1319,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
 					if (sleepFor > 0)
 						SDL_Delay(sleepFor);
+                    printf("tT - %d, lF - %d, sF - %d, GT - %d\n", targetTime, lastFrame, sleepFor, SDL_GetTicks());
 					lastFrame = SDL_GetTicks();
 					frame++;
 					//SDL_RenderPresent(mainRenderer);
@@ -1346,6 +1348,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                     printf("%s\n", moveStr);
             }
 			//end figure this out
+			targetTime = calcWaitTime(FPS);
 			char* dialogueText = calloc(88, sizeof(char));
 			bool keepOnscreen = (aMenu(tilesetTexture, MAIN_ARROW_ID, "Keep tile onscreen after done?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL)) == 1;
 			stringInput(&dialogueText, "Dialogue after completion? (Optional)", 88, "0", true);
@@ -1431,6 +1434,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 			char* moveStr;
 			//visualize boss actions
 			quit = false;
+			targetTime = calcWaitTime(60);
 			int coords = 0;
 			const int maxCoords = 10;
 			int xCoords[maxCoords];
@@ -1556,6 +1560,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 			free(moveStr);
 			strcpy(data, dataStr);
 			free(dataStr);
+			targetTime = calcWaitTime(FPS);
 			//printf("%s\n", data);
 		}
 

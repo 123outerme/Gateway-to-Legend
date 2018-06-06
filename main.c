@@ -1375,81 +1375,83 @@ int mainLoop(player* playerSprite)
                             enemies[i].spr.type = type_na;
                         }
                     }
-
-                    if (enemies[i].spr.tileIndex == ENEMY(1) && enemies[i].spr.type == type_enemy)
+                    if (!playerSprite->movementLocked)  //enemy movement
                     {
-                        //behavior: move quickly at player, with little HP
-                        int length = 0;
-                        node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
-                        /*if (enemies[i].spr.x != playerSprite->spr.x)
-                            enemies[i].spr.x += 3 - 6 * (playerSprite->spr.x < enemies[i].spr.x);
-                        if (enemies[i].spr.y != playerSprite->spr.y)
-                            enemies[i].spr.y += 3 - 6 * (playerSprite->spr.y < enemies[i].spr.y);*/
-                        if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
+                        if (enemies[i].spr.tileIndex == ENEMY(1) && enemies[i].spr.type == type_enemy)
                         {
-                            if (nodeArray[1].x < enemies[i].spr.x)
-                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
-                            else
-                                enemies[i].spr.flip = SDL_FLIP_NONE;
-
-                            if (enemies[i].spr.x != nodeArray[1].x)  //nodeArray[1] -> next tile
-                                enemies[i].spr.x += 3 - 6 * (nodeArray[1].x < enemies[i].spr.x);
-                            if (enemies[i].spr.y != nodeArray[1].y)
-                                enemies[i].spr.y += 3 - 6 * (nodeArray[1].y < enemies[i].spr.y);
-
-                        }
-                        free(nodeArray);
-                    }
-
-                    if (enemies[i].spr.tileIndex == ENEMY(2) && enemies[i].spr.type == type_enemy)
-                    {
-                        //behavior: burst movement towards player?
-                        if (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
-                        {
-                            if (playerSprite->spr.x < enemies[i].spr.x)
-                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
-                            else
-                                enemies[i].spr.flip = SDL_FLIP_NONE;
-
-                            if (enemies[i].spr.x != playerSprite->spr.x)
-                                enemies[i].spr.x += 2 - 4 * (playerSprite->spr.x < enemies[i].spr.x);
-                            if (enemies[i].spr.y != playerSprite->spr.y)
-                                enemies[i].spr.y += 2 - 4 * (playerSprite->spr.y < enemies[i].spr.y);
-                        }
-                    }
-
-                    if (enemies[i].spr.tileIndex == ENEMY(3) && enemies[i].spr.type == type_enemy)
-                    {
-                        //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
-                        int length = 0;
-                        static node curNode;
-                        if (!length || (curNode.x == enemies[i].spr.x && curNode.y == enemies[i].spr.y))
-                        {
+                            //behavior: move quickly at player, with little HP
+                            int length = 0;
                             node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
-                            if (length > 0)
+                            /*if (enemies[i].spr.x != playerSprite->spr.x)
+                                enemies[i].spr.x += 3 - 6 * (playerSprite->spr.x < enemies[i].spr.x);
+                            if (enemies[i].spr.y != playerSprite->spr.y)
+                                enemies[i].spr.y += 3 - 6 * (playerSprite->spr.y < enemies[i].spr.y);*/
+                            if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
                             {
-                                curNode = nodeArray[1];
-                                free(nodeArray);
+                                if (nodeArray[1].x < enemies[i].spr.x)
+                                    enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
+                                else
+                                    enemies[i].spr.flip = SDL_FLIP_NONE;
+
+                                if (enemies[i].spr.x != nodeArray[1].x)  //nodeArray[1] -> next tile
+                                    enemies[i].spr.x += 3 - 6 * (nodeArray[1].x < enemies[i].spr.x);
+                                if (enemies[i].spr.y != nodeArray[1].y)
+                                    enemies[i].spr.y += 3 - 6 * (nodeArray[1].y < enemies[i].spr.y);
+
+                            }
+                            free(nodeArray);
+                        }
+
+                        if (enemies[i].spr.tileIndex == ENEMY(2) && enemies[i].spr.type == type_enemy)
+                        {
+                            //behavior: burst movement towards player?
+                            if (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
+                            {
+                                if (playerSprite->spr.x < enemies[i].spr.x)
+                                    enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
+                                else
+                                    enemies[i].spr.flip = SDL_FLIP_NONE;
+
+                                if (enemies[i].spr.x != playerSprite->spr.x)
+                                    enemies[i].spr.x += 2 - 4 * (playerSprite->spr.x < enemies[i].spr.x);
+                                if (enemies[i].spr.y != playerSprite->spr.y)
+                                    enemies[i].spr.y += 2 - 4 * (playerSprite->spr.y < enemies[i].spr.y);
                             }
                         }
-                        if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
-                        {
-                            if (curNode.x < enemies[i].spr.x)
-                                enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
-                            else
-                                enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                            if (enemies[i].spr.x != curNode.x)
-                                enemies[i].spr.x += 3 - 6 * (curNode.x < enemies[i].spr.x);
-                            if (enemies[i].spr.y != curNode.y)
-                                enemies[i].spr.y += 3 - 6 * (curNode.y < enemies[i].spr.y);
+                        if (enemies[i].spr.tileIndex == ENEMY(3) && enemies[i].spr.type == type_enemy)
+                        {
+                            //behavior: move slowly at player, matching up x coord first then y, w/ lot of HP
+                            int length = 0;
+                            static node curNode;
+                            if (!length || (curNode.x == enemies[i].spr.x && curNode.y == enemies[i].spr.y))
+                            {
+                                node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
+                                if (length > 0)
+                                {
+                                    curNode = nodeArray[1];
+                                    free(nodeArray);
+                                }
+                            }
+                            if (length > 0 && (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
+                            {
+                                if (curNode.x < enemies[i].spr.x)
+                                    enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
+                                else
+                                    enemies[i].spr.flip = SDL_FLIP_NONE;
+
+                                if (enemies[i].spr.x != curNode.x)
+                                    enemies[i].spr.x += 3 - 6 * (curNode.x < enemies[i].spr.x);
+                                if (enemies[i].spr.y != curNode.y)
+                                    enemies[i].spr.y += 3 - 6 * (curNode.y < enemies[i].spr.y);
+                            }
                         }
                     }
                 }
                 if (playHitSound)
                     Mix_PlayChannel(-1, ENEMYHURT_SOUND, 0);
             }
-            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && bossLoaded)
+            if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && bossLoaded && !playerSprite->movementLocked)
             {
                 if (!noclip && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
