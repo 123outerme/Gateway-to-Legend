@@ -1130,7 +1130,9 @@ bool executeScriptAction(script* scriptData, player* player)
 		char* dataCopy = calloc(strlen(scriptData->data), sizeof(char));
 		strcpy(dataCopy, scriptData->data);
 		bool found = false;
-		strtok(data, "(|)");
+		char* dataCopy2 = calloc(strlen(scriptData->data), sizeof(char));
+		strcpy(dataCopy2, scriptData->data);
+		strtok(dataCopy2, "(|)");
 		while(!found)
 		{
 			char* xStr = strtok(NULL, "(|)");
@@ -1166,8 +1168,8 @@ bool executeScriptAction(script* scriptData, player* player)
             moveFrame++;
             if (moveFrame == totalFrames)
             {
-                scriptData->x = x;
-                scriptData->y = y;
+                animationSpr.x = x;
+                animationSpr.y = y;
                 startX = x;
                 startY = y;
             }
