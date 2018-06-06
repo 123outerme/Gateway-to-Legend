@@ -26,4 +26,4 @@ scripts/StopDying.txt
 42
 35
 36
-2
+1

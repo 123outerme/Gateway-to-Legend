@@ -1092,6 +1092,68 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         if (editScript->action == script_animation)
         {
 			SDL_Rect bounding = {.x = 0, .y = 0, .w = TILE_SIZE, .h = TILE_SIZE};
+			//get bounding
+			{
+			    int xx1 = x1, yy1 = y1, xx2 = x2, yy2 = y2;
+			    sprite ccursor;
+                initSprite(&ccursor, xx1, yy1, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
+                bool quit = false, editXY = true;
+			    while(!quit)
+                {
+                    SDL_RenderClear(mainRenderer);
+                    viewMap(workingPack, map, false, false);
+                    SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+                    SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? xx1 : ccursor.x, .y = !editXY ? yy1 : ccursor.y, .w = !editXY ? ccursor.x - xx1 : ccursor.w, .h = !editXY ? ccursor.y - yy1 : ccursor.h}));
+                    key = getKey();
+                    if (SC_SPECIAL == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
+                    {
+                        intervalSize = 48;
+                        bigIntervalSize = true;
+                    }
+                    else
+                    if (bigIntervalSize == true && SC_SPECIAL == SDL_GetScancodeFromKey(key))
+                    {
+                        intervalSize = 6;
+                        bigIntervalSize = false;
+                    }
+
+                    if (SC_UP == SDL_GetScancodeFromKey(key) && ccursor.y > 0)
+                        ccursor.y -= intervalSize;
+                    if (SC_DOWN == SDL_GetScancodeFromKey(key) && ccursor.y < SCREEN_HEIGHT)
+                        ccursor.y += intervalSize;
+                    if (SC_LEFT == SDL_GetScancodeFromKey(key) && ccursor.x > 0)
+                        ccursor.x -= intervalSize;
+                    if (SC_RIGHT == SDL_GetScancodeFromKey(key) && ccursor.x < SCREEN_WIDTH)
+                        ccursor.x += intervalSize;
+                    if (SC_INTERACT == SDL_GetScancodeFromKey(key))
+                    {
+                        if (editXY)
+                        {
+                            xx1 = ccursor.x;
+                            yy1 = ccursor.y;
+                            ccursor.x = xx1 + ccursor.w;
+                            ccursor.y = yy1 + ccursor.h;
+                            bigIntervalSize = false;
+                            intervalSize = 6;
+                            editXY = false;
+                        }
+                        else
+                        {
+                            xx2 = ccursor.x;
+                            yy2 = ccursor.y;
+                            quit = true;
+                        }
+                    }
+                    if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
+                        quit = true;
+                    SDL_RenderPresent(mainRenderer);
+                }
+                bounding.x = toolchain_min(xx1, xx2);
+                bounding.y = toolchain_min(yy1, yy2);
+                bounding.w = abs(xx2 - xx1);
+                bounding.h = abs(yy2 - yy1);
+			}
+			//end get bounding
 			//get startingTile
 			int startingTile = 0;
 			{
@@ -1191,6 +1253,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                     SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = toolchain_min(x1, x2), .y = toolchain_min(y1, y2), .w = abs(x2 - x1), .h = abs(y2 - y1)}));
                     SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
+					drawATile(workingPack.mapPackTexture, animationSpr.tileIndex, bounding.x, bounding.y, bounding.w, bounding.h, cursor.angle, cursor.flip);
 					if (coords > 0)
                     {
                         int totalFrames = 0;
@@ -1220,7 +1283,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                             }
                         }
                     }
-                    drawASprite(workingPack.mapPackTexture, animationSpr);
+                    drawATile(workingPack.mapPackTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, bounding.w, bounding.h, animationSpr.angle, animationSpr.flip);
                     drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
 					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
@@ -1232,13 +1295,13 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 						}
 						if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
 						{
-							if (cursor.y > TILE_SIZE && checkSKUp)
+							if (checkSKUp)
 								cursor.y -= PIXELS_MOVED;
-							if (cursor.y < SCREEN_HEIGHT - cursor.h && checkSKDown)
+							if (checkSKDown)
 								cursor.y += PIXELS_MOVED;
-							if (cursor.x > 0 && checkSKLeft)
+							if (checkSKLeft)
 								cursor.x -= PIXELS_MOVED;
-							if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
+							if (checkSKRight)
 								cursor.x += PIXELS_MOVED;
 							if (checkSKInteract)
 								select = true;
@@ -1269,8 +1332,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 				//get num of frames, add into array
 			}
 			//then make it all a string
-			moveStr = calloc(coords * 4 + 2, sizeof(char));
-			moveStr[0] = '(';
+			char* moveStr = calloc(coords * 4 + 2, sizeof(char));
 			char* temp = "";
 			for(int i = 0; i < coords; i++)
             {
@@ -1281,13 +1343,13 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 strcat(moveStr, intToString(frameCoords[i], temp));
                 if (i < coords - 1)
                     strcat(moveStr, "|");
-                    //printf("%s\n", moveStr);
+                    printf("%s\n", moveStr);
             }
-            strcat(moveStr, ")");
 			//end figure this out
 			char* dialogueText = calloc(88, sizeof(char));
+			bool keepOnscreen = (aMenu(tilesetTexture, MAIN_ARROW_ID, "Keep tile onscreen after done?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL)) == 1;
 			stringInput(&dialogueText, "Dialogue after completion? (Optional)", 88, "0", true);
-			snprintf(data, , "[%d/%d/%d/%d/%d](%s)<%s>", bounding.x, bounding.y, bounding.w, bounding.h, startingTile, aMenu(tilesetTexture, MAIN_ARROW_ID, "Keep tile onscreen after done?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL) == 1, moveStr, dialogueText);
+			snprintf(data, 116 + strlen(moveStr), "[%d/%d/%d/%d/%d/%d](%s)<%s>", bounding.x, bounding.y, bounding.w, bounding.h, startingTile, keepOnscreen, moveStr, dialogueText);
 			free(dialogueText);
         }
 
@@ -1328,13 +1390,13 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 						}
 						if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
 						{
-							if (cursor.y > TILE_SIZE && checkSKUp)
+							if (checkSKUp)
 								cursor.y -= PIXELS_MOVED;
-							if (cursor.y < SCREEN_HEIGHT - cursor.h && checkSKDown)
+							if (checkSKDown)
 								cursor.y += PIXELS_MOVED;
-							if (cursor.x > 0 && checkSKLeft)
+							if (checkSKLeft)
 								cursor.x -= PIXELS_MOVED;
-							if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
+							if (checkSKRight)
 								cursor.x += PIXELS_MOVED;
 							if (checkSKInteract)
 							{

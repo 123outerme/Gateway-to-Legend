@@ -943,7 +943,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
 bool executeScriptAction(script* scriptData, player* player)
 {
     bool exitGameLoop = false;
-    if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once) && scriptData->data[0] != '\0')
+    if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue) && scriptData->data[0] != '\0')
     {
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
         waitForKey();
@@ -1103,23 +1103,41 @@ bool executeScriptAction(script* scriptData, player* player)
             Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }
-	
+
 	if (scriptData->action == script_animation)
 	{
-		char* data;
+	    player->movementLocked = true;
+		char* data = calloc(strlen(scriptData->data), sizeof(char));
 		strcpy(data, scriptData->data);
 		static int moveFrame = 1;
-		static char* animationData = strtok(data, "[]");
-		int totalFrames = 0;
-		char* dataCopy;
+		static int startX = 0;
+		static int startY = 0;
+		static char* animationData = "";
+		animationData = calloc(256 ,sizeof(char));
+		strncpy(animationData, strtok(data, "[]"), 256);
+		//printf("animation - %s\n", animationData);
+		int animationDataArr[6];
+		animationDataArr[0] = strtol(strtok(animationData, "/"), NULL, 10);
+		for(int i = 1; i < 6; i++)
+        {
+            animationDataArr[i] = strtol(strtok(NULL, "/"), NULL, 10);
+        }
+        animationSpr.w = animationDataArr[2];
+        animationSpr.h = animationDataArr[3];
+        animationSpr.tileIndex = animationDataArr[4];
+        //printf("[%d,%d,%d,%d,%d,%d]\n", animationDataArr[0], animationDataArr[1], animationDataArr[2], animationDataArr[3], animationDataArr[4], animationDataArr[5]);
+		int totalFrames = 0, x = 0, y = 0, frames = 0;
+		char* dataCopy = calloc(strlen(scriptData->data), sizeof(char));
 		strcpy(dataCopy, scriptData->data);
 		bool found = false;
+		strtok(data, "(|)");
 		while(!found)
 		{
 			char* xStr = strtok(NULL, "(|)");
 			if (!xStr)  //no more data
 			{
-				moveFrame = 1;  //repeat; has to be 1 to reset to the way it is init'ed
+				moveFrame = 0;  //repeat; has to be 1 to reset to the way it is init'ed
+				scriptData->action = script_none;  //disable further execution in this launch
 				strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
 			}
 			else
@@ -1128,12 +1146,52 @@ bool executeScriptAction(script* scriptData, player* player)
 				y = strtol(strtok(NULL, "(|)"), NULL, 10);
 				frames = strtol(strtok(NULL, "(|)"), NULL, 10);
 				totalFrames += frames;
+				printf("tf - %d, f - %d, mf - %d\n", totalFrames, frames, moveFrame);
 				if (moveFrame <= totalFrames)
 					found = true;
 			}
 		}
+        if (moveFrame == 1)
+        {
+            animationSpr.x = animationDataArr[0];
+            animationSpr.y = animationDataArr[1];
+            startX = animationDataArr[0];
+            startY = animationDataArr[1];
+            moveFrame++;
+        }
+        else if (moveFrame > 1)
+        {
+            animationSpr.x += (x - startX) / frames;
+            animationSpr.y += (y - startY) / frames;
+            moveFrame++;
+            if (moveFrame == totalFrames)
+            {
+                scriptData->x = x;
+                scriptData->y = y;
+                startX = x;
+                startY = y;
+            }
+        }
+
+		if (moveFrame == 0)
+        {
+            if (!animationDataArr[5])  //if not stay onscreen
+                animationSpr.tileIndex = tileIDArray[5];
+            player->movementLocked = false;
+            script textBox;
+            char* textStuff = calloc(88, sizeof(char));
+            char* dataPtr = scriptData->data;
+            strtok(scriptData->data, "<>");  //gets rid of extra data
+            strncpy(textStuff, strtok(NULL, "<>"), 88);
+            strcpy(scriptData->data, dataPtr);
+            printf("%s\n", textStuff);
+            initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff);
+            executeScriptAction(&textBox, player);
+            printf("completed\n");
+            moveFrame = 1;
+        }
 	}
-	
+
     if (scriptData->action == script_boss_actions)
     {
         static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
@@ -1236,7 +1294,7 @@ bool executeScriptAction(script* scriptData, player* player)
         }
         //play animation (?) and sound
     }
-		scriptData->active = false;
+    scriptData->active = false;
     return exitGameLoop;  //returns whether or not it wants to exit the game loop
 }
 

@@ -56,6 +56,7 @@ int toolchain_main();
 #define CURSOR_ID tileIDArray[2]
 #define HP_ID tileIDArray[3]
 #define SWORD_ID tileIDArray[4]
+#define INVIS_ID tileIDArray[5]
 #define ENEMY(x) tileIDArray[14 + x]
 #define GOLD_ID tileIDArray[18]
 
@@ -998,6 +999,7 @@ int mainLoop(player* playerSprite)
     Uint32 swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
+    initSprite(&animationSpr, 0, 0, TILE_SIZE, TILE_SIZE, INVIS_ID, 0, SDL_FLIP_NONE, type_generic);
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -1506,10 +1508,12 @@ int mainLoop(player* playerSprite)
                         thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)) || thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)) || /*thisScript->action == script_animation ||*/ thisScript->action == script_none)
                             thisScript->active = false;
                         else
                             break;
+                        /*if (thisScript->action == script_animation)
+                            executeScriptAction(thisScript, playerSprite);*/
                     }
                 }
             }
@@ -1549,6 +1553,11 @@ int mainLoop(player* playerSprite)
             drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
             /*for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);*/
+        }
+
+        if (animationSpr.x >= 0)
+        {
+            drawATile(tilesTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, animationSpr.w, animationSpr.h, animationSpr.angle, animationSpr.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)

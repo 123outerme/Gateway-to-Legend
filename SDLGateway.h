@@ -226,21 +226,6 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define FANFARE_MUSIC_FILE "assets/audio/GtL4.mp3"
 #define GAMEOVER_MUSIC_FILE "assets/audio/gatewayToRetry.mp3"
 
-/*
-Sound effects should play upon walking
-killing enemies [x]
-swinging the sword [x]
-pausing [ ]
-moving menu cursors [x]
-selecting options [x]
-going through the portals [x]
-walking [x]
-opening doors [x]
-teleporting [x]
-getting hurt [x]
-etc.
-*/
-
 #define SPARK_COLOR_RED ((SDL_Color) {0xD8, 0x22, 0x0A, 0xD0})
 #define SPARK_COLOR_ORANGE ((SDL_Color) {0xFF, 0x8C, 0x11, 0xD0})
 #define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
@@ -260,6 +245,7 @@ saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 int maxBosses;
 bool bossLoaded;
 int musicIndex;
+sprite animationSpr;
 
 #define MAX_SPARKS 8
 bool sparkFlag, theseSparkFlags[MAX_SPARKS];
