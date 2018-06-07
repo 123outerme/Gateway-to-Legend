@@ -1266,7 +1266,7 @@ bool executeScriptAction(script* scriptData, player* player)
         if (player->money > 9999)
             player->money = 9999;
             Mix_PlayChannel(-1, CASH_SOUND, 0);
-        initSpark(&theseSparks[3], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, (FPS ? FPS / 4 : (frame / startTime) / 4), (FPS ? FPS / 8 : (frame / startTime) / 8));
+        initSpark(&theseSparks[3], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime) / 4), (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
         sparkFlag = true;
         theseSparkFlags[3] = true;
         //play animation and sound
@@ -1283,7 +1283,7 @@ bool executeScriptAction(script* scriptData, player* player)
         if (dmg > 0)
         {
             Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
-            printf("%d / (%d - %d) == %d\n", frame, SDL_GetTicks(), startTime, frame * 1000 / (SDL_GetTicks() - startTime));
+            //printf("%d / (%d - %d) == %d\n", frame, SDL_GetTicks(), startTime, frame * 1000 / (SDL_GetTicks() - startTime));
             initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_RED, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
             sparkFlag = true;
             theseSparkFlags[1] = true;
