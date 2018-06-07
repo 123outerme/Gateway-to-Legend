@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
                 changeName(&person);
             if (choice == 4)
             {
-                int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);
+                int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);  //todo: show old FPS
                 if (newFPS > 0 && newFPS < 30)
                     newFPS = 30;
                 changeFPS(newFPS);

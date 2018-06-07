@@ -1187,7 +1187,8 @@ bool executeScriptAction(script* scriptData, player* player)
             strncpy(textStuff, strtok(NULL, "<>"), 88);
             strcpy(scriptData->data, dataPtr);
             printf("%s\n", textStuff);
-            initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff);
+            if (strcmp(textStuff, "0")) //if the two have differences aka aren't equal
+                initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff);
             executeScriptAction(&textBox, player);
             printf("completed\n");
             moveFrame = 1;
