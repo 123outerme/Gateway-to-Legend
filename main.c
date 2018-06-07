@@ -1570,7 +1570,7 @@ int mainLoop(player* playerSprite)
         {
             for(int i = 0; i < MAX_SPARKS; i++)
             {
-                printf("theseSparks[%d].timer == %d, theseSparkFlags[i] == %d\n", i, theseSparks[i].timer, theseSparkFlags[i]);
+                //printf("theseSparks[%d].timer == %d, theseSparkFlags[i] == %d\n", i, theseSparks[i].timer, theseSparkFlags[i]);
                 if (theseSparks[i].timer && theseSparkFlags[i])
                 {
                     drawSparks(&theseSparks[i]);
