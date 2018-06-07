@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
                 loadIMG("assets/splashscreen.png", &titlescreen);
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
-                while(!key)
+                while(key != SDLK_SPACE)
                 {
                     SDL_RenderClear(mainRenderer);
                     SDL_RenderCopy(mainRenderer, titlescreen, NULL, NULL);
@@ -994,8 +994,9 @@ int mainLoop(player* playerSprite)
     //doDebugDraw = false;
     int exitCode = 2;
     char whatever[5] = "    \0";
-    int startTime = SDL_GetTicks(), lastFrame = startTime,
-        frame = 0, framerate = 0, sleepFor = 0, lastXPress = 0, lastYPress = 0;
+    startTime = SDL_GetTicks();
+    frame = 0;
+    int lastFrame = startTime, framerate = 0, sleepFor = 0, lastXPress = 0, lastYPress = 0;
     Uint32 swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
@@ -1158,14 +1159,14 @@ int mainLoop(player* playerSprite)
                     playerSprite->xVeloc = 0;
                     playerSprite->yVeloc = 0;
                     //printf("%d\n", exitCode);
-                    if (collisionData[8] && !playerSprite->invincCounter && !noclip)  //spikes
+                    if (collisionData[8] && playerSprite->invincCounter < 1 && !noclip)  //spikes
                     {
                         playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
                         playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
                         script hurtPlayer;
                         initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
                         executeScriptAction(&hurtPlayer, playerSprite);
-                        playerSprite->invincCounter = FPS / 6;  //10 frames of invincibility at 60fps, or approx. .167 of a second
+                        playerSprite->invincCounter = 10;  //10 frames of invincibility at 60fps, or approx. .167 of a second
                     }
                 }
 
@@ -1241,7 +1242,7 @@ int mainLoop(player* playerSprite)
                             }
                     }
                     thisScript->active = found;
-                    initSpark(&theseSparks[4], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, FPS / 3, FPS / 6);
+                    initSpark(&theseSparks[4], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, framerate / 3, framerate / 6);
                     sparkFlag = true;
                     theseSparkFlags[4] = true;
                 }
@@ -1308,7 +1309,7 @@ int mainLoop(player* playerSprite)
 
                 if (!strncmp(command, "particles", 9))
                 {
-                    initSpark(&theseSparks[6], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, FPS / 2, FPS / 4);
+                    initSpark(&theseSparks[6], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 8, 8, framerate / 2, framerate / 4);
                     sparkFlag = true;
                     theseSparkFlags[6] = true;
                 }
@@ -1347,7 +1348,7 @@ int mainLoop(player* playerSprite)
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
-                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
                         sparkFlag = true;
                         theseSparkFlags[1] = true;
                     }
@@ -1478,7 +1479,7 @@ int mainLoop(player* playerSprite)
                             executeScriptAction(&bossDeadScript, playerSprite);
                             initScript(&bossDeadScript, script_gain_money, 0, 0, 0, 0, 0, "15");  //boss should probably become money, "dropping" it
                             executeScriptAction(&bossDeadScript, playerSprite);
-                            initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, FPS / 2, FPS / 4);
+                            initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, framerate / 2, framerate / 4);
                             sparkFlag = true;
                             theseSparkFlags[7] = true;
                             playerSprite->defeatedBosses[playerSprite->nextBossPos++] = playerSprite->mapScreen;
@@ -1487,7 +1488,7 @@ int mainLoop(player* playerSprite)
                         }
                         else
                         {
-                            initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, FPS / 4, FPS / 8);
+                            initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
                             sparkFlag = true;
                             theseSparkFlags[1] = true;
                         }
@@ -1538,7 +1539,7 @@ int mainLoop(player* playerSprite)
 
         frame++;
         //if ((SDL_GetTicks() - startTime) % 250 == 0)
-        framerate = (int) (frame / ((SDL_GetTicks() - startTime) / 1000.0));
+        framerate = (int) (frame * 1000.0 / (SDL_GetTicks() - startTime));  //multiplied by 1000 on both sides since 1000f / ms == 1f / s
 
         if (drawFPS)
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
@@ -1569,6 +1570,7 @@ int mainLoop(player* playerSprite)
         {
             for(int i = 0; i < MAX_SPARKS; i++)
             {
+                printf("theseSparks[%d].timer == %d, theseSparkFlags[i] == %d\n", i, theseSparks[i].timer, theseSparkFlags[i]);
                 if (theseSparks[i].timer && theseSparkFlags[i])
                 {
                     drawSparks(&theseSparks[i]);

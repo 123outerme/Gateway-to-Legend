@@ -4,7 +4,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
-#define VERSION_NUMBER "1.0.0b"
+#define VERSION_NUMBER "0.9.0b"
 
 #define SAVE_FILE_LINES 0
 #define GAME_WINDOW_NAME "Gateway to Legend"
@@ -235,7 +235,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
 #define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
-int FPS, targetTime;
+int FPS, targetTime, startTime, frame;
 bool doorFlags[3];
 bool noclip;
 
