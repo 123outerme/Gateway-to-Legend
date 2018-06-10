@@ -415,59 +415,73 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                 Mix_PlayChannel(-1, OPTION_SOUND, 0);
             }
             //User presses a key
-            else if(e.type == SDL_KEYDOWN)
+            else
             {
-                const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-                if (keyStates[SC_UP] && cursor.y > 5 * TILE_SIZE)
+                if(e.type == SDL_KEYDOWN)
                 {
-                    cursor.y -= TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (keyStates[SC_DOWN] && cursor.y < (options + 4) * TILE_SIZE)
-                {
-                    cursor.y += TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (keyStates[SC_INTERACT])
-                {
-                    selection = cursor.y / TILE_SIZE - 4;
-                    quit = true;
-                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
-                }
-                if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R] && !settingsReset)
-                {
-                    SC_UP = SDL_SCANCODE_W;
-                    SC_DOWN = SDL_SCANCODE_S;
-                    SC_LEFT = SDL_SCANCODE_A;
-                    SC_RIGHT = SDL_SCANCODE_D;
-                    SC_SPECIAL = SDL_SCANCODE_LSHIFT;
-                    SC_INTERACT = SDL_SCANCODE_SPACE;
-                    SC_MENU = SDL_SCANCODE_ESCAPE;
-                    saveConfig(CONFIG_FILEPATH);
-                    Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
-                    settingsReset = true;
-                }
-                if (isMain && ((keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_M]))
-                {
-                    static int prevMusicVolume = 0;
-                    static int prevSoundVolume = 0;
-                    if (musicVolume != 0 && soundVolume != 0)
+                    const Uint8* keyStates = SDL_GetKeyboardState(NULL);
+                    if (keyStates[SC_UP] && cursor.y > 5 * TILE_SIZE)
                     {
+                        cursor.y -= TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
 
-                        prevMusicVolume = (musicVolume ? musicVolume : MIX_MAX_VOLUME);
-                        prevSoundVolume = (soundVolume ? soundVolume : MIX_MAX_VOLUME);
-                        musicVolume = 0;
-                        soundVolume = 0;
-                    }
-                    else
+                    if (keyStates[SC_DOWN] && cursor.y < (options + 4) * TILE_SIZE)
                     {
-                        musicVolume = prevMusicVolume;
-                        soundVolume = prevSoundVolume;
+                        cursor.y += TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                    Mix_Volume(-1, soundVolume);
-                    Mix_VolumeMusic(musicVolume);
+
+                    if (keyStates[SC_INTERACT])
+                    {
+                        selection = cursor.y / TILE_SIZE - 4;
+                        quit = true;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                    if (isMain && (keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_R] && !settingsReset)
+                    {
+                        SC_UP = SDL_SCANCODE_W;
+                        SC_DOWN = SDL_SCANCODE_S;
+                        SC_LEFT = SDL_SCANCODE_A;
+                        SC_RIGHT = SDL_SCANCODE_D;
+                        SC_SPECIAL = SDL_SCANCODE_LSHIFT;
+                        SC_INTERACT = SDL_SCANCODE_SPACE;
+                        SC_MENU = SDL_SCANCODE_ESCAPE;
+                        saveConfig(CONFIG_FILEPATH);
+                        Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+                        settingsReset = true;
+                    }
+                    if (isMain && ((keyStates[SDL_SCANCODE_LCTRL] || keyStates[SDL_SCANCODE_RCTRL]) && keyStates[SDL_SCANCODE_M]))
+                    {
+                        static int prevMusicVolume = 0;
+                        static int prevSoundVolume = 0;
+                        if (musicVolume != 0 && soundVolume != 0)
+                        {
+
+                            prevMusicVolume = (musicVolume ? musicVolume : MIX_MAX_VOLUME);
+                            prevSoundVolume = (soundVolume ? soundVolume : MIX_MAX_VOLUME);
+                            musicVolume = 0;
+                            soundVolume = 0;
+                        }
+                        else
+                        {
+                            musicVolume = prevMusicVolume;
+                            soundVolume = prevSoundVolume;
+                        }
+                        Mix_Volume(-1, soundVolume);
+                        Mix_VolumeMusic(musicVolume);
+                    }
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                {
+
+                    int choice = (e.button.y / TILE_SIZE) - 4;
+                    if (choice > 0 && choice <= options)
+                    {
+                        selection = choice;
+                        quit = true;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
                 }
             }
         }
@@ -768,7 +782,7 @@ void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int sele
     SDL_SetRenderDrawColor(mainRenderer, bgColor.r, bgColor.g, bgColor.b, 0xFF);
     SDL_RenderFillRect(mainRenderer, NULL);
     drawText(titleText, .5 * TILE_SIZE, 5 * SCREEN_HEIGHT / 64, (WIDTH_IN_TILES - .5) * TILE_SIZE, (HEIGHT_IN_TILES - 4) * TILE_SIZE, textColor, true);
-    SDL_Keycode kc = waitForKey();
+    SDL_Keycode kc = waitForKey(false);
     bool conflict = false;
     for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
     {
@@ -896,7 +910,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
                     SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = x * TILE_SIZE, .y = y * TILE_SIZE, .w = TILE_SIZE, .h = TILE_SIZE}));
                     SDL_RenderPresent(mainRenderer);
                     //printf("%p\n", searchList[y][x].lastNode);
-                    waitForKey();
+                    waitForKey(true);
                 }
             }
         }
@@ -946,7 +960,7 @@ bool executeScriptAction(script* scriptData, player* player)
     if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue) && scriptData->data[0] != '\0')
     {
         drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
-        waitForKey();
+        waitForKey(true);
         if (scriptData->action == script_trigger_dialogue_once)
             scriptData->data[0] = '\0';
     }

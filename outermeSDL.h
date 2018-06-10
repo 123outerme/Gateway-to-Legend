@@ -85,8 +85,8 @@ void initSprite(sprite* spr, int x, int y, int w, int h, int tileIndex, int angl
 void drawATilemap(SDL_Texture* texture, int map[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, int hideTileNumOf, bool updateScreen);  //draws a tilemap from a given tileset texture.
 void drawATile(SDL_Texture* texture, int id, int xCoord, int yCoord, int width, int height, int angle, SDL_RendererFlip flip);  //draws a tile from a given tileset texture
 void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bool render);  //draws text to the screen
-SDL_Keycode getKey();  //gets a keycode that was pressed, or none if none was pressed during collection
-SDL_Keycode waitForKey();  //waits for a player to press any key, returns the key that was pressed
+SDL_Keycode getKey(bool useMouse);  //gets a keycode that was pressed, or none if none was pressed during collection
+SDL_Keycode waitForKey(bool useMouse);  //waits for a player to press any key, returns the key that was pressed
 void closeSDL();  //closes SDL and related stuff
 int intSeqSearch(int value, int array[], size_t arraySize);  //finds an int in an int array
 char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string

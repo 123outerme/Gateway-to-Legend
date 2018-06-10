@@ -196,7 +196,7 @@ void drawText(char* input, int x, int y, int maxW, int maxH, SDL_Color color, bo
     }
 }
 
-SDL_Keycode getKey()
+SDL_Keycode getKey(bool useMouse)
 {
     SDL_Event e;
     SDL_Keycode keycode = 0;
@@ -205,13 +205,17 @@ SDL_Keycode getKey()
         if(e.type == SDL_QUIT)
             keycode = -1;
         else
+        {
             if(e.type == SDL_KEYDOWN)
                 keycode = e.key.keysym.sym;
+            if (e.type == SDL_MOUSEBUTTONDOWN && useMouse)
+                keycode = 1;
+        }
     }
     return keycode;
 }
 
-SDL_Keycode waitForKey()
+SDL_Keycode waitForKey(bool useMouse)
 {
     SDL_Event e;
     bool quit = false;
@@ -223,11 +227,18 @@ SDL_Keycode waitForKey()
             if(e.type == SDL_QUIT)
                 quit = true;
             else
+            {
                 if(e.type == SDL_KEYDOWN)
                 {
                     keycode = e.key.keysym.sym;
                     quit = true;
                 }
+                if (e.type == SDL_MOUSEBUTTONDOWN && useMouse)
+                {
+                    keycode = 1;
+                    quit = true;
+                }
+            }
         }
     }
     return keycode;

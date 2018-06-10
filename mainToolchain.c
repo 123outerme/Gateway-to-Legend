@@ -145,7 +145,7 @@ int toolchain_main()
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderFillRect(mainRenderer, NULL);
                 drawText(MAIN_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                key = getKey();
+                key = getKey(true);
             }
         }
 
@@ -288,7 +288,7 @@ void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
         SDL_RenderClear(mainRenderer);
         viewMap(workingPack, *map, false, false);
         drawText("Choose x/y coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
-        key = getKey();
+        key = getKey(false);
         if (SC_UP == SDL_GetScancodeFromKey(key) && *y > 0)
             *y -= TILE_SIZE;
         if (SC_DOWN == SDL_GetScancodeFromKey(key) && *y < SCREEN_HEIGHT)
@@ -392,7 +392,7 @@ int mainMapCreator(mapPack* workingPack)
             if (scriptCount > 0)
                 strcat(exitNote, " and to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
             drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-            waitForKey();
+            waitForKey(false);
             free(exitNote);
         }
         free(mapScripts);
@@ -424,7 +424,7 @@ int chooseMap(mapPack workingPack)
     while(!quit)
     {
         viewMap(workingPack, mapNum, true, true);
-        keycode = getKey();
+        keycode = getKey(false);
         mapNum += (keycode == SDLK_d && mapNum < maxMapNum) - (keycode == SDLK_a && mapNum > 0) + 10 * (keycode == SDLK_s && mapNum + 9 < maxMapNum) - 10 * (keycode == SDLK_w && mapNum > 9);
         if (keycode == SDLK_RETURN || keycode == SDLK_ESCAPE || keycode == SDLK_SPACE || keycode == -1)
             quit = true;
@@ -440,7 +440,7 @@ void chooseCoords(mapPack workingPack, int mapNum, int* xPtr, int* yPtr)
     while(!quit)
     {
         viewMap(workingPack, mapNum, true, false);
-        keycode = getKey();
+        keycode = getKey(false);
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
         x += TILE_SIZE * ((SC_RIGHT == SDL_GetScancodeFromKey(keycode) && x < SCREEN_WIDTH - TILE_SIZE) - (SC_LEFT == SDL_GetScancodeFromKey(keycode) && x > 0));
@@ -584,7 +584,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                         drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
                         drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
                         drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
-                        key = getKey();
+                        key = getKey(false);
                         if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
                             y -= TILE_SIZE;
                         if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
@@ -753,7 +753,7 @@ void mainScriptEdtior(mapPack* workingPack)
             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
             SDL_RenderClear(mainRenderer);
             drawText("Appended to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-            waitForKey();
+            waitForKey(true);
         }
     }
 }
@@ -846,7 +846,7 @@ int scriptSelectLoop(mapPack workingPack)
                     Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     if (selection == 3)
                     {
-                        while(!getKey())
+                        while(!getKey(true))
                         {
                             SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                             SDL_RenderFillRect(mainRenderer, NULL);
@@ -887,7 +887,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         SDL_RenderClear(mainRenderer);
         viewMap(workingPack, map, false, false);
         SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? x1 : cursor.x, .y = !editXY ? y1 : cursor.y, .w = !editXY ? cursor.x - x1 : cursor.w, .h = !editXY ? cursor.y - y1 : cursor.h}));
-        key = getKey();
+        key = getKey(false);
         if (SC_SPECIAL == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
         {
             intervalSize = 48;
@@ -960,7 +960,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             {
                 SDL_RenderClear(mainRenderer);
                 viewMap(workingPack, loadedScript.mapNum, true, false);
-                key = getKey();
+                key = getKey(false);
                 if (key == SDL_GetKeyFromScancode(SC_UP))
                 {
                     if (foundIndex > 9)
@@ -1104,7 +1104,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                     viewMap(workingPack, map, false, false);
                     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
                     SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = !editXY ? xx1 : ccursor.x, .y = !editXY ? yy1 : ccursor.y, .w = !editXY ? ccursor.x - xx1 : ccursor.w, .h = !editXY ? ccursor.y - yy1 : ccursor.h}));
-                    key = getKey();
+                    key = getKey(false);
                     if (SC_SPECIAL == SDL_GetScancodeFromKey(key) && bigIntervalSize == false)
                     {
                         intervalSize = 48;
@@ -1593,7 +1593,7 @@ script visualLoadScript(mapPack* workingPack)
     {
         SDL_RenderClear(mainRenderer);
         viewMap(*workingPack, loadedScript.mapNum, true, false);
-        key = getKey();
+        key = getKey(false);
         if (key == SDL_GetKeyFromScancode(SC_UP))
         {
             if (scriptLineNum > 9)
@@ -1661,7 +1661,7 @@ int mainMapPackWizard(mapPack* workingPack)
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderFillRect(mainRenderer, NULL);
                 drawText(MAPPACK_SETUP_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                key = getKey();
+                key = getKey(true);
             }
         }
 

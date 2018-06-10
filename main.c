@@ -126,13 +126,13 @@ int main(int argc, char* argv[])
                 loadIMG("assets/splashscreen.png", &titlescreen);
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
-                while(key != SDLK_SPACE)
+                while(!key)
                 {
                     SDL_RenderClear(mainRenderer);
                     SDL_RenderCopy(mainRenderer, titlescreen, NULL, NULL);
                     //drawText("Gateway to Legend", 1.5 * TILE_SIZE, 1.5 * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
                     //drawText("Press Any Key", 3.5 * TILE_SIZE, 12 * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TITLECOLOR2}, false);
-                    key = getKey();
+                    key = getKey(true);
                     SDL_RenderPresent(mainRenderer);
                 }
                 SDL_DestroyTexture(titlescreen);
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
                     SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                     SDL_RenderFillRect(mainRenderer, NULL);
                     drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                    pauseKey = getKey(0);
+                    pauseKey = getKey(true);
                 }
             }
             if (choice == 7)
@@ -552,64 +552,84 @@ void changeVolumes()
             if(e.type == SDL_QUIT)
                 quit = true;
             //User presses a key
-            else if(e.type == SDL_KEYDOWN)
+            else
             {
-                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
+                if(e.type == SDL_KEYDOWN)
                 {
-                    cursor.y -= TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 8 * TILE_SIZE)
-                {
-                    cursor.y += TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.scancode == SC_LEFT  && cursor.y < TILE_SIZE * 7)
-                {
-                    if (cursor.y == TILE_SIZE * 5 && musicVolume > 0)
+                    if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                     {
-                        musicVolume -= 16;
-                        Mix_VolumeMusic(musicVolume);
-                        Mix_Volume(-1, musicVolume);
-                        Mix_PlayChannel(-1, PING_SOUND, 0);
-                        Mix_Volume(-1, soundVolume);
-                    }
-                    else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
-                    {
-                        soundVolume -= 16;
-                        Mix_Volume(-1, soundVolume);
+                        cursor.y -= TILE_SIZE;
                         Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                }
 
-                if (e.key.keysym.scancode == SC_RIGHT  && cursor.y < TILE_SIZE * 7)
-                {
-                    if (cursor.y == TILE_SIZE * 5 && musicVolume < MIX_MAX_VOLUME)
+                    if (e.key.keysym.scancode == SC_DOWN && cursor.y < 8 * TILE_SIZE)
                     {
-                        musicVolume += 16;
-                        Mix_VolumeMusic(musicVolume);
-                        Mix_Volume(-1, musicVolume);
-                        Mix_PlayChannel(-1, PING_SOUND, 0);
-                        Mix_Volume(-1, soundVolume);
-                    }
-                    else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
-                    {
-                        soundVolume += 16;
-                        Mix_Volume(-1, soundVolume);
+                        cursor.y += TILE_SIZE;
                         Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                }
 
-                if (e.key.keysym.scancode == SC_INTERACT)
+                    if (e.key.keysym.scancode == SC_LEFT  && cursor.y < TILE_SIZE * 7)
+                    {
+                        if (cursor.y == TILE_SIZE * 5 && musicVolume > 0)
+                        {
+                            musicVolume -= 16;
+                            Mix_VolumeMusic(musicVolume);
+                            Mix_Volume(-1, musicVolume);
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                            Mix_Volume(-1, soundVolume);
+                        }
+                        else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
+                        {
+                            soundVolume -= 16;
+                            Mix_Volume(-1, soundVolume);
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
+                    }
+
+                    if (e.key.keysym.scancode == SC_RIGHT  && cursor.y < TILE_SIZE * 7)
+                    {
+                        if (cursor.y == TILE_SIZE * 5 && musicVolume < MIX_MAX_VOLUME)
+                        {
+                            musicVolume += 16;
+                            Mix_VolumeMusic(musicVolume);
+                            Mix_Volume(-1, musicVolume);
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                            Mix_Volume(-1, soundVolume);
+                        }
+                        else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
+                        {
+                            soundVolume += 16;
+                            Mix_Volume(-1, soundVolume);
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
+                    }
+
+                    if (e.key.keysym.scancode == SC_INTERACT)
+                    {
+                        Mix_Volume(-1, soundVolume);
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        if (cursor.y == TILE_SIZE * 7)
+                            soundTestMenu();
+                        if (cursor.y == TILE_SIZE * 8)
+                            quit = true;
+                    }
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
                 {
-                    Mix_Volume(-1, soundVolume);
-                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
-                    if (cursor.y == TILE_SIZE * 7)
-                        soundTestMenu();
-                    if (cursor.y == TILE_SIZE * 8)
-                        quit = true;
+
+                    int choice = (e.button.y / TILE_SIZE) - 4;
+                    if (choice > 0 && choice <= 4)
+                    {
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        if (choice < 3)
+                        {
+                            //
+                        }
+                        if (choice == 3)
+                            soundTestMenu();
+                        if (choice == 4)
+                            quit = true;
+                    }
                 }
             }
         }
@@ -649,64 +669,88 @@ void soundTestMenu()
         drawText("Back", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 8) * TILE_SIZE, textColor, false);
 
         //SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.w}));
-        //Handle events on queue
         while(SDL_PollEvent(&e) != 0)
         {
-            //User requests quit
             if(e.type == SDL_QUIT)
             {
                 quit = true;
                 soundIndex = ANYWHERE_QUIT;
             }
-            //User presses a key
-            else if(e.type == SDL_KEYDOWN)
+            else
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                if (e.type == SDL_KEYDOWN)
                 {
-                    if (cursor.y > 5 * TILE_SIZE)
-                        cursor.y -= TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
-                {
-                    if (cursor.y < 6 * TILE_SIZE)
-                        cursor.y += TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE && soundIndex > 0)
-                {
-                    soundIndex--;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE && soundIndex < optionsSize - 1)
-                {
-                    soundIndex++;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
-                {
-                    selection = cursor.y / TILE_SIZE - 4;
-                    if (selection == 2)
-                        quit = true;
-                    if (selection == 1)
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                     {
-                        Mix_HaltMusic();
-                        if (soundIndex != 0)
-                        {
-                            Mix_HaltChannel(-1);
-
-                            if (soundIndex < 8)
-                                Mix_PlayMusic(MUSIC((musicIndex = soundIndex)), (soundIndex != 6 ? -1 : 0));
-                            else
-                                Mix_PlayChannel(-1, audioArray[soundIndex - 8], 0);
-                        }
+                        if (cursor.y > 5 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                    else
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
+                    {
+                        if (cursor.y < 6 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE && soundIndex > 0)
+                    {
+                        soundIndex--;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE && soundIndex < optionsSize - 1)
+                    {
+                        soundIndex++;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                    {
+                        selection = cursor.y / TILE_SIZE - 4;
+                        if (selection == 2)
+                            quit = true;
+                        if (selection == 1)
+                        {
+                            Mix_HaltMusic();
+                            if (soundIndex != 0)
+                            {
+                                Mix_HaltChannel(-1);
+
+                                if (soundIndex < 8)
+                                    Mix_PlayMusic(MUSIC((musicIndex = soundIndex)), (soundIndex != 6 ? -1 : 0));
+                                else
+                                    Mix_PlayChannel(-1, audioArray[soundIndex - 8], 0);
+                            }
+                        }
+                        else
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                {
+
+                    int choice = (e.button.y / TILE_SIZE) - 4;
+                    if (choice > 0 && choice <= 2)
+                    {
+                        if (choice == 1)
+                        {
+                            Mix_HaltMusic();
+                            if (soundIndex != 0)
+                            {
+                                Mix_HaltChannel(-1);
+
+                                if (soundIndex < 8)
+                                    Mix_PlayMusic(MUSIC((musicIndex = soundIndex)), (soundIndex != 6 ? -1 : 0));
+                                else
+                                    Mix_PlayChannel(-1, audioArray[soundIndex - 8], 0);
+                            }
+                        }
+                        else
+                            quit = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
                 }
             }
         }
@@ -774,30 +818,44 @@ int changeControls()
                     selection = ANYWHERE_QUIT;
                 }
                 //User presses a key
-                else if(e.type == SDL_KEYDOWN)
+                else
                 {
-                    if (e.key.keysym.scancode == SC_UP && cursor.y > 4 * TILE_SIZE)
+                    if(e.type == SDL_KEYDOWN)
                     {
-                        cursor.y -= TILE_SIZE;
-                        Mix_PlayChannel(-1, PING_SOUND, 0);
-                    }
+                        if (e.key.keysym.scancode == SC_UP && cursor.y > 4 * TILE_SIZE)
+                        {
+                            cursor.y -= TILE_SIZE;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
 
-                    if (e.key.keysym.scancode == SC_DOWN && cursor.y < 11 * TILE_SIZE)
-                    {
-                        cursor.y += TILE_SIZE;
-                        Mix_PlayChannel(-1, PING_SOUND, 0);
-                    }
+                        if (e.key.keysym.scancode == SC_DOWN && cursor.y < 11 * TILE_SIZE)
+                        {
+                            cursor.y += TILE_SIZE;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
 
-                    if (e.key.keysym.scancode == SC_INTERACT)
+                        if (e.key.keysym.scancode == SC_INTERACT)
+                        {
+                            selection = cursor.y / TILE_SIZE - 3;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                            quit = true;
+                        }
+                    }
+                    if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
                     {
-                        selection = cursor.y / TILE_SIZE - 3;
-                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
-                        quit = true;
+
+                        int choice = (e.button.y / TILE_SIZE) - 3;
+                        if (choice > 0 && choice <= 8)
+                        {
+                            selection = choice;
+                            quit = true;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
                     }
                 }
             }
         }
-        if (selection > 0 && selection != 8)
+        if (selection > 0 && selection < 8)
         {
             char* keyName[7] = {"Up", "Down", "Left", "Right", "Confirm", "Menu", "Attack"};
             char titleText[] = "Press a key for\n";
@@ -846,8 +904,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 {
     bool quitMenu = false;
     char junkArray[MAX_FILE_PATH];
-    SDL_Keycode menuKeycode;
-    int menuPage = 0, selectItem = 0;
+    int menuPage = 0, selectItem = 1;
+    SDL_Event e;
     while(!quitMenu)
     {
         SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
@@ -858,24 +916,72 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
             drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
                           0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
-        menuKeycode = getKey();
-        if ((menuKeycode == SDL_GetKeyFromScancode(SC_LEFT) && menuPage > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
+        while(SDL_PollEvent(&e) != 0)
         {
-            menuPage += (menuKeycode == SDL_GetKeyFromScancode(SC_RIGHT)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_LEFT));
-            selectItem = 0;
-        }
+            if (e.type == SDL_QUIT)
+            {
+                selectItem = 0;
+                *backFlag = -1;
+            }
+            else
+            {
+                if (e.type == SDL_KEYDOWN)
+                {
 
-        if ((menuKeycode == SDL_GetKeyFromScancode(SC_UP) && selectItem > 0) || (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN) && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
-        {
-            selectItem += (menuKeycode == SDL_GetKeyFromScancode(SC_DOWN)) - 1 * (menuKeycode == SDL_GetKeyFromScancode(SC_UP));
-            Mix_PlayChannel(-1, PING_SOUND, 0);
-        }
+                    if ((e.key.keysym.scancode == SC_LEFT && menuPage > 0) || (e.key.keysym.scancode == SC_RIGHT && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE))
+                    {
+                        menuPage += (e.key.keysym.scancode == SC_RIGHT) - (e.key.keysym.scancode == SC_LEFT);
+                        selectItem = 0;
+                    }
 
-        if (menuKeycode == -1)
-        {
-            *backFlag = -1;
+                    if ((e.key.keysym.scancode == SC_UP && selectItem > 0) || (e.key.keysym.scancode == SC_DOWN && selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE)))
+                    {
+                        selectItem += (e.key.keysym.scancode == SC_DOWN) - (e.key.keysym.scancode == SC_UP);
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+                    if (e.key.keysym.scancode == SC_INTERACT)
+                    {
+                        if (selectItem != 0)
+                            selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
+                        else
+                            *backFlag = true;
+                            quitMenu = true;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN)
+                {
+                    int choice = (e.button.y / TILE_SIZE) - 3;
+                    if (choice < 0)
+                    {
+                        SDL_Rect minus = {8.5 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE};
+                        SDL_Rect plus = {9.75 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE};
+                        if (abs(e.button.x - minus.x) < minus.w && abs(e.button.y - minus.y) < minus.h)
+                        {
+                            menuPage--;
+                        }
+                        if (abs(e.button.x - plus.x) < plus.w && abs(e.button.y - plus.y) < plus.h)
+                        {
+                            menuPage++;
+                        }
+                    }
+                    if (choice >= 0 && choice <= (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
+                    {
+                        selectItem = choice;
+                        quitMenu = true;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                    if (choice == -1)
+                    {
+                        selectItem = 0;
+                        *backFlag = 1;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                    }
+                }
+            }
+        }
+        if (selectItem == 0)
             quitMenu = true;
-        }
 
         if (maxStrNum / MAX_MAPPACKS_PER_PAGE > 0)
         {
@@ -888,15 +994,6 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         drawATile(tilesetTexture, MAIN_ARROW_ID, 10, (selectItem + 2) * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         SDL_RenderPresent(mainRenderer);
 
-        if (menuKeycode == SDL_GetKeyFromScancode(SC_INTERACT))
-        {
-            if (selectItem != 0)
-                selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
-            else
-                *backFlag = true;
-                quitMenu = true;
-            Mix_PlayChannel(-1, OPTION_SOUND, 0);
-        }
     }
     //loading map pack stuff
     strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_FILE_PATH - 9);
