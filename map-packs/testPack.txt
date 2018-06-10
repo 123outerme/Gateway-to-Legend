@@ -1,4 +1,4 @@
-Test Area
+Test Area 1
 maps/testMaps.txt
 tileset/mainTileset48.png
 saves/testArea.txt

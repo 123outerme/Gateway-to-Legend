@@ -904,7 +904,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 {
     bool quitMenu = false;
     char junkArray[MAX_FILE_PATH];
-    int menuPage = 0, selectItem = 1;
+    static int menuPage = 0;
+    int selectItem = 1;
     SDL_Event e;
     while(!quitMenu)
     {
@@ -913,7 +914,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
         SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
         SDL_RenderFillRect(mainRenderer, &((SDL_Rect){.x = SCREEN_WIDTH / 128, .y = SCREEN_HEIGHT / 128, .w = 126 * SCREEN_WIDTH / 128, .h = 126 * SCREEN_HEIGHT / 128}));
         for(int i = 0; i < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE); i++)  //11 can comfortably be max
-            drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * 5)]),  /*concatting the path and one of the filenames together into one string*/
+            drawText(readLine((char*) strcat(strcpy(junkArray, MAP_PACKS_SUBFOLDER), listOfFilenames[i + (menuPage * MAX_MAPPACKS_PER_PAGE)]),  /*concatting the path and one of the filenames together into one string*/
                           0, (char**) &junkArray), TILE_SIZE + 10, (i + 3) * TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Back", TILE_SIZE + 10, 2 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         while(SDL_PollEvent(&e) != 0)
@@ -956,18 +957,22 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                     {
                         SDL_Rect minus = {8.5 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE};
                         SDL_Rect plus = {9.75 * TILE_SIZE, 2, TILE_SIZE, TILE_SIZE};
-                        if (abs(e.button.x - minus.x) < minus.w && abs(e.button.y - minus.y) < minus.h)
+
+                        if ((e.button.x - minus.x <= minus.w && e.button.x - minus.x > 0) && (e.button.y - minus.y <= minus.h && e.button.y - minus.y > 0) && menuPage > 0)
                         {
                             menuPage--;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
                         }
-                        if (abs(e.button.x - plus.x) < plus.w && abs(e.button.y - plus.y) < plus.h)
+
+                        if ((e.button.x - plus.x <= plus.w && e.button.x - plus.x > 0) && (e.button.y - plus.y <= plus.h && e.button.y - plus.y > 0) && menuPage < maxStrNum / MAX_MAPPACKS_PER_PAGE)
                         {
                             menuPage++;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
                         }
                     }
                     if (choice >= 0 && choice <= (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
                     {
-                        selectItem = choice;
+                        selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + choice;
                         quitMenu = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
