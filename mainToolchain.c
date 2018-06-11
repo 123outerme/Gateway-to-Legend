@@ -74,7 +74,8 @@ void writeScriptData(mapPack workingPack, script* mapScripts, int count);
 
 //V map-pack wizard functions
 int mainMapPackWizard();
-void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray);
+void mainMapPackWizardLoop(mapPack workingPack, int* numArray);
+int chooseTile(mapPack workingPack, char* prompt);
 
 void strPrepend(char* input, const char* prepend);
 
@@ -261,7 +262,7 @@ void createMapPack(mapPack* newPack)
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
     char* temp = "";
-    mainMapPackWizardLoop(*newPack, &chooser, newPack->tilesetMaps);
+    mainMapPackWizardLoop(*newPack, newPack->tilesetMaps);
 
     for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
     {
@@ -798,62 +799,107 @@ int scriptSelectLoop(mapPack workingPack)
                 scriptType = ANYWHERE_QUIT;
             }
             //User presses a key
-            else if(e.type == SDL_KEYDOWN)
+            else
             {
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
+                if(e.type == SDL_KEYDOWN)
                 {
-                    if (cursor.y > 5 * TILE_SIZE)
-                        cursor.y -= TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
-                {
-                    if (cursor.y < 8 * TILE_SIZE)
-                        cursor.y += TILE_SIZE;
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
-
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE)
-                {
-                    if (scriptType > 0)
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_UP))
                     {
-                        if (scriptType == 7)
-                            scriptType -= 3;
-                        else
-                            scriptType--;
+                        if (cursor.y > 5 * TILE_SIZE)
+                            cursor.y -= TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE)
-                {
-                    if (scriptType < optionsSize - 1)
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_DOWN))
                     {
-                        if (scriptType == 4)
-                            scriptType += 3;
-                        else
-                            scriptType++;
+                        if (cursor.y < 8 * TILE_SIZE)
+                            cursor.y += TILE_SIZE;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
                     }
-                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                }
 
-                if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
-                {
-                    selection = cursor.y / TILE_SIZE - 4;
-                    if (selection == 2 || selection == 4)
-                        quit = true;
-                    Mix_PlayChannel(-1, OPTION_SOUND, 0);
-                    if (selection == 3)
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_LEFT) && cursor.y == 5 * TILE_SIZE)
                     {
-                        while(!getKey(true))
+                        if (scriptType > 0)
                         {
-                            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
-                            SDL_RenderFillRect(mainRenderer, NULL);
-                            drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                            if (scriptType == 7)
+                                scriptType -= 3;
+                            else
+                                scriptType--;
                         }
-                        selection = 0;
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_RIGHT) && cursor.y == 5 * TILE_SIZE)
+                    {
+                        if (scriptType < optionsSize - 1)
+                        {
+                            if (scriptType == 4)
+                                scriptType += 3;
+                            else
+                                scriptType++;
+                        }
+                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                    }
+
+                    if (e.key.keysym.sym == SDL_GetKeyFromScancode(SC_INTERACT))
+                    {
+                        selection = cursor.y / TILE_SIZE - 4;
+                        if (selection == 2 || selection == 4)
+                            quit = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        if (selection == 3)
+                        {
+                            while(!getKey(true))
+                            {
+                                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                                SDL_RenderFillRect(mainRenderer, NULL);
+                                drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                            }
+                            selection = 0;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
+                    }
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                {
+
+                    int choice = (e.button.y / TILE_SIZE) - 4;
+                    if (choice > 1 && choice <= 4)
+                    {
+                        selection = choice;
+                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        if (selection != 3)
+                        {
+                            quit = true;
+                        }
+                        else
+                        {
+                            while(!getKey(true))
+                            {
+                                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                                SDL_RenderFillRect(mainRenderer, NULL);
+                                drawText(SCRIPT_HELP_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                            }
+                            selection = 0;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
+                    }
+                    else if (choice == 1)
+                    {
+                        SDL_Rect minus = {TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                        SDL_Rect plus = {18 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+                        if ((e.button.x - minus.x <= minus.w && e.button.x - minus.x > 0) && (e.button.y - minus.y <= minus.h && e.button.y - minus.y > 0) && scriptType > 0)
+                        {
+                            scriptType--;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
+
+                        if ((e.button.x - plus.x <= plus.w && e.button.x - plus.x > 0) && (e.button.y - plus.y <= plus.h && e.button.y - plus.y > 0) && scriptType < optionsSize)
+                        {
+                            scriptType++;
+                            Mix_PlayChannel(-1, PING_SOUND, 0);
+                        }
                     }
                 }
             }
@@ -1154,74 +1200,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 bounding.h = abs(yy2 - yy1);
 			}
 			//end get bounding
-			//get startingTile
-			int startingTile = 0;
-			{
-				#undef SCREEN_WIDTH
-				#undef SCREEN_HEIGHT
-				#define SCREEN_WIDTH TILE_SIZE * 16
-				#define SCREEN_HEIGHT TILE_SIZE * 9
-				loadTTFont(FONT_FILE_NAME, &mainFont, 24);
-				sprite cursor;
-				initSprite(&cursor, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
-				int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
-				bool quit = false, whiteBG = true;
-				SDL_Event e;
-				while(!quit)
-				{
-					if (whiteBG)
-						SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					else
-						SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
-					SDL_RenderClear(mainRenderer);
-					SDL_RenderCopy(mainRenderer, workingPack.mapPackTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
-					SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
-					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
-					SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					drawText("Choose the top left animation tile.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF}, true);
-					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
-					{
-						if (e.type == SDL_QUIT)
-						{
-							quit = true;
-						}
-						if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
-						{
-							if (cursor.y > TILE_SIZE && checkSKUp)
-								cursor.y -= PIXELS_MOVED;
-							if (cursor.y < SCREEN_HEIGHT - cursor.h && checkSKDown)
-								cursor.y += PIXELS_MOVED;
-							if (cursor.x > 0 && checkSKLeft)
-								cursor.x -= PIXELS_MOVED;
-							if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
-								cursor.x += PIXELS_MOVED;
-							if (checkSKInteract)
-							{
-								startingTile = 8 * (cursor.x / TILE_SIZE) + cursor.y / TILE_SIZE - 1;  //-1 because we don't start at y=0
-								quit = true;
-							}
-							if (keyStates[SDL_SCANCODE_LSHIFT])
-								whiteBG = !whiteBG;
-							lastKeypressTime = SDL_GetTicks();
-						}
-					}
-
-					if (checkSKMenu || keyStates[SDL_SCANCODE_RETURN])
-						quit = true;
-					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
-					if (sleepFor > 0)
-						SDL_Delay(sleepFor);
-					lastFrame = SDL_GetTicks();
-					frame++;
-					//SDL_RenderPresent(mainRenderer);
-				}
-				#undef SCREEN_WIDTH
-				#undef SCREEN_HEIGHT
-				#define SCREEN_WIDTH TILE_SIZE * 20
-				#define SCREEN_HEIGHT TILE_SIZE * 15
-			}
-			//end getting startingTile
+			int startingTile = chooseTile(workingPack, "Choose the (top left) tile.");
 			loadTTFont(FONT_FILE_NAME, &mainFont, 48);
             //figure this out
 			quit = false;
@@ -1360,72 +1339,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         {
 			//[starting tile|health](actions...)
 			//select starting tile
-			int startingTile = 0;
-			{
-				#undef SCREEN_WIDTH
-				#undef SCREEN_HEIGHT
-				#define SCREEN_WIDTH TILE_SIZE * 16
-				#define SCREEN_HEIGHT TILE_SIZE * 9
-				loadTTFont(FONT_FILE_NAME, &mainFont, 24);
-				sprite cursor;
-				initSprite(&cursor, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_na);
-				int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
-				bool quit = false, whiteBG = true;
-				SDL_Event e;
-				while(!quit)
-				{
-					if (whiteBG)
-						SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					else
-						SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0xFF);
-					SDL_RenderClear(mainRenderer);
-					SDL_RenderCopy(mainRenderer, workingPack.mapPackTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
-					SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
-					SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
-					SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					drawText("Choose the top left boss tile.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF}, true);
-					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
-					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
-					{
-						if (e.type == SDL_QUIT)
-						{
-							quit = true;
-						}
-						if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
-						{
-							if (checkSKUp)
-								cursor.y -= PIXELS_MOVED;
-							if (checkSKDown)
-								cursor.y += PIXELS_MOVED;
-							if (checkSKLeft)
-								cursor.x -= PIXELS_MOVED;
-							if (checkSKRight)
-								cursor.x += PIXELS_MOVED;
-							if (checkSKInteract)
-							{
-								startingTile = 8 * (cursor.x / TILE_SIZE) + cursor.y / TILE_SIZE - 1;  //-1 because we don't start at y=0
-								quit = true;
-							}
-							if (keyStates[SDL_SCANCODE_LSHIFT])
-								whiteBG = !whiteBG;
-							lastKeypressTime = SDL_GetTicks();
-						}
-					}
-
-					if (checkSKMenu || keyStates[SDL_SCANCODE_RETURN])
-						quit = true;
-					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
-					if (sleepFor > 0)
-						SDL_Delay(sleepFor);
-					lastFrame = SDL_GetTicks();
-					frame++;
-					//SDL_RenderPresent(mainRenderer);
-				}
-				#undef SCREEN_WIDTH
-				#undef SCREEN_HEIGHT
-				#define SCREEN_WIDTH TILE_SIZE * 20
-				#define SCREEN_HEIGHT TILE_SIZE * 15
-			}
+			int startingTile = chooseTile(workingPack, "Choose the (top left) tile.");
 			loadTTFont(FONT_FILE_NAME, &mainFont, 48);
 			//get health
 
@@ -1743,10 +1657,6 @@ void editInitSpawn(mapPack* workingPack)
     saveMapPack(workingPack);
 }
 
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
-#define SCREEN_WIDTH TILE_SIZE * 16
-#define SCREEN_HEIGHT TILE_SIZE * 9
 void editTileEquates(mapPack* workingPack)
 {
     loadTTFont(FONT_FILE_NAME, &mainFont, 24);
@@ -1755,7 +1665,7 @@ void editTileEquates(mapPack* workingPack)
     numbers[0] = -1;
     sprite chooser;
     initSprite(&chooser, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_player);
-    mainMapPackWizardLoop(*workingPack, &chooser, (int*) numbers);
+    mainMapPackWizardLoop(*workingPack, (int*) numbers);
     if (!(numbers[0] == -1))
     {
         for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
@@ -1771,13 +1681,38 @@ void editTileEquates(mapPack* workingPack)
     loadTTFont(FONT_FILE_NAME, &mainFont, 48);
 }
 
-void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numArray)
+void mainMapPackWizardLoop(mapPack workingPack, int* numArray)
 {
-    int numArrayTracker = 0, frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1;
+    int numArrayTracker = 0;
     char* text[] = PICK_MESSAGES_ARRAY;
-    bool quit = false, whiteBG = true;
-    SDL_Event e;
+    bool quit = false;
     while(numArrayTracker < MAX_SPRITE_MAPPINGS && !quit)
+    {
+        numArray[numArrayTracker] = chooseTile(workingPack, text[numArrayTracker]);
+        if (numArray[numArrayTracker] == -1)
+            quit = true;
+        else
+            numArrayTracker++;
+    }
+    /*for(int i = 0; i < maxArraySize; i++)
+        printf("%d\n", numArray[i]);*/
+    //waitForKey();
+    if (numArrayTracker < MAX_SPRITE_MAPPINGS)
+        numArray[0] = -1;
+}
+
+int chooseTile(mapPack workingPack, char* prompt)
+{
+    #undef SCREEN_WIDTH
+    #undef SCREEN_HEIGHT
+    #define SCREEN_WIDTH TILE_SIZE * 16
+    #define SCREEN_HEIGHT TILE_SIZE * 9
+    int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1, tile = -1;
+    bool quit = false, whiteBG = true;
+    sprite cursor;
+    initSprite(&cursor, 0, TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, type_generic);
+    SDL_Event e;
+    while(!quit)
     {
         if (whiteBG)
             SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -1786,9 +1721,9 @@ void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numAr
         SDL_RenderClear(mainRenderer);
         SDL_RenderCopy(mainRenderer, workingPack.mapPackTexture, NULL, &((SDL_Rect) {.x = 0, .y = TILE_SIZE, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT - TILE_SIZE}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x1C, 0xC6, 0xFF);
-        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = playerSprite->x, .y= playerSprite->y, .w = playerSprite->w, .h = playerSprite->h}));
+        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect){.x = cursor.x, .y = cursor.y, .w = cursor.w, .h = cursor.h}));
         SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        drawText(text[numArrayTracker], 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF}, true);
+        drawText(prompt, 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF * (!whiteBG), 0xFF}, true);
         const Uint8* keyStates = SDL_GetKeyboardState(NULL);
         while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
         {
@@ -1798,19 +1733,27 @@ void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numAr
             }
             if (e.type == SDL_KEYDOWN && SDL_GetTicks() - lastKeypressTime >= 48)
             {
-                if (playerSprite->y > TILE_SIZE && checkSKUp)
-                    playerSprite->y -= PIXELS_MOVED;
-                if (playerSprite->y < SCREEN_HEIGHT - playerSprite->h && checkSKDown)
-                    playerSprite->y += PIXELS_MOVED;
-                if (playerSprite->x > 0 && checkSKLeft)
-                    playerSprite->x -= PIXELS_MOVED;
-                if (playerSprite->x < SCREEN_WIDTH - playerSprite->w && checkSKRight)
-                    playerSprite->x += PIXELS_MOVED;
-                if (checkSKInteract)
-                    numArray[numArrayTracker++] = 8 * (playerSprite->x / TILE_SIZE) + playerSprite->y / TILE_SIZE - 1;  //-1 because we don't start at y=0
+                if (cursor.y > TILE_SIZE && checkSKUp)
+                    cursor.y -= PIXELS_MOVED;
+                if (cursor.y < SCREEN_HEIGHT - cursor.h && checkSKDown)
+                    cursor.y += PIXELS_MOVED;
+                if (cursor.x > 0 && checkSKLeft)
+                    cursor.x -= PIXELS_MOVED;
+                if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
+                    cursor.x += PIXELS_MOVED;
+                if (checkSKInteract || keyStates[SDL_SCANCODE_RETURN])
+                {
+                    tile = 8 * (cursor.x / TILE_SIZE) + cursor.y / TILE_SIZE - 1;  //-1 because we don't start at y=0
+                    quit = true;
+                }
                 if (keyStates[SDL_SCANCODE_LSHIFT])
                     whiteBG = !whiteBG;
                 lastKeypressTime = SDL_GetTicks();
+            }
+            if (e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                cursor.x = (e.button.x / TILE_SIZE) * TILE_SIZE;
+                cursor.y = (e.button.y / TILE_SIZE) * TILE_SIZE;
             }
         }
 
@@ -1823,11 +1766,11 @@ void mainMapPackWizardLoop(mapPack workingPack, sprite* playerSprite, int* numAr
 	frame++;
         //SDL_RenderPresent(mainRenderer);
     }
-    /*for(int i = 0; i < maxArraySize; i++)
-        printf("%d\n", numArray[i]);*/
-    //waitForKey();
-    if (numArrayTracker < MAX_SPRITE_MAPPINGS)
-        numArray[0] = -1;
+    #undef SCREEN_WIDTH
+    #undef SCREEN_HEIGHT
+    #define SCREEN_WIDTH TILE_SIZE * 20
+    #define SCREEN_HEIGHT TILE_SIZE * 15
+    return tile;
 }
 
 void strPrepend(char* input, const char* prepend)

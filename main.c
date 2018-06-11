@@ -737,7 +737,25 @@ void soundTestMenu()
                         if (choice == 1)
                         {
                             Mix_HaltMusic();
-                            if (soundIndex != 0)
+                            bool arrows = false;
+                            SDL_Rect minus = {TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                            SDL_Rect plus = {18 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+                            if ((e.button.x - minus.x <= minus.w && e.button.x - minus.x > 0) && (e.button.y - minus.y <= minus.h && e.button.y - minus.y > 0) && soundIndex > 0)
+                            {
+                                soundIndex--;
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                                arrows = true;
+                            }
+
+                            if ((e.button.x - plus.x <= plus.w && e.button.x - plus.x > 0) && (e.button.y - plus.y <= plus.h && e.button.y - plus.y > 0) && soundIndex < optionsSize - 1)
+                            {
+                                soundIndex++;
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                                arrows = true;
+                            }
+
+                            if (soundIndex != 0 && !arrows)
                             {
                                 Mix_HaltChannel(-1);
 
@@ -748,8 +766,10 @@ void soundTestMenu()
                             }
                         }
                         else
+                        {
                             quit = true;
-                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
                     }
                 }
             }

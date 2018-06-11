@@ -3,7 +3,7 @@ maps/testMaps.txt
 tileset/mainTileset48.png
 saves/testArea.txt
 scripts/testArea.txt
-432
+336
 336
 1
 16
