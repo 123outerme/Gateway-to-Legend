@@ -48,6 +48,8 @@ void drawSparks(spark* s);
 
 void aMenu_drawMain();
 void aMenu_drawMoney();
+int gameOver();
+void screenTransitions();
 
 int toolchain_main();
 
@@ -259,6 +261,7 @@ int main(int argc, char* argv[])
                 initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
             }
             //done game init
+            screenTransitions();
             playOverworldMusic();
             choice = 3;
             gameState = RELOAD_GAMECODE;
@@ -273,8 +276,10 @@ int main(int argc, char* argv[])
                 quitGame = true;
             if (choice == 1)
                 gameState = OVERWORLDMENU_GAMECODE;
-            if (choice == 2 || choice == 3)  //2 is normal transition quit, 3 is special quit
+            if (choice == 2 || choice == 3 || choice == 4)  //2 is normal transition quit, 3 is special quit, 4 is quit with loading screen
                 gameState = RELOAD_GAMECODE;
+            if (choice == 5)  //go back to main menu
+                gameState = START_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             Mix_HaltChannel(-1);
@@ -297,6 +302,8 @@ int main(int argc, char* argv[])
             bossLoaded = false;
             if (choice == 2)
                 smoothScrolling(&person, person.mapScreen, 2 * ((person.mapScreen - lastMap) % 10), 2 * ((person.mapScreen - lastMap) / 10));
+            if (choice == 4)
+                screenTransitions();
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
@@ -993,7 +1000,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                     if (choice >= 0 && choice <= (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
                     {
                         selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + choice;
-                        quitMenu = true;
+                        if (selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
+                            quitMenu = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
                     if (choice == -1)
@@ -1420,6 +1428,9 @@ int mainLoop(player* playerSprite)
                 if (!strncmp(command, "hurt", 4))
                     initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
 
+                if (!strncmp(command, "diemenu", 7))
+                    gameOver();
+
                 if (!strncmp(command, "fps", 3))
                     changeFPS((int) strtol(strtok(commandCpy, "fps "), NULL, 10));
 
@@ -1721,10 +1732,8 @@ int mainLoop(player* playerSprite)
 
     if (playerSprite->HP < 1)
     {
-        exitCode = 1;
+        exitCode = 5 - gameOver();
         playerSprite->HP = playerSprite->maxHP;
-        Mix_PlayMusic(MUSIC(7), -1);
-        Mix_HookMusicFinished(playMainMusic);
     }
     if (theseScripts)
         free(theseScripts);
@@ -1883,4 +1892,30 @@ void aMenu_drawMoney()
     drawText(moneyEachStr, 2.25 * TILE_SIZE, 13.5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
     free(moneyStr);
     free(moneyEachStr);
+}
+
+int gameOver()
+{
+    Mix_PlayMusic(MUSIC(7), -1);
+    Mix_HookMusicFinished(playMainMusic);
+    return 1 == aMenu(tilesTexture, CURSOR_ID, "Game Over.\nContinue?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_GAMEOVER_THEME, true, false, NULL);
+}
+
+void screenTransitions()
+{
+
+    SDL_Texture* transitionScreen;
+    loadIMG("assets/loadingscreen.png", &transitionScreen);
+    SDL_RenderCopy(mainRenderer, transitionScreen, NULL, NULL);
+    SDL_RenderPresent(mainRenderer);
+    SDL_Delay(400 + rand() % 500);
+    Mix_FadeOutMusic(500);
+    for(int i = 0; i < 255; i++)
+    {
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, i);
+        SDL_RenderCopy(mainRenderer, transitionScreen, NULL, NULL);
+        SDL_RenderFillRect(mainRenderer, NULL);
+        SDL_RenderPresent(mainRenderer);
+        SDL_Delay(2);
+    }
 }
