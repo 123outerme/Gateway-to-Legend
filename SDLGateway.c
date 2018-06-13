@@ -267,10 +267,15 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     char* data = readLine(filePath, 7, &data);
     char* dataCpy = calloc(3 * maxBosses, sizeof(data));
     strcpy(dataCpy, data);
+	for(int i = 0; i < maxBosses; i++)
+	{
+		playerSprite->defeatedBosses[i] = -1;
+	}
     playerSprite->defeatedBosses[0] = strtol(strtok(dataCpy, "{,}"), NULL, 10);
-    playerSprite->nextBossPos = -1;
     if (playerSprite->defeatedBosses[0] == -1)
-            playerSprite->nextBossPos = 0;
+        playerSprite->nextBossPos = 0;
+	else
+		playerSprite->nextBossPos = 1;
     for(int i = 1; i < maxBosses; i++)
     {
         playerSprite->defeatedBosses[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
