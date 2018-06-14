@@ -59,8 +59,8 @@ int toolchain_main();
 #define HP_ID tileIDArray[3]
 #define SWORD_ID tileIDArray[4]
 #define INVIS_ID tileIDArray[5]
-#define ENEMY(x) tileIDArray[14 + x]
-#define GOLD_ID tileIDArray[18]
+#define ENEMY(x) tileIDArray[15 + x]
+#define GOLD_ID tileIDArray[19]
 
 #define MAIN_ARROW_ID 34
 
@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
-                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, TILE_SIZE, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), 0, SDL_FLIP_NONE, PLAYER_ID);
+                createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, TILE_SIZE, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), 0, SDL_FLIP_NONE, PLAYER_ID, sizeOfAllScripts);
             quitGame = false;
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
@@ -293,13 +293,14 @@ int main(int argc, char* argv[])
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;
-            for(int i = 0; i < 3; i++)
+            for(int i = 0; i < 4; i++)
                 doorFlags[i] = true;
             for(int i = 0; i < MAX_ENEMIES + 1; i++)
                 enemyFlags[i] = true;
             person.invincCounter = 0;
             loadBoss = true;
             bossLoaded = false;
+			initSprite(&animationSpr, 0, 0, TILE_SIZE, TILE_SIZE, INVIS_ID, 0, SDL_FLIP_NONE, type_generic);
             if (choice == 2)
                 smoothScrolling(&person, person.mapScreen, 2 * ((person.mapScreen - lastMap) % 10), 2 * ((person.mapScreen - lastMap) / 10));
             if (choice == 4)
@@ -311,7 +312,7 @@ int main(int argc, char* argv[])
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3 || choice == -1)
             {
-                for(int i = 0; i < 3; i++)  //reset door flags
+                for(int i = 0; i < 4; i++)  //reset door flags
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
                     enemyFlags[i] = true;
@@ -1062,12 +1063,12 @@ int mainLoop(player* playerSprite)
     {
         for(int x = 0; x < WIDTH_IN_TILES; x++)
         {
-            if(eventmap[y][x] > 10 && eventmap[y][x] < 14 && enemyCount < MAX_ENEMIES)
+            if(eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
             {
                 enemyCount++;
                 if (enemyFlags[MAX_ENEMIES])
                 {
-                    initEnemy(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 10), 1 + (eventmap[y][x] == 13), enemyFlags[enemyCount - 1] ? type_enemy : type_na);
+                    initEnemy(&enemies[enemyCount - 1], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, ENEMY(eventmap[y][x] - 11), 1 + (eventmap[y][x] == 14), enemyFlags[enemyCount - 1] ? type_enemy : type_na);
                 }
             }
         }
@@ -1130,7 +1131,6 @@ int mainLoop(player* playerSprite)
     Uint32 swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
-    initSprite(&animationSpr, 0, 0, TILE_SIZE, TILE_SIZE, INVIS_ID, 0, SDL_FLIP_NONE, type_generic);
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -1282,14 +1282,14 @@ int mainLoop(player* playerSprite)
                         swordTimer = SDL_GetTicks() + 750;
                 }
 
-                if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true))  || collisionData[8] || collisionData[14]))
+                if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true) || (collisionData[7] && doorFlags[3] == true))  || collisionData[9] || collisionData[15]))
                 {  //unwalkable tile or closed door or spikes
                     playerSprite->spr.y = lastY;
                     playerSprite->spr.x = lastX;
                     playerSprite->xVeloc = 0;
                     playerSprite->yVeloc = 0;
                     //printf("%d\n", exitCode);
-                    if (collisionData[8] && playerSprite->invincCounter < 1 && !noclip)  //spikes
+                    if (collisionData[9] && playerSprite->invincCounter < 1 && !noclip)  //spikes
                     {
                         playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
                         playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
@@ -1339,7 +1339,7 @@ int mainLoop(player* playerSprite)
                 if (collisionData[1] || collisionData[2] || collisionData[3])   //door buttons
                 {
                     bool exec = false;
-                    bool newDoorFlags[3] = {-1, -1, -1};
+                    bool newDoorFlags[4] = {-1, -1, -1, doorFlags[3]};
                     for(int i = 0; i < 3; i++)
                     {
                         if (collisionData[i + 1])
@@ -1359,7 +1359,7 @@ int mainLoop(player* playerSprite)
                         free(data);
                     }
                 }
-                if (collisionData[7])  //teleporter
+                if (collisionData[8])  //teleporter
                 {
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
@@ -1376,7 +1376,7 @@ int mainLoop(player* playerSprite)
                     sparkFlag = true;
                     theseSparkFlags[4] = true;
                 }
-                if (collisionData[9])  //gateway
+                if (collisionData[10])  //gateway
                 {
                     bool found = false;
                     for(int i = 0; i < maxTheseScripts; i++)
@@ -1639,17 +1639,15 @@ int mainLoop(player* playerSprite)
                 {
                     if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}))
                         && theseScripts[i]->action != script_use_gateway && theseScripts[i]->action != script_use_teleporter
-                        && theseScripts[i]->action != script_boss_actions)
+                        && theseScripts[i]->action != script_boss_actions && thisScript->action != script_none)
                     {
                         thisScript = theseScripts[i];
                         thisScript->active = true;
                         if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)) || /*thisScript->action == script_animation ||*/ thisScript->action == script_none)
+                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)))
                             thisScript->active = false;
                         else
                             break;
-                        /*if (thisScript->action == script_animation)
-                            executeScriptAction(thisScript, playerSprite);*/
                     }
                 }
             }
@@ -1676,8 +1674,13 @@ int mainLoop(player* playerSprite)
 
         if (drawFPS)
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
-
-        drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
+		
+		if (animationSpr.x >= 0)
+        {
+            drawATile(tilesTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, animationSpr.w, animationSpr.h, animationSpr.angle, animationSpr.flip);
+        }
+		
+		drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 
         for(int i = 0; i < enemyCount; i++)
         {
@@ -1689,11 +1692,6 @@ int mainLoop(player* playerSprite)
             drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
             /*for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);*/
-        }
-
-        if (animationSpr.x >= 0)
-        {
-            drawATile(tilesTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, animationSpr.w, animationSpr.h, animationSpr.angle, animationSpr.flip);
         }
 
         if (swordTimer > SDL_GetTicks() + 250)
@@ -1845,7 +1843,7 @@ void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int
         for(int x = startX; x < endX; x++)
         {
             searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots-> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 15 || searchIndex == 16 || searchIndex == 17))  //8,9,10 are the door indexes
+            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 16 || searchIndex == 17 || searchIndex == 18))  //8,9,10,11 are the door indexes
                 searchIndex = 5;  //5 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE + xOffset, y * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }

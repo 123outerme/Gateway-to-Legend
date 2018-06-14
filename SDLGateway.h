@@ -4,7 +4,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
-#define VERSION_NUMBER "0.9.0b"
+#define VERSION_NUMBER "0.10.0b"
 
 #define SAVE_FILE_LINES 0
 #define GAME_WINDOW_NAME "Gateway to Legend"
@@ -14,7 +14,7 @@
 #define MAP_PACKS_SUBFOLDER "map-packs/"
 #define MAX_LIST_OF_MAPS 30
 
-#define MAX_SPRITE_MAPPINGS 20  //sprite defines
+#define MAX_SPRITE_MAPPINGS 21  //sprite defines
 #define MAX_MAP_PACK_DATA 6 //does not include sprite defines
 
 #define AMENU_MAIN_TEXTCOLOR  0x00, 0xB0, 0xDA, 0xFF
@@ -69,6 +69,7 @@ typedef struct _player {
     bool techUnlocks[MAX_PLAYER_TECHNIQUES];  // 5 bytes
     bool movementLocked;  // 1 byte
     int defeatedBosses[10]; //
+	int* disabledScripts;  //
     int nextBossPos;  //
     char* extraData;  //
 } player;
@@ -132,7 +133,7 @@ typedef struct _spark {
 int initSounds();  //inits all sounds used. Returns -5 if one can't load
 void loadMapPackData(mapPack* loadPack, char* location);  //loads map pack data
 void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //inits new player struct
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex);  //creates new local data for player
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex, int numScripts);  //creates new local data for player
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type);  //inits an enemy
 void initConfig(char* filePath);  //resets config data
@@ -237,7 +238,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
 int FPS, targetTime, startTime, frame;
-bool doorFlags[3];
+bool doorFlags[4];
 bool noclip;
 
 char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],

@@ -151,7 +151,7 @@ void initPlayer(player* player, int x, int y, int w, int h, int mapScreen, int a
     //name, x, y, w, level, HP, maxHP, attack, speed, statPts, move1 - move4, steps, worldNum, mapScreen, lastScreen, overworldX, overworldY
 }
 
-void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex)
+void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w, int h, int mapScreen, int angle, SDL_RendererFlip flip, int tileIndex, int numScripts)
 {
     initPlayer(playerSprite, x, y, w, h, mapScreen, angle, flip, tileIndex);
     playerSprite->HP = playerSprite->maxHP;
@@ -159,6 +159,7 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
     {
         playerSprite->defeatedBosses[i] = -1;
     }
+	playerSprite->disabledScripts = calloc(numScripts, sizeof(int));
     saveLocalPlayer(*playerSprite, filePath);
 }
 
@@ -900,7 +901,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
         {
             int x = (curNode->x / TILE_SIZE) + (i == 0) - (i == 1);
             int y = (curNode->y / TILE_SIZE) + (i == 2) - (i == 3);
-            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && !(eventmap[y][x] == 5 && doorFlags[0]) && !(eventmap[y][x] == 6 && doorFlags[1]) && !(eventmap[y][x] == 7 && doorFlags[2]) && eventmap[y][x] != 9 && eventmap[y][x] != 10 && eventmap[y][x] != 15) && searchList[y][x].visited == false)
+            if ((x >= 0 && y >= 0 && x < WIDTH_IN_TILES && y < HEIGHT_IN_TILES) && (eventmap[y][x] != 1 && !(eventmap[y][x] == 5 && doorFlags[0]) && !(eventmap[y][x] == 6 && doorFlags[1]) && !(eventmap[y][x] == 7 && doorFlags[2]) && !(eventmap[y][x] == 8 && doorFlags[3]) && eventmap[y][x] != 10 && eventmap[y][x] != 11 && eventmap[y][x] != 16) && searchList[y][x].visited == false)
             {
                 queue[queueCount++] = &(searchList[y][x]);
                 searchList[y][x].visited = true;
@@ -964,7 +965,7 @@ bool executeScriptAction(script* scriptData, player* player)
     bool exitGameLoop = false;
     if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue) && scriptData->data[0] != '\0')
     {
-        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);  //change coords & color? Possibly use a drawTextBox funct instead?
+        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
         waitForKey(true);
         if (scriptData->action == script_trigger_dialogue_once)
             scriptData->data[0] = '\0';
@@ -1106,8 +1107,8 @@ bool executeScriptAction(script* scriptData, player* player)
     if (scriptData->action == script_toggle_door)
     {  //-1 = unchanged, 0 = open, 1 = closed
         char* data = calloc(99, sizeof(char));
-        bool oldDoorFlags[3] = {doorFlags[0], doorFlags[1], doorFlags[2]};
-        bool newDoorFlags[3] = {-1, -1, -1};
+        bool oldDoorFlags[4] = {doorFlags[0], doorFlags[1], doorFlags[2], doorFlags[3]};
+        bool newDoorFlags[4] = {-1, -1, -1, doorFlags[3]};
         newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
         for(int i = 0; i < 3; i++)
         {

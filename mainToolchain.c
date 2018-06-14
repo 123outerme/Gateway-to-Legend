@@ -26,8 +26,8 @@
 #define MAIN_ARROW_ID 34
 //^map creator defines. v map-pack wizard defines
 
-#define MAX_SPRITE_MAPPINGS 20
-#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the weak enemy.", "Pick the ghost enemy.", "Pick the strong enemy.", "Pick the gold.", "Pick the NPC."}
+//#define MAX_SPRITE_MAPPINGS 21  //already defined
+#define PICK_MESSAGES_ARRAY {"Pick the main character idle.", "Pick the main character walking.", "Pick the cursor.", "Pick the HP icon.", "Pick the player sword.", "Pick the fully-transparent tile.", "Pick button 1.", "Pick button 2.", "Pick button 3.", "Pick door 1.", "Pick door 2.", "Pick door 3.", "Pick the boss door.", "Pick the teleporter.", "Pick the damaging hazard.", "Pick the warp gate.", "Pick the weak enemy.", "Pick the ghost enemy.", "Pick the strong enemy.", "Pick the gold.", "Pick the NPC."}
 
 #define MAIN_HELP_TEXT "Make map-packs using this toolchain! Create maps, scripts, and setup your files and tileset using this. To navigate, use the keys you set up in the main program."
 #define SCRIPT_HELP_TEXT "Use your movement keys to maneuver between maps and to the tile you want. Press Confirm to \"drop the anchor\" there. Set the width and height next. Toggle interval between 1/8 tile and a full tile using Attack."
@@ -468,12 +468,13 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
     {
         for(int x = 0; x < WIDTH_IN_TILES; x++)
         {
-            if (eventmap[y][x] > 10 && eventmap[y][x] < 14 && enemyCount < MAX_ENEMIES)
+            if (eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount < MAX_ENEMIES)
                 enemyCount++;
-            if (eventmap[y][x] > 10 && eventmap[y][x] < 14 && enemyCount > MAX_ENEMIES)
+            if (eventmap[y][x] > 11 && eventmap[y][x] < 15 && enemyCount > MAX_ENEMIES)
                 eventmap[y][x] = 0;
         }
     }
+	printf("There are %d enemies at the start.\n", enemyCount);
     SDL_Delay(500);  //gives time for keypresses to unregister
     SDL_Event e;
     while(!quit)
@@ -532,29 +533,24 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 
             if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
             {
-
-                if (playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14)  //enemies
+				int prevTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
+				eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
                 {
-                    int curTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-                    if ((playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14) && !(curTile > 10 && curTile < 14) && enemyCount < MAX_ENEMIES)
-                    {
+                    
+                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(prevTile > 11 && prevTile < 15) && enemyCount < MAX_ENEMIES)
                         enemyCount++;
-                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        //printf("%d (+)\n", enemyCount);
-                    }
-
-                    if (curTile > 10 && curTile < 14)
-                    {
-                        if (!(playerSprite->spr.tileIndex > 10 && playerSprite->spr.tileIndex < 14))
-                            enemyCount--;
-                        eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                        //printf("%d (-)\n", enemyCount);
-                    }
+					printf("There are now %d enemies.\n", enemyCount);
                 }
-                else
-                    eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+				
+				if (prevTile > 11 && prevTile < 15)
+                    {
+                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
+                            enemyCount--;
+						printf("There are now %d enemies.\n", enemyCount);
+                    }
 
-            if (playerSprite->spr.tileIndex == 10)  //warp gate
+            if (playerSprite->spr.tileIndex == 11)  //warp gate
                 {
                     script gateScript;
                     int map = 0, x = 0, y = 0;
@@ -573,7 +569,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     free(data);
                     SDL_Delay(500);  //gives time for keypresses to unregister
                 }
-                if (playerSprite->spr.tileIndex == 8)  //teleporter
+                if (playerSprite->spr.tileIndex == 9)  //teleporter
                 {
                     script teleportScript;
                     int x = 0, y = 0;
@@ -1707,6 +1703,8 @@ int chooseTile(mapPack workingPack, char* prompt)
     #undef SCREEN_HEIGHT
     #define SCREEN_WIDTH TILE_SIZE * 16
     #define SCREEN_HEIGHT TILE_SIZE * 9
+	TTF_CloseFont(mainFont);
+	loadTTFont(FONT_FILE_NAME, &mainFont, 24);
     int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = lastFrame + 1, tile = -1;
     bool quit = false, whiteBG = true;
     sprite cursor;
@@ -1754,6 +1752,10 @@ int chooseTile(mapPack workingPack, char* prompt)
             {
                 cursor.x = (e.button.x / TILE_SIZE) * TILE_SIZE;
                 cursor.y = (e.button.y / TILE_SIZE) * TILE_SIZE;
+				if (cursor.x > SCREEN_WIDTH)
+					cursor.x = SCREEN_WIDTH;
+				if (cursor.y > SCREEN_HEIGHT)
+					cursor.y = SCREEN_HEIGHT;
             }
         }
 
@@ -1770,6 +1772,8 @@ int chooseTile(mapPack workingPack, char* prompt)
     #undef SCREEN_HEIGHT
     #define SCREEN_WIDTH TILE_SIZE * 20
     #define SCREEN_HEIGHT TILE_SIZE * 15
+	TTF_CloseFont(mainFont);
+	loadTTFont(FONT_FILE_NAME, &mainFont, 48);
     return tile;
 }
 
