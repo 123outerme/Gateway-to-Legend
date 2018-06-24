@@ -1106,18 +1106,27 @@ int mainLoop(player* playerSprite)
             }
         }
     }
+    else
+    {
+        script openDoors;
+        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]");
+        executeScriptAction(&openDoors, playerSprite);
+    }
     checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
-    if (collisionData[4] || collisionData[5] || collisionData[6])
+    if (collisionData[4] || collisionData[5] || collisionData[6] || collisionData[7])
     {  //if player spawns on top of door
         script openDoors;
         if (collisionData[4])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/-1/-1]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/-1/-1/-1]");
 
         if (collisionData[5])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/0/-1]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/0/-1/-1]");
 
         if (collisionData[6])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0/-1]");
+
+        if (collisionData[7])
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]");
 
         executeScriptAction(&openDoors, playerSprite);
     }
@@ -1353,7 +1362,7 @@ int mainLoop(player* playerSprite)
                     {
                         script openDoorScript;
                         char* data = calloc(99, sizeof(char));
-                        snprintf(data, 99, "[%d/%d/%d]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
+                        snprintf(data, 99, "[%d/%d/%d/-1]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
                         initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data);
                         executeScriptAction(&openDoorScript, playerSprite);
                         free(data);
@@ -1420,10 +1429,10 @@ int mainLoop(player* playerSprite)
                 }
 
                 if (!strncmp(command, "opendoors", 50))
-                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]");  //opens all doors
 
                 if (!strncmp(command, "closedoors", 50))
-                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[1/1/1]");  //closes all doors
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[1/1/1/1]");  //closes all doors
 
                 if (!strncmp(command, "hurt", 4))
                     initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
@@ -1608,7 +1617,7 @@ int mainLoop(player* playerSprite)
                         {
                             bossSprite.spr.type = type_na;
                             script bossDeadScript;
-                            initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0]");  //opens all doors
+                            initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]");  //opens all doors
                             executeScriptAction(&bossDeadScript, playerSprite);
                             initScript(&bossDeadScript, script_gain_money, 0, 0, 0, 0, 0, "15");  //boss should probably become money, "dropping" it
                             executeScriptAction(&bossDeadScript, playerSprite);
@@ -1616,6 +1625,7 @@ int mainLoop(player* playerSprite)
                             sparkFlag = true;
                             theseSparkFlags[7] = true;
                             playerSprite->defeatedBosses[playerSprite->nextBossPos++] = playerSprite->mapScreen;
+
                             Mix_PlayMusic(MUSIC((musicIndex = 6)), 0);  //fanfare
                             Mix_HookMusicFinished(playOverworldMusic);
                         }
@@ -1674,12 +1684,12 @@ int mainLoop(player* playerSprite)
 
         if (drawFPS)
             drawText(intToString(framerate, whatever), 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, false);
-		
+
 		if (animationSpr.x >= 0)
         {
             drawATile(tilesTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, animationSpr.w, animationSpr.h, animationSpr.angle, animationSpr.flip);
         }
-		
+
 		drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 
         for(int i = 0; i < enemyCount; i++)
@@ -1842,8 +1852,8 @@ void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
-            searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots-> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 12 ? searchIndex - 9 : 0] == false) || (searchIndex == 16 || searchIndex == 17 || searchIndex == 18))  //8,9,10,11 are the door indexes
+            searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots -> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
+            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 13 ? searchIndex - 9 : 0] == false) || (searchIndex == 16 || searchIndex == 17 || searchIndex == 18))  //8,9,10,11 are the door indexes <- this may be old
                 searchIndex = 5;  //5 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE + xOffset, y * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }

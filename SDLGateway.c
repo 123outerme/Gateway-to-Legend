@@ -1108,18 +1108,22 @@ bool executeScriptAction(script* scriptData, player* player)
     {  //-1 = unchanged, 0 = open, 1 = closed
         char* data = calloc(99, sizeof(char));
         bool oldDoorFlags[4] = {doorFlags[0], doorFlags[1], doorFlags[2], doorFlags[3]};
-        bool newDoorFlags[4] = {-1, -1, -1, doorFlags[3]};
+        bool newDoorFlags[4] = {-1, -1, -1, -1};
         newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
-        for(int i = 0; i < 3; i++)
+        for(int i = 0; i < 4; i++)
         {
             if (i > 0)
                 newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
+            printf("%d/", newDoorFlags[i]);
             if (newDoorFlags[i] > -1)  //set
                 doorFlags[i] = newDoorFlags[i];
             if (newDoorFlags[i] == -2)  //flip
                 doorFlags[i] = !doorFlags[i];
+
         }
-        if (oldDoorFlags[0] != doorFlags[0] || oldDoorFlags[1] != doorFlags[1] || oldDoorFlags[2] != doorFlags[2])
+        printf("\n");
+        printf("%d/%d/%d/%d\n", oldDoorFlags[0], oldDoorFlags[1], oldDoorFlags[2], oldDoorFlags[3]);
+        if (oldDoorFlags[0] != doorFlags[0] || oldDoorFlags[1] != doorFlags[1] || oldDoorFlags[2] != doorFlags[2] || oldDoorFlags[3] != doorFlags[3])
             Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
         free(data);
     }

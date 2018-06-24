@@ -537,12 +537,12 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 				eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
                 if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
                 {
-                    
+
                     if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(prevTile > 11 && prevTile < 15) && enemyCount < MAX_ENEMIES)
                         enemyCount++;
 					printf("There are now %d enemies.\n", enemyCount);
                 }
-				
+
 				if (prevTile > 11 && prevTile < 15)
                     {
                         if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
@@ -1128,7 +1128,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, (cursor.y < TILE_SIZE * 8 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
                 SDL_RenderPresent(mainRenderer);
             }
-            snprintf(data, 9, "%d/%d/%d", newDoors[0], newDoors[1], newDoors[2]);
+            snprintf(data, 9, "%d/%d/%d/-1", newDoors[0], newDoors[1], newDoors[2]);
         }
 
         if (editScript->action == script_animation)
