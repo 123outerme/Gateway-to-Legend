@@ -29,9 +29,9 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-#define ALL_TECHNIQUES {"Dash", "SpinAttack", "Illusion", "Barrier", "Charge"}
+#define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Barrier", "Charge"}
 
-void upgradeShop(player* playerSprite);
+bool upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
 int changeControls();
@@ -153,7 +153,10 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
             if (choice == 2)
-                upgradeShop(&person);
+            {
+                if (upgradeShop(&person))
+                    quitGame = true;
+            }
             if (choice == 3)
                 toolchain_main();
             if (choice == 4)
@@ -348,8 +351,9 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void upgradeShop(player* playerSprite)
+bool upgradeShop(player* playerSprite)
 {
+    bool totalQuit = false;
     bool quit = false;
     while(!quit)
     {
@@ -366,8 +370,8 @@ void upgradeShop(player* playerSprite)
                     sprite cursor;
                     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
                     SDL_Event e;
-                    bool quit = false;
-                    while(!quit)
+                    bool iQuit = false;
+                    while(!iQuit)
                     {
                         SDL_SetRenderDrawColor(mainRenderer, textColor.r, textColor.g, textColor.b, 0xFF);
                         SDL_RenderClear(mainRenderer);
@@ -400,30 +404,53 @@ void upgradeShop(player* playerSprite)
                         {
                             //User requests quit
                             if(e.type == SDL_QUIT)
-                                quit = true;
-                            //User presses a key
-                            else if(e.type == SDL_KEYDOWN)
                             {
-                                if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
+                                iQuit = true;
+                                quit = true;
+                                totalQuit = true;
+                            }
+                            //User presses a key
+                            else
+                            {
+                                if(e.type == SDL_KEYDOWN)
                                 {
-                                    cursor.y -= TILE_SIZE;
-                                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                                }
-
-                                if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
-                                {
-                                    cursor.y += TILE_SIZE;
-                                    Mix_PlayChannel(-1, PING_SOUND, 0);
-                                }
-
-                                if (e.key.keysym.scancode == SC_INTERACT)
-                                {
-                                    if (cursor.y == TILE_SIZE * 7)
+                                    if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                                     {
-                                        quit = true;
+                                        cursor.y -= TILE_SIZE;
+                                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                                    }
+
+                                    if (e.key.keysym.scancode == SC_DOWN && cursor.y < 7 * TILE_SIZE)
+                                    {
+                                        cursor.y += TILE_SIZE;
+                                        Mix_PlayChannel(-1, PING_SOUND, 0);
+                                    }
+
+                                    if (e.key.keysym.scancode == SC_INTERACT)
+                                    {
+                                        if (cursor.y == TILE_SIZE * 7)
+                                        {
+                                            iQuit = true;
+                                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                                        }
+                                        if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money > 14)
+                                        {
+                                            playerSprite->maxHP += 2;
+                                            playerSprite->money -= 15;
+                                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                                        }
+                                    }
+                                }
+                                if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                                {
+
+                                    int choice = (e.button.y / TILE_SIZE) - 4;
+                                    if (choice == 3)
+                                    {
+                                        iQuit = true;
                                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
-                                    if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money > 14)
+                                    if (choice == 1)
                                     {
                                         playerSprite->maxHP += 2;
                                         playerSprite->money -= 15;
@@ -445,65 +472,106 @@ void upgradeShop(player* playerSprite)
                 while(!tQuit)
                 {
                     int a = aMenu(tilesetTexture, MAIN_ARROW_ID, "Techniques", (char*[3]) {"Equip", "Buy", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
+                    char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
                     if (a == 1)
                     {
-                        char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
-                        char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
-                        int posArray[MAX_PLAYER_TECHNIQUES];
-                        int nextPos = 0;
-                        for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                        bool eQuit = false;
+                        while(!eQuit)
                         {
-                            if (playerSprite->techUnlocks[i])
+                            char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
+                            int posArray[MAX_PLAYER_TECHNIQUES];
+                            int nextPos = 0;
+                            for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
                             {
-                                techniqueArray[nextPos] = calloc(23, sizeof(char));
-                                posArray[nextPos] = i;
-                                strncpy(techniqueArray[nextPos++], literalsArray[i], 11);
-                                if (playerSprite->techUnlocks[i] > 1)
-                                    strncat(techniqueArray[nextPos - 1], " - Un-Equip", 22); //11 + 11
-                                else
-                                    strncat(techniqueArray[nextPos - 1], " - Equip", 19); //11 + 8
+                                if (playerSprite->techUnlocks[i])
+                                {
+                                    techniqueArray[nextPos] = calloc(23, sizeof(char));
+                                    posArray[nextPos] = i;
+                                    strncpy(techniqueArray[nextPos++], literalsArray[i], 11);
+                                    if (playerSprite->techUnlocks[i] > 1)
+                                        strncat(techniqueArray[nextPos - 1], " -Un-Equip", 22); //11 + 11
+                                    else
+                                        strncat(techniqueArray[nextPos - 1], " -Equip", 19); //11 + 8
+                                }
                             }
-                        }
-                        techniqueArray[nextPos++] = "Back";
-                        int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
-                        if (selection == nextPos)
-                            tQuit = true;
-                        else
-                            playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
-                        for(int i = 0; i <= nextPos; i++)
-                        {
-                            free(techniqueArray[i]);
+                            techniqueArray[nextPos++] = "Back";
+
+                            int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
+
+                            if (selection == ANYWHERE_QUIT || selection == nextPos)
+                            {
+                                eQuit = true;
+                                if (selection == ANYWHERE_QUIT)
+                                {
+                                    tQuit = true;
+                                    quit = true;
+                                    totalQuit = true;
+                                }
+                            }
+                            else
+                            {
+                                playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
+                                if (playerSprite->techUnlocks[posArray[selection - 1]] == 2 && posArray[selection - 1] > 0)
+                                {
+                                    for(int i = 1; i < MAX_PLAYER_TECHNIQUES; i++)
+                                    {
+                                        if (i != posArray[selection - 1] && playerSprite->techUnlocks[i] == 2)
+                                        {
+                                            playerSprite->techUnlocks[i] = 1;
+                                        }
+                                    }
+                                }
+                            }
+                            for(int i = 0; i <= nextPos; i++)
+                            {
+                                free(techniqueArray[i]);
+                            }
                         }
                         saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
                     }
                     if (a == 2)
                     {
-                        char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
-                        char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
-                        int nextPos = 0;
-                        for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                        bool bQuit = false;
+                        while(!bQuit)
                         {
-                            if (!playerSprite->techUnlocks[i])
-                                techniqueArray[nextPos++] = literalsArray[i];
-                        }
-                        techniqueArray[nextPos++] = "Back";
-                        _globalInt1 = playerSprite->money;
-                        _globalInt2 = 50;
-                        int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Techniques", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
-                        if (retCode < nextPos && playerSprite->money >= 50)
-                        {
-                            playerSprite->money -= 50;
-                            int position = 0;
+                            char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
+                            int nextPos = 0;
                             for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
                             {
-                                if (strcmp(techniqueArray[retCode - 1], literalsArray[i]) == 0)
+                                if (!playerSprite->techUnlocks[i])
+                                    techniqueArray[nextPos++] = literalsArray[i];
+                            }
+                            techniqueArray[nextPos++] = "Back";
+                            _globalInt1 = playerSprite->money;
+                            _globalInt2 = 50;
+                            int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Techniques", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
+
+                            if (retCode == ANYWHERE_QUIT || retCode == nextPos)
+                            {
+                                bQuit = true;
+                                if (retCode == ANYWHERE_QUIT)
                                 {
-                                    position = i;
-                                    break;
+                                    tQuit = true;
+                                    quit = true;
+                                    totalQuit = true;
                                 }
                             }
-                            playerSprite->techUnlocks[position] = true;
-                            saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
+
+                            if (retCode != ANYWHERE_QUIT && retCode < nextPos && playerSprite->money >= 50)
+                            {
+                                playerSprite->money -= 50;
+                                int position = 0;
+                                for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+                                {
+                                    if (strcmp(techniqueArray[retCode - 1], literalsArray[i]) == 0)
+                                    {
+                                        position = i;
+                                        break;
+                                    }
+                                }
+                                playerSprite->techUnlocks[position] = true;
+                                saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
+                            }
                         }
                     }
                     if (a == 3 || a == -1)
@@ -512,12 +580,16 @@ void upgradeShop(player* playerSprite)
             }
             break;
         case 3:
-        case -1:
         default:
             quit = true;
             break;
+        case -1:
+            quit = true;
+            totalQuit = true;
+            break;
         }
     }
+    return totalQuit;
 }
 
 void changeVolumes()
@@ -1138,9 +1210,11 @@ int mainLoop(player* playerSprite)
     frame = 0;
     int lastFrame = startTime, framerate = 0, sleepFor = 0, spinCycle = 0;
     bool initSword = false;
-    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks(), lastSpinTime = SDL_GetTicks();
-    sprite sword;
+    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, lastUpdateTime = startTime,
+           lastBoostTime = startTime, lastSpinTime = startTime, lastIllusionTime = startTime;
+    sprite sword, illusionSpr;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
+    initSprite(&illusionSpr, 0, 0, TILE_SIZE, TILE_SIZE, PLAYER_ID, 0, SDL_FLIP_NONE, type_generic);
     while(!quit && playerSprite->HP > 0)
     {
         SDL_RenderClear(mainRenderer);
@@ -1217,11 +1291,28 @@ int mainLoop(player* playerSprite)
 
                 if (checkSKSpecial)
                 {
-                    if (lastSpcPress < lastUpdateTime - 32 && lastSpcPress + 120 > curTime && lastSpinTime + 500 < curTime && playerSprite->techUnlocks[1] == 2)
+                    if (lastSpcPress < lastUpdateTime - 32 && lastSpcPress + 120 > curTime)
                     {
-                        lastSpinTime = curTime;
-                        spinCycle = 1;
-                        initSword = true;
+                        if (lastSpinTime + 500 < curTime && playerSprite->techUnlocks[1] == 2)  //spin attack
+                        {
+                            lastSpinTime = curTime;
+                            spinCycle = 1;
+                            initSword = true;
+                            initSpark(&theseSparks[0], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GRAY, 4, 8, 8, framerate / 2, framerate / 4);
+                            theseSparkFlags[0] = true;
+                            sparkFlag = true;
+                        }
+                        if (lastIllusionTime + 2750 < curTime && playerSprite->techUnlocks[2] == 2)  //illusion
+                        {
+                            lastIllusionTime = curTime;
+                            illusionTimer = curTime + 2000;
+                            playerSprite->invincCounter = 60;  //1 second invincibility
+                            initSprite(&illusionSpr, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, PLAYER_ID, 0, SDL_FLIP_VERTICAL, type_generic);
+                            Mix_PlayChannel(-1, UNSHEATH_SOUND, 0);
+                            initSpark(&theseSparks[0], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GRAY, 4, 8, 8, framerate / 2, framerate / 4);
+                            theseSparkFlags[0] = true;
+                            sparkFlag = true;
+                        }
                     }
                     lastSpcPress = curTime;
                 }
@@ -1511,7 +1602,18 @@ int mainLoop(player* playerSprite)
                         {
                             //behavior: move quickly at player, with little HP
                             int length = 0;
-                            node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
+                            int targetX = 0, targetY = 0;
+                            if (illusionTimer)
+                            {
+                                targetX = illusionSpr.x;
+                                targetY = illusionSpr.y;
+                            }
+                            else
+                            {
+                                targetX = playerSprite->spr.x;
+                                targetY = playerSprite->spr.y;
+                            }
+                            node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, targetX, targetY, &length, false);
                             /*if (enemies[i].spr.x != playerSprite->spr.x)
                                 enemies[i].spr.x += 3 - 6 * (playerSprite->spr.x < enemies[i].spr.x);
                             if (enemies[i].spr.y != playerSprite->spr.y)
@@ -1556,7 +1658,18 @@ int mainLoop(player* playerSprite)
                             static node curNode;
                             if (!length || (curNode.x == enemies[i].spr.x && curNode.y == enemies[i].spr.y))
                             {
-                                node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, playerSprite->spr.x, playerSprite->spr.y, &length, false);
+                                int targetX = 0, targetY = 0;
+                                if (illusionTimer)
+                                {
+                                    targetX = illusionSpr.x;
+                                    targetY = illusionSpr.y;
+                                }
+                                else
+                                {
+                                    targetX = playerSprite->spr.x;
+                                    targetY = playerSprite->spr.y;
+                                }
+                                node* nodeArray = BreadthFirst(enemies[i].spr.x, enemies[i].spr.y, targetX, targetY, &length, false);
                                 if (length > 0)
                                 {
                                     curNode = nodeArray[1];
@@ -1718,6 +1831,14 @@ int mainLoop(player* playerSprite)
         {
             drawATile(tilesTexture, animationSpr.tileIndex, animationSpr.x, animationSpr.y, animationSpr.w, animationSpr.h, animationSpr.angle, animationSpr.flip);
         }
+
+        if (illusionTimer)
+        {
+            drawASprite(tilesTexture, illusionSpr);
+            if (SDL_GetTicks() > illusionTimer)
+                illusionTimer = 0;
+        }
+
 
 		drawATile(tilesTexture, tileIDArray[(playerSprite->animationCounter > 0)], playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, playerSprite->spr.angle, playerSprite->spr.flip);
 

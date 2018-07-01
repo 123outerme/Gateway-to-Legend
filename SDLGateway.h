@@ -255,7 +255,7 @@ spark theseSparks[MAX_SPARKS];
 
 /*
 Spark IDs:
-0 - ~RESERVED~
+0 - Ability
 1 - Hurt / Heal
 2 - Hit
 3 - Money
