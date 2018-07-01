@@ -29,7 +29,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-#define ALL_TECHNIQUES {"Dash", "Spin Attack", "Illusion", "Barrier", "Charge"}
+#define ALL_TECHNIQUES {"Dash", "SpinAttack", "Illusion", "Barrier", "Charge"}
 
 void upgradeShop(player* playerSprite);
 void changeVolumes();
@@ -1136,8 +1136,9 @@ int mainLoop(player* playerSprite)
     char whatever[5] = "    \0";
     startTime = SDL_GetTicks();
     frame = 0;
-    int lastFrame = startTime, framerate = 0, sleepFor = 0, lastXPress = 0, lastYPress = 0;
-    Uint32 swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks();
+    int lastFrame = startTime, framerate = 0, sleepFor = 0, spinCycle = 0;
+    bool initSword = false;
+    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, swordTimer = SDL_GetTicks() + 250, lastUpdateTime = SDL_GetTicks(), lastBoostTime = SDL_GetTicks(), lastSpinTime = SDL_GetTicks();
     sprite sword;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     while(!quit && playerSprite->HP > 0)
@@ -1177,13 +1178,13 @@ int mainLoop(player* playerSprite)
 
                 Uint32 curTime = SDL_GetTicks();
 
-                if ((Uint32) (lastXPress * (checkSKRight - checkSKLeft)) < lastUpdateTime - 32 && (Uint32) (lastXPress * (checkSKRight - checkSKLeft)) + 120 > curTime && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
+                if (lastXPress * (checkSKRight - checkSKLeft) < lastUpdateTime - 32 && lastXPress * (checkSKRight - checkSKLeft) + 120 > curTime && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
                     //printf("boost: %d, now %d\n", lastXPress, curTime);
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
 					lastBoostTime = curTime;
                 }
-                if ((Uint32) (lastYPress * (checkSKDown - checkSKUp)) < (Uint32) lastUpdateTime - 32 && (Uint32) (lastYPress * (checkSKDown - checkSKUp)) + 120 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
+                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 && lastYPress * (checkSKDown - checkSKUp) + 120 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
                     //printf("boost: %d, now %d\n", lastYPress, curTime);
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
@@ -1204,21 +1205,26 @@ int mainLoop(player* playerSprite)
 
                 if (checkSKRight - checkSKLeft)
                 {
-                    lastXPress = SDL_GetTicks() * (checkSKRight - checkSKLeft);
-                    lastYPress = (SDL_GetTicks() - 121) * (checkSKDown - checkSKUp);  //disqualify y-dash
+                    lastXPress = curTime * (checkSKRight - checkSKLeft);
+                    lastYPress = (curTime - 121) * (checkSKDown - checkSKUp);  //disqualify y-dash
                 }
 
                 if (checkSKDown - checkSKUp)
                 {
-                    lastYPress = SDL_GetTicks() * (checkSKDown - checkSKUp);
-                    lastXPress = (SDL_GetTicks() - 121) * (checkSKRight - checkSKLeft);  //disqualify x-dash
+                    lastYPress = curTime * (checkSKDown - checkSKUp);
+                    lastXPress = (curTime - 121) * (checkSKRight - checkSKLeft);  //disqualify x-dash
                 }
 
-                /*if (checkSKSpecial && !textBoxOn && frame > targetTime / 2)
+                if (checkSKSpecial)
                 {
-                    initScript(&thisScript, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, script_trigger_dialogue, "Hello world!");
-                    textBoxOn = true;
-                }*/
+                    if (lastSpcPress < lastUpdateTime - 32 && lastSpcPress + 120 > curTime && lastSpinTime + 500 < curTime && playerSprite->techUnlocks[1] == 2)
+                    {
+                        lastSpinTime = curTime;
+                        spinCycle = 1;
+                        initSword = true;
+                    }
+                    lastSpcPress = curTime;
+                }
 
                 if (((checkSKUp && !checkSKDown) || (!checkSKUp && checkSKDown) || (checkSKLeft && !checkSKRight) || (!checkSKLeft && checkSKRight)) && !checkSKSpecial)
                     playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft+ 8 * checkSKRight;
@@ -1270,26 +1276,7 @@ int mainLoop(player* playerSprite)
                     playerSprite->yVeloc -= 6 - 12 * (playerSprite->yVeloc < 0);
 
                 if (checkSKInteract || swordTimer)
-                {
-                    if (checkSKInteract && !swordTimer)
-                        SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
-                    int xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
-                    int yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
-                    if ((xDir -= 1) != -1)
-                        xDir -= !xDir;  //turns 0 and 1 into -1 and 1
-                    else
-                        xDir = 0;
-
-                    if (yDir != -1)
-                        yDir -= !yDir;
-                    else
-                        yDir = 0;
-                    yDir *= !xDir;  //x direction takes precedence over the y direction
-                    initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
-
-                    if (!swordTimer)
-                        swordTimer = SDL_GetTicks() + 750;
-                }
+                    initSword = true;
 
                 if (!noclip &&(collisionData[0] || ((collisionData[4] && doorFlags[0] == true) || (collisionData[5] && doorFlags[1] == true) || (collisionData[6] && doorFlags[2] == true) || (collisionData[7] && doorFlags[3] == true))  || collisionData[9] || collisionData[15]))
                 {  //unwalkable tile or closed door or spikes
@@ -1660,6 +1647,48 @@ int mainLoop(player* playerSprite)
                             break;
                     }
                 }
+            }
+
+            if (initSword || spinCycle)
+            {
+                if ((initSword && !swordTimer) || spinCycle == 1)
+                    SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
+                int xDir = 0;
+                int yDir = 0;
+                if (spinCycle)
+                {
+                    xDir = ((spinCycle / 4) + 1 == 2) - ((spinCycle / 4) + 1 == 4);
+                    yDir = ((spinCycle / 4) + 1 == 3) - (((spinCycle / 4) + 1) % 4 == 1);
+                }
+                else
+                {
+                    xDir = (playerSprite->lastDirection / 4) % 3;  //mod 3 to get rid of a value of 3 -- 3 == both directions pressed, or 0 movement
+                    yDir = (playerSprite->lastDirection - xDir * 4) % 3 - 1;  //subtract 1 to turn either 0, 1, or 2 into either -1, 0, or 1
+                    if ((xDir -= 1) != -1)
+                        xDir -= !xDir;  //turns 0 and 1 into -1 and 1
+                    else
+                        xDir = 0;
+
+                    if (yDir != -1)
+                        yDir -= !yDir;
+                    else
+                        yDir = 0;
+                    yDir *= !xDir;  //x direction takes precedence over the y direction
+                }
+                initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
+
+                if (spinCycle)
+                {
+                    spinCycle = (spinCycle + 1) % 25;
+                }
+                //e
+
+                if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && thisScript->active) && initSword)
+                {
+                    if (swordTimer <= 0)
+                        swordTimer = SDL_GetTicks() + 750;
+                }
+                initSword = false;
             }
             if (playerSprite->invincCounter)
                 playerSprite->invincCounter--;

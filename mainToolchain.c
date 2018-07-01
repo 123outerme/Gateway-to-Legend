@@ -9,7 +9,7 @@
 #define checkSKRight keyStates[SC_RIGHT]
 #define checkSKInteract keyStates[SC_INTERACT]
 #define checkSKMenu keyStates[SC_MENU]
-#define checkSKAttack keyStates[SC_SPECIAL]
+#define checkSKSpecial keyStates[SC_SPECIAL]
 //SDL_SCANCODE_W
 //SDL_SCANCODE_S
 //SDL_SCANCODE_A
@@ -559,13 +559,6 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     snprintf(data, 99, "[%d/%d/%d]", map, x, y);
                     initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
                     mapScripts[(*scriptCount)++] = gateScript;
-                    if (*scriptCount >= scriptMaxCount)
-                    {
-                        scriptMaxCount += 5;
-                        script* temp = realloc(mapScripts, scriptMaxCount);
-                        if (temp)
-                            mapScripts = temp;
-                    }
                     free(data);
                     SDL_Delay(500);  //gives time for keypresses to unregister
                 }
@@ -599,17 +592,19 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     snprintf(data, 99, "[%d/%d]", x, y);
                     initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
                     mapScripts[(*scriptCount)++] = teleportScript;
-                    if (*scriptCount >= scriptMaxCount)
-                    {
-                        scriptMaxCount += 5;
-                        script* temp = realloc(mapScripts, scriptMaxCount);
-                        if (temp)
-                            mapScripts = temp;
-                    }
                     //printf("%s\n", data);
                     //printf("%s\n", mapScripts[*scriptCount - 1].data);
                     free(data);
                     SDL_Delay(500);  //gives time for keypresses to unregister
+                }
+                if (*scriptCount >= scriptMaxCount - 1)
+                {
+                    scriptMaxCount += 5;
+                    script* temp = realloc(mapScripts, scriptMaxCount);
+                    if (temp)
+                        mapScripts = temp;
+                    else
+                        printf("can't realloc\n");
                 }
             }
 
