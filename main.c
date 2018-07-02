@@ -29,7 +29,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-#define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Barrier", "Charge"}
+#define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
 bool upgradeShop(player* playerSprite);
 void changeVolumes();
@@ -64,7 +64,7 @@ int toolchain_main();
 
 #define MAIN_ARROW_ID 34
 
-#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+LeftShift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
+#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
 bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
 enemy enemies[MAX_ENEMIES];
@@ -1210,8 +1210,8 @@ int mainLoop(player* playerSprite)
     frame = 0;
     int lastFrame = startTime, framerate = 0, sleepFor = 0, spinCycle = 0;
     bool initSword = false;
-    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, lastUpdateTime = startTime,
-           lastBoostTime = startTime, lastSpinTime = 0, lastIllusionTime = 0;
+    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, laserTimer = 0, lastUpdateTime = startTime,
+           lastBoostTime = startTime, lastSpinTime = 0, lastIllusionTime = 0, lastLaserTime = 0;
     sprite sword, illusionSpr;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     initSprite(&illusionSpr, 0, 0, TILE_SIZE, TILE_SIZE, PLAYER_ID, 0, SDL_FLIP_NONE, type_generic);
@@ -1299,7 +1299,7 @@ int mainLoop(player* playerSprite)
                             spinCycle = 1;
                             initSword = true;
                         }
-                        if (lastIllusionTime + 2750 < curTime && playerSprite->techUnlocks[2] == 2)  //illusion
+                        if (lastIllusionTime + 3000 < curTime && playerSprite->techUnlocks[2] == 2)  //illusion
                         {
                             lastIllusionTime = curTime;
                             illusionTimer = curTime + 2000;
@@ -1309,6 +1309,12 @@ int mainLoop(player* playerSprite)
                             initSpark(&theseSparks[0], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GRAY, 4, 8, 8, framerate / 2, framerate / 4);
                             theseSparkFlags[0] = true;
                             sparkFlag = true;
+                        }
+                        if (lastLaserTime + 1250 < curTime && playerSprite->techUnlocks[3] == 2)
+                        {
+                            lastLaserTime = curTime;
+                            laserTimer = curTime + 650;
+                            initSword = true;
                         }
                     }
                     lastSpcPress = curTime;
@@ -1770,9 +1776,9 @@ int mainLoop(player* playerSprite)
                 }
             }
 
-            if (initSword || spinCycle)
+            if (initSword || spinCycle || laserTimer)
             {
-                if ((initSword && !swordTimer) || spinCycle == 1)
+                if ((initSword && (!swordTimer || laserTimer)) || spinCycle == 1)
                     SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
                 int xDir = 0;
                 int yDir = 0;
@@ -1797,7 +1803,31 @@ int mainLoop(player* playerSprite)
                     yDir *= !xDir;  //x direction takes precedence over the y direction
                 }
                 initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
-
+                if (laserTimer)
+                {
+                    static int firstXDir = -2;
+                    static int firstYDir = -2;
+                    if (firstXDir == -2 || firstYDir == -2)
+                    {
+                        firstXDir = xDir;
+                        firstYDir = yDir;
+                    }
+                    int distance = 20 - ((laserTimer - SDL_GetTicks()) / 32);
+                    initSprite(&sword, playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir, playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir, TILE_SIZE, TILE_SIZE, INVIS_ID, 0, SDL_FLIP_NONE, type_na);
+                    initSpark(&theseSparks[0], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_LASER, 4, 12, 12, framerate / 4, framerate / 4);
+                    theseSparkFlags[0] = true;
+                    sparkFlag = true;
+                    if (SDL_GetTicks() > laserTimer ||
+                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir < 0 ||
+                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir > SCREEN_WIDTH ||
+                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir < 0 ||
+                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir > SCREEN_HEIGHT)
+                    {
+                        laserTimer = 0;
+                        firstXDir = -2;
+                        firstYDir = -2;
+                    }
+                }
                 if (spinCycle)
                     spinCycle = (spinCycle + 1) % 24;
                 //e
@@ -1805,7 +1835,7 @@ int mainLoop(player* playerSprite)
                 if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && thisScript->active) && initSword)
                 {
                     if (swordTimer <= 0)
-                        swordTimer = SDL_GetTicks() + 750 + 150 * (spinCycle > 0);
+                        swordTimer = SDL_GetTicks() + 750 + 150 * (spinCycle > 0) - 150 * (laserTimer > 0);
                 }
                 initSword = false;
             }
@@ -1893,8 +1923,9 @@ int mainLoop(player* playerSprite)
                 exitCode = 3;
             thisScript->active = 2;
         }
-        if (thisScript->active == 2)
-            thisScript->active = 0;
+        else
+            if (thisScript->active == 2)
+                thisScript->active = 0;
     }
 
     if (playerSprite->HP < 1)

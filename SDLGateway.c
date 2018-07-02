@@ -1083,7 +1083,7 @@ bool executeScriptAction(script* scriptData, player* player)
         player->lastY = tempY;
         player->xVeloc = 0;
         player->yVeloc = 0;
-        initSpark(&theseSparks[4], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, FPS / 2, FPS / 4);
+        initSpark(&theseSparks[4], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, (frame * 1000 / (SDL_GetTicks() - startTime) / 2), (frame * 1000 / (SDL_GetTicks() - startTime) / 4));
         sparkFlag = true;
         theseSparkFlags[4] = true;
         free(data);
@@ -1101,7 +1101,7 @@ bool executeScriptAction(script* scriptData, player* player)
         Mix_PlayChannel(-1, TELEPORT_SOUND, 0);
         //play animation at old & new coords?
         free(data);
-        initSpark(&theseSparks[5], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 6, 6, FPS / 4, FPS / 8);
+        initSpark(&theseSparks[5], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
         sparkFlag = true;
         theseSparkFlags[5] = true;
     }

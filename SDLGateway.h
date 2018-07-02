@@ -236,6 +236,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SPARK_COLOR_GRAY ((SDL_Color) {0x60, 0x65, 0x70, 0xD0})
 #define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
 #define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
+#define SPARK_LASER ((SDL_Color) {0xFF, 0x3F, 0x3F, 0xD0})
 #define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
 int FPS, targetTime, startTime, frame;
