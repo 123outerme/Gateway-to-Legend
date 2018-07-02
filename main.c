@@ -1211,7 +1211,7 @@ int mainLoop(player* playerSprite)
     int lastFrame = startTime, framerate = 0, sleepFor = 0, spinCycle = 0;
     bool initSword = false;
     Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, lastUpdateTime = startTime,
-           lastBoostTime = startTime, lastSpinTime = startTime, lastIllusionTime = startTime;
+           lastBoostTime = startTime, lastSpinTime = 0, lastIllusionTime = 0;
     sprite sword, illusionSpr;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     initSprite(&illusionSpr, 0, 0, TILE_SIZE, TILE_SIZE, PLAYER_ID, 0, SDL_FLIP_NONE, type_generic);
@@ -1298,9 +1298,6 @@ int mainLoop(player* playerSprite)
                             lastSpinTime = curTime;
                             spinCycle = 1;
                             initSword = true;
-                            initSpark(&theseSparks[0], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GRAY, 4, 8, 8, framerate / 2, framerate / 4);
-                            theseSparkFlags[0] = true;
-                            sparkFlag = true;
                         }
                         if (lastIllusionTime + 2750 < curTime && playerSprite->techUnlocks[2] == 2)  //illusion
                         {
@@ -1639,15 +1636,26 @@ int mainLoop(player* playerSprite)
                             //behavior: burst movement towards player?
                             if (enemies[i].invincTimer == false || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
                             {
-                                if (playerSprite->spr.x < enemies[i].spr.x)
+                                int targetX = 0, targetY = 0;
+                                if (illusionTimer)
+                                {
+                                    targetX = illusionSpr.x;
+                                    targetY = illusionSpr.y;
+                                }
+                                else
+                                {
+                                    targetX = playerSprite->spr.x;
+                                    targetY = playerSprite->spr.y;
+                                }
+                                if (targetX < enemies[i].spr.x)
                                     enemies[i].spr.flip = SDL_FLIP_HORIZONTAL;
                                 else
                                     enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                                if (enemies[i].spr.x != playerSprite->spr.x)
-                                    enemies[i].spr.x += 2 - 4 * (playerSprite->spr.x < enemies[i].spr.x);
-                                if (enemies[i].spr.y != playerSprite->spr.y)
-                                    enemies[i].spr.y += 2 - 4 * (playerSprite->spr.y < enemies[i].spr.y);
+                                if (enemies[i].spr.x != targetX)
+                                    enemies[i].spr.x += 2 - 4 * (targetX < enemies[i].spr.x);
+                                if (enemies[i].spr.y != targetY)
+                                    enemies[i].spr.y += 2 - 4 * (targetY < enemies[i].spr.y);
                             }
                         }
 
@@ -1770,8 +1778,8 @@ int mainLoop(player* playerSprite)
                 int yDir = 0;
                 if (spinCycle)
                 {
-                    xDir = ((spinCycle / 4) + 1 == 2) - ((spinCycle / 4) + 1 == 4);
-                    yDir = ((spinCycle / 4) + 1 == 3) - (((spinCycle / 4) + 1) % 4 == 1);
+                    xDir = (((spinCycle - 1) / 4) + 1 == 2) - (((spinCycle - 1) / 4) + 1 == 4);
+                    yDir = (((spinCycle - 1) / 4) + 1 == 3) - ((((spinCycle - 1) / 4) + 1) % 4 == 1);
                 }
                 else
                 {
@@ -1791,15 +1799,13 @@ int mainLoop(player* playerSprite)
                 initSprite(&sword, playerSprite->spr.x + TILE_SIZE * xDir, playerSprite->spr.y + (TILE_SIZE + 2) * yDir, TILE_SIZE, TILE_SIZE, SWORD_ID, 90 * yDir, SDL_FLIP_HORIZONTAL * (xDir == -1), type_na);
 
                 if (spinCycle)
-                {
-                    spinCycle = (spinCycle + 1) % 25;
-                }
+                    spinCycle = (spinCycle + 1) % 24;
                 //e
 
                 if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && thisScript->active) && initSword)
                 {
                     if (swordTimer <= 0)
-                        swordTimer = SDL_GetTicks() + 750;
+                        swordTimer = SDL_GetTicks() + 750 + 150 * (spinCycle > 0);
                 }
                 initSword = false;
             }
@@ -1879,13 +1885,16 @@ int mainLoop(player* playerSprite)
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         lastFrame = SDL_GetTicks();
-        if (thisScript->active)
+        if (thisScript->active == 1)
         {
             bool quitScript = executeScriptAction(thisScript, playerSprite);
             quit = quit | quitScript;
             if (quitScript)
                 exitCode = 3;
+            thisScript->active = 2;
         }
+        if (thisScript->active == 2)
+            thisScript->active = 0;
     }
 
     if (playerSprite->HP < 1)
@@ -2055,8 +2064,16 @@ void aMenu_drawMoney()
 int gameOver()
 {
     Mix_PlayMusic(MUSIC(7), -1);
-    Mix_HookMusicFinished(playMainMusic);
-    return 1 == aMenu(tilesTexture, CURSOR_ID, "Game Over.\nContinue?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_GAMEOVER_THEME, true, false, NULL);
+    if (1 == aMenu(tilesTexture, CURSOR_ID, "Game Over.\nContinue?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_GAMEOVER_THEME, true, false, NULL))
+    {
+        Mix_HookMusicFinished(playOverworldMusic);
+        return 1;
+    }
+    else
+    {
+        Mix_HookMusicFinished(playMainMusic);
+        return 0;
+    }
 }
 
 void screenTransitions()

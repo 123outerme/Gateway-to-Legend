@@ -209,6 +209,7 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	scriptPtr->h = h;
 	strcpy(scriptPtr->data, data);
 	scriptPtr->active = true;
+	scriptPtr->disabled = false;
 }
 
 void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance)
@@ -839,7 +840,7 @@ char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int*
 		exit(1);
 	}
 	char** strArray = calloc(maxStrings, sizeof(char*));
-	for (int i = 0 ; i < maxStrings; ++i)
+	for (int i = 0; i < maxStrings; ++i)
 		strArray[i] = calloc(maxLength, sizeof(char));
 	int i = 0;
 	while ((ent = readdir (dir)) != NULL)
