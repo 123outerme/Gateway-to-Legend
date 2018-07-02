@@ -494,7 +494,7 @@ bool upgradeShop(player* playerSprite)
                                         strncat(techniqueArray[nextPos - 1], " -Equip", 19); //11 + 8
                                 }
                             }
-                            techniqueArray[nextPos++] = "Back";
+                            strcpy(techniqueArray[nextPos++], "Back");
 
                             int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
 
@@ -522,7 +522,7 @@ bool upgradeShop(player* playerSprite)
                                     }
                                 }
                             }
-                            for(int i = 0; i <= nextPos; i++)
+                            for(int i = 0; i < nextPos; i++)
                             {
                                 free(techniqueArray[i]);
                             }

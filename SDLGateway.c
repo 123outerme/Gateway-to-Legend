@@ -1158,8 +1158,9 @@ bool executeScriptAction(script* scriptData, player* player)
 		while(!found)
 		{
 			char* xStr = strtok(NULL, "(|)");
-			if (!xStr)  //no more data
+			if (xStr[0] == '<')  //no more data
 			{
+			    printf("%s\n", xStr);
 				moveFrame = 0;  //repeat; has to be 1 to reset to the way it is init'ed
 				scriptData->action = script_none;  //disable further execution in this launch
 				strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above

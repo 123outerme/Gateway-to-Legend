@@ -251,11 +251,11 @@ void closeSDL()
 	if (tilesetTexture)
         SDL_DestroyTexture(tilesetTexture);
 	if (mainScreen)
-        SDL_FreeSurface(mainScreen);
+        SDL_FreeSurface(mainScreen);  //this is broken on Linux, not sure why
     if (mainWindow)
         SDL_DestroyWindow(mainWindow);
     if (mainRenderer)
-        SDL_DestroyRenderer(mainRenderer);
+        SDL_DestroyRenderer(mainRenderer);  //this is also what's broken - switch out two skills, then quit and this errors
     for(int i = 0; i < MAX_SOUNDS; i++)
     {
         if (audioArray[i])
