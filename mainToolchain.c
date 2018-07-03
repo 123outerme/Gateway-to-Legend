@@ -69,7 +69,7 @@ void mainScriptEdtior(mapPack* workingPack);
 int scriptSelectLoop(mapPack workingPack);
 script mainScriptLoop(mapPack workingPack, script* editScript);
 script visualLoadScript(mapPack* workingPack);
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data, int lineNum);
 void writeScriptData(mapPack workingPack, script* mapScripts, int count);
 
 //V map-pack wizard functions
@@ -557,7 +557,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     locationSelectLoop(workingPack, &map, &x, &y);
                     char* data = calloc(99, sizeof(char));
                     snprintf(data, 99, "[%d/%d/%d]", map, x, y);
-                    initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
+                    initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
                     mapScripts[(*scriptCount)++] = gateScript;
                     free(data);
                     SDL_Delay(500);  //gives time for keypresses to unregister
@@ -590,7 +590,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     }
                     char* data = calloc(99, sizeof(char));
                     snprintf(data, 99, "[%d/%d]", x, y);
-                    initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data);
+                    initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
                     mapScripts[(*scriptCount)++] = teleportScript;
                     //printf("%s\n", data);
                     //printf("%s\n", mapScripts[*scriptCount - 1].data);
@@ -726,7 +726,7 @@ void mainScriptEdtior(mapPack* workingPack)
         editScript = visualLoadScript(workingPack);
 
     if (scriptNum > 0)
-        initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "");
+        initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "", -1);
 
     if (scriptNum >= 0)
     {
@@ -984,7 +984,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             for(int i = 0; i < maxScriptLines; i++)
             {
                 script aScript;
-                readScript(&aScript, readLine(workingPack.scriptFilePath, i, &temp));
+                readScript(&aScript, readLine(workingPack.scriptFilePath, i, &temp), i);
                 if (aScript.action == script_boss_actions && bossIndex < bossArraySize - 1)
                     bossLineArray[bossIndex++] = i;
             }
@@ -1002,28 +1002,28 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 {
                     if (foundIndex > 9)
                         foundIndex -= 10;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
                 }
 
                 if (key == SDL_GetKeyFromScancode(SC_DOWN))
                 {
                     if (foundIndex < bossArraySize && bossArraySize >= 10 + foundIndex)
                         foundIndex += 10;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
                 }
 
                 if (key == SDL_GetKeyFromScancode(SC_LEFT))
                 {
                     if (foundIndex > 0)
                         foundIndex--;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
                 }
 
                 if (key == SDL_GetKeyFromScancode(SC_RIGHT))
                 {
                     if (foundIndex < bossArraySize)
                         foundIndex++;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp));
+                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
                 }
                 if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
                     quit = true;
@@ -1479,9 +1479,9 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         }
 	}
 	if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
-		initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ");
+		initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ", -1);
 	else
-		initScript(editScript, editScript->action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data);
+		initScript(editScript, editScript->action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data, -1);
 	free(data);
 	return *editScript;
 }
@@ -1492,7 +1492,7 @@ script visualLoadScript(mapPack* workingPack)
     bool quit = false;
     char* temp = "";
     int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
-    readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+    readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), 0);
     SDL_Keycode key;
     while(!quit)
     {
@@ -1503,28 +1503,28 @@ script visualLoadScript(mapPack* workingPack)
         {
             if (scriptLineNum > 9)
                 scriptLineNum -= 10;
-            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), scriptLineNum);
         }
 
         if (key == SDL_GetKeyFromScancode(SC_DOWN))
         {
             if (scriptLineNum < maxLines)
                 scriptLineNum += 10;
-            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), scriptLineNum);
         }
 
         if (key == SDL_GetKeyFromScancode(SC_LEFT))
         {
             if (scriptLineNum > 0)
                 scriptLineNum--;
-            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), scriptLineNum);
         }
 
         if (key == SDL_GetKeyFromScancode(SC_RIGHT))
         {
             if (scriptLineNum < maxLines)
                 scriptLineNum++;
-            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp));
+            readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), scriptLineNum);
         }
         if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
             quit = true;

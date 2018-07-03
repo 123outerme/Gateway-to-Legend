@@ -107,6 +107,7 @@ typedef struct _script {
     char data[99];
     bool active;
     bool disabled;
+    int lineNum;
 } script;
 
 typedef struct _node {
@@ -138,7 +139,7 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 void createGlobalPlayer(player* playerSprite, char* filePath);  //creates new global data for player
 void initEnemy(enemy* enemyPtr, int x, int y, int w, int h, int tileIndex, int HP, entityType type);  //inits an enemy
 void initConfig(char* filePath);  //resets config data
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data);  //initializes a new script struct
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data, int lineNum);  //initializes a new script struct
 void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance);  //initializes a new node
 void initSpark(spark* sparkPtr, SDL_Rect boundsRect, SDL_Color color, int num, int maxW, int maxH, int maxTimer, int update);  //initializes a new spark
 void loadConfig(char* filePath);  //loads config data into the public variables
@@ -156,7 +157,7 @@ void saveGlobalPlayer(const player playerSprite, char* filePath);  //saves to gl
 void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int selection);  //changes a key to another key if it can
 char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineNum);  //takes a pointer to a char array and gives you what was on the file's line in the unique location
 node* BreadthFirst(const int startX, const int startY, const int endX, const int endY, int* lengthOfPath, const bool drawDebug);  //finds the path between (startX, startY) and (endX, endY) using the data in eventmap
-int readScript(script* scriptPtr, char* input);  //inits a script from a string input
+int readScript(script* scriptPtr, char* input, int lineNum);  //inits a script from a string input
 char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int* strNum);  //gets the list of files in a directory
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
@@ -230,13 +231,14 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define GAMEOVER_MUSIC_FILE "assets/audio/gatewayToRetry.mp3"
 
 #define SPARK_COLOR_RED ((SDL_Color) {0xD8, 0x22, 0x0A, 0xD0})
+#define SPARK_COLOR_BRIGHT_RED ((SDL_Color) {0xFF, 0x3F, 0x3F, 0xD0})
 #define SPARK_COLOR_ORANGE ((SDL_Color) {0xFF, 0x8C, 0x11, 0xD0})
 #define SPARK_COLOR_BLUE ((SDL_Color) {0x44, 0x8C, 0xFF, 0xD0})
 #define SPARK_COLOR_GREEN ((SDL_Color) {0x00, 0xBA, 0x34, 0xD0})
 #define SPARK_COLOR_GRAY ((SDL_Color) {0x60, 0x65, 0x70, 0xD0})
 #define SPARK_COLOR_SILVER ((SDL_Color) {0xD4, 0xD8, 0xDD, 0xD0})
 #define SPARK_GATEWAY ((SDL_Color) {0x48, 0x00, 0x96, 0xA0})
-#define SPARK_LASER ((SDL_Color) {0xFF, 0x3F, 0x3F, 0xD0})
+
 #define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
 int FPS, targetTime, startTime, frame;
@@ -247,6 +249,7 @@ char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[M
 saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 
 int maxBosses;
+int maxScripts;
 bool bossLoaded;
 int musicIndex;
 sprite animationSpr;

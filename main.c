@@ -29,8 +29,6 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-#define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
-
 bool upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
@@ -63,6 +61,8 @@ int toolchain_main();
 #define GOLD_ID tileIDArray[19]
 
 #define MAIN_ARROW_ID 34
+
+#define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
 #define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
@@ -216,17 +216,6 @@ int main(int argc, char* argv[])
             //printf("%s\n", scriptFilePath);
             loadIMG(tileFilePath, &tilesTexture);
             free(allScripts);
-            allScripts = calloc(checkFile(scriptFilePath, -1) + 2, sizeof(script));
-            if (checkFile(scriptFilePath, -1))
-            {
-                for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
-                {
-                    script thisScript;
-                    readScript(&thisScript, readLine(scriptFilePath, i, &buffer));
-                    allScripts[i] = thisScript;
-                    sizeOfAllScripts = i + 1;
-                }
-            }
             for(int i = 0; i < MAX_SPRITE_MAPPINGS; i++)
             {
                 tileIDArray[i] = strtol(readLine(mainFilePath, 8 + i, &buffer), NULL, 10);
@@ -238,11 +227,30 @@ int main(int argc, char* argv[])
                 quitGame = (quitGame == -1);
                 break;
             }
+            allScripts = calloc(checkFile(scriptFilePath, -1) + 2, sizeof(script));
+            if (checkFile(scriptFilePath, -1))
+            {
+                for(int i = 0; i < checkFile(scriptFilePath, -1) + 1; i++)
+                {
+                    script thisScript;
+                    readScript(&thisScript, readLine(scriptFilePath, i, &buffer), i);
+                    allScripts[i] = thisScript;
+                    sizeOfAllScripts = i + 1;
+                }
+            }
+
             if (checkFile(saveFilePath, 0) && quitGame == 2)
                 loadLocalPlayer(&person, saveFilePath, PLAYER_ID);
             else
                 createLocalPlayer(&person, saveFilePath, strtol(readLine(mainFilePath, 5, &buffer), NULL, 10), strtol(readLine(mainFilePath, 6, &buffer), NULL, 10), TILE_SIZE, TILE_SIZE, strtol(readLine(mainFilePath, 7, &buffer), NULL, 10), 0, SDL_FLIP_NONE, PLAYER_ID, sizeOfAllScripts);
             quitGame = false;
+
+            for(int i = 0; i < sizeOfAllScripts; i++)
+            {
+                if (person.disabledScripts[i])
+                    allScripts[i].disabled = true;
+            }
+
             //done loading map-pack specific stuff
             if (checkFile(GLOBALSAVE_FILEPATH, 0))
                 loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);  //loaded twice just to ensure nothing is overwritten?
@@ -325,7 +333,7 @@ int main(int argc, char* argv[])
                 person.lastX = -1;
                 person.lastY = -1;
                 script resetScript;
-                initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
+                initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r", -1);
                 executeScriptAction(&resetScript, &person);  //resets boss movement timer
                 noclip = false;
                 sparkFlag = false;
@@ -1114,7 +1122,7 @@ int mainLoop(player* playerSprite)
 	strcpy(mapFilePath, playerSprite->extraData);
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
-    initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]");
+    initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]", -1);
     static int bossHP = 1;
     thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
@@ -1181,7 +1189,7 @@ int mainLoop(player* playerSprite)
     else
     {
         script openDoors;
-        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]");
+        initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]", -1);
         executeScriptAction(&openDoors, playerSprite);
     }
     checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
@@ -1189,16 +1197,16 @@ int mainLoop(player* playerSprite)
     {  //if player spawns on top of door
         script openDoors;
         if (collisionData[4])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/-1/-1/-1]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[0/-1/-1/-1]", -1);
 
         if (collisionData[5])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/0/-1/-1]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/0/-1/-1]", -1);
 
         if (collisionData[6])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0/-1]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/0/-1]", -1);
 
         if (collisionData[7])
-            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]");
+            initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]", -1);
 
         executeScriptAction(&openDoors, playerSprite);
     }
@@ -1384,7 +1392,7 @@ int mainLoop(player* playerSprite)
                         playerSprite->xVeloc -= 24 * (checkSKRight - checkSKLeft);
                         playerSprite->yVeloc -= 24 * (checkSKDown - checkSKUp);
                         script hurtPlayer;
-                        initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1");
+                        initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "1", -1);
                         executeScriptAction(&hurtPlayer, playerSprite);
                         playerSprite->invincCounter = 10;  //10 frames of invincibility at 60fps, or approx. .167 of a second
                     }
@@ -1444,7 +1452,7 @@ int mainLoop(player* playerSprite)
                         script openDoorScript;
                         char* data = calloc(99, sizeof(char));
                         snprintf(data, 99, "[%d/%d/%d/-1]", newDoorFlags[0], newDoorFlags[1], newDoorFlags[2]);
-                        initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data);
+                        initScript(&openDoorScript, script_toggle_door, 0, 0, 0, 0, 0, data, -1);
                         executeScriptAction(&openDoorScript, playerSprite);
                         free(data);
                     }
@@ -1489,7 +1497,7 @@ int mainLoop(player* playerSprite)
             {
                 bool done = false;
                 script exec;
-                initScript(&exec, script_none, 0, 0, 0, 0, 0, "");
+                initScript(&exec, script_none, 0, 0, 0, 0, 0, "", -1);
                 char* command = calloc(50, sizeof(char));
                 char* commandCpy = calloc(50, sizeof(char));
 
@@ -1510,13 +1518,13 @@ int mainLoop(player* playerSprite)
                 }
 
                 if (!strncmp(command, "opendoors", 50))
-                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]");  //opens all doors
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]", -1);  //opens all doors
 
                 if (!strncmp(command, "closedoors", 50))
-                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[1/1/1/1]");  //closes all doors
+                    initScript(&exec, script_toggle_door, 0, 0, 0, 0, 0, "[1/1/1/1]", -1);  //closes all doors
 
                 if (!strncmp(command, "hurt", 4))
-                    initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "));
+                    initScript(&exec, script_player_hurt, 0, 0, 0, 0, 0, strtok(commandCpy, "hurt "), -1);
 
                 if (!strncmp(command, "diemenu", 7))
                     gameOver();
@@ -1527,7 +1535,8 @@ int mainLoop(player* playerSprite)
                 if (!strncmp(command, "execscript", 10))
                 {
                     char* temp = "";
-                    readScript(&exec, readLine(scriptFilePath, strtol(strtok(commandCpy, "execscript "), NULL, 10), &temp));
+                    int lineNum = strtol(strtok(commandCpy, "execscript "), NULL, 10);
+                    readScript(&exec, readLine(scriptFilePath, lineNum, &temp), lineNum);
                 }
 
                 if (!strncmp(command, "particles", 9))
@@ -1581,7 +1590,7 @@ int mainLoop(player* playerSprite)
                         if (enemies[i].spr.type == type_enemy && !noclip)
                         {
                             script hurtPlayer;
-                            initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2");
+                            initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, enemies[i].spr.tileIndex != ENEMY(3) ? "1" : "2", -1);
                             playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y))
                              - 48 * (enemies[i].spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - enemies[i].spr.x) > abs(playerSprite->spr.y - enemies[i].spr.y)));
 
@@ -1594,7 +1603,7 @@ int mainLoop(player* playerSprite)
                         else if (enemies[i].spr.type == type_generic)
                         {
                             script rewardScript;
-                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5");  //note: enemies should probably actually become money, "dropping" it and only rewarding when you pick it up
+                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5", -1);
                             executeScriptAction(&rewardScript, playerSprite);
                             enemies[i].spr.type = type_na;
                         }
@@ -1713,7 +1722,7 @@ int mainLoop(player* playerSprite)
                 if (!noclip && checkRectCol(playerSprite->spr.x, playerSprite->spr.y, playerSprite->spr.w, playerSprite->spr.h, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h))
                 {
                     script hurtPlayer;
-                    initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "2");
+                    initScript(&hurtPlayer, script_player_hurt, 0, 0, 0, 0, 0, "2", -1);
                     playerSprite->xVeloc += 24 * (abs(playerSprite->spr.x - bossSprite.spr.x) > abs(playerSprite->spr.y - bossSprite.spr.y))
                         - 48 * (bossSprite.spr.x > playerSprite->spr.x && (abs(playerSprite->spr.x - bossSprite.spr.x) > abs(playerSprite->spr.y - bossSprite.spr.y)));
 
@@ -1731,9 +1740,9 @@ int mainLoop(player* playerSprite)
                         {
                             bossSprite.spr.type = type_na;
                             script bossDeadScript;
-                            initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]");  //opens all doors
+                            initScript(&bossDeadScript, script_toggle_door, 0, 0, 0, 0, 0, "[0/0/0/0]", -1);  //opens all doors
                             executeScriptAction(&bossDeadScript, playerSprite);
-                            initScript(&bossDeadScript, script_gain_money, 0, 0, 0, 0, 0, "15");  //boss should probably become money, "dropping" it
+                            initScript(&bossDeadScript, script_gain_money, 0, 0, 0, 0, 0, "15", -1);  //boss should probably become money, "dropping" it
                             executeScriptAction(&bossDeadScript, playerSprite);
                             initSpark(&theseSparks[7], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_BOSS, 6, 8, 8, framerate / 2, framerate / 4);
                             sparkFlag = true;
@@ -1767,8 +1776,7 @@ int mainLoop(player* playerSprite)
                     {
                         thisScript = theseScripts[i];
                         thisScript->active = true;
-                        if (((thisScript->action == script_trigger_dialogue || (thisScript->action == script_trigger_dialogue_once && thisScript->data[0] != '\0')) && !checkSKInteract)
-                            || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated)))
+                        if (thisScript->disabled || (((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && !checkSKInteract) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
                         else
                             break;
@@ -1812,11 +1820,8 @@ int mainLoop(player* playerSprite)
                         firstXDir = xDir;
                         firstYDir = yDir;
                     }
-                    int distance = 20 - ((laserTimer - SDL_GetTicks()) / 32);
-                    initSprite(&sword, playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir, playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir, TILE_SIZE, TILE_SIZE, INVIS_ID, 0, SDL_FLIP_NONE, type_na);
-                    initSpark(&theseSparks[0], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_LASER, 4, 12, 12, framerate / 4, framerate / 4);
-                    theseSparkFlags[0] = true;
-                    sparkFlag = true;
+                    int distance = 21 - ((laserTimer - SDL_GetTicks()) / 32);
+                    initSprite(&sword, playerSprite->spr.x + (TILE_SIZE * distance * firstXDir) + ((firstYDir != 0) * 1.5 * TILE_SIZE / 4), playerSprite->spr.y + ((TILE_SIZE + 2) * distance * firstYDir) + ((firstXDir != 0) * 1.5 * TILE_SIZE / 4), TILE_SIZE - ((firstYDir != 0) * 3 * TILE_SIZE / 4), TILE_SIZE - ((firstXDir != 0) * 3 * TILE_SIZE / 4), INVIS_ID, 0, SDL_FLIP_NONE, type_na);
                     if (SDL_GetTicks() > laserTimer ||
                         playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir < 0 ||
                         playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir > SCREEN_WIDTH ||
@@ -1893,6 +1898,13 @@ int mainLoop(player* playerSprite)
         if (swordTimer > SDL_GetTicks() + 250)
             drawASprite(tilesTexture, sword);
 
+        if (laserTimer)
+        {
+            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0x3F, 0x3F, 0xF0);
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {sword.x, sword.y, sword.w, sword.h}));
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+        }
+
         if (sparkFlag)
         {
             for(int i = 0; i < MAX_SPARKS; i++)
@@ -1942,7 +1954,7 @@ int mainLoop(player* playerSprite)
         initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
         loadBoss = true;
         script resetScript;
-        initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r");
+        initScript(&resetScript, script_boss_actions, 0, 0, 0, 0, 0, "r", -1);
         executeScriptAction(&resetScript, playerSprite);  //resets boss movement timer
     }
 

@@ -113,7 +113,7 @@ void loadMapPackData(mapPack* loadPack, char* location)
     {
         char* temp = "";
         script aScript;
-        readScript(&aScript, readLine(loadPack->scriptFilePath, i, &temp));
+        readScript(&aScript, readLine(loadPack->scriptFilePath, i, &temp), i);
         if (aScript.action == script_boss_actions)
             countBosses++;
     }
@@ -160,6 +160,11 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
         playerSprite->defeatedBosses[i] = -1;
     }
 	playerSprite->disabledScripts = calloc(numScripts, sizeof(int));
+	for(int i = 0; i < numScripts; i++)
+    {
+        playerSprite->disabledScripts[i] = 0;
+    }
+    maxScripts = numScripts;
     saveLocalPlayer(*playerSprite, filePath);
 }
 
@@ -199,7 +204,7 @@ void initConfig(char* filePath)
     saveConfig(filePath);
 }
 
-void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data)
+void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int y, int w, int h, char* data, int lineNum)
 {
 	scriptPtr->action = action;
 	scriptPtr->mapNum = mapNum;
@@ -210,6 +215,7 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	strcpy(scriptPtr->data, data);
 	scriptPtr->active = true;
 	scriptPtr->disabled = false;
+	scriptPtr->lineNum = lineNum;
 }
 
 void initNode(node* nodePtr, int x, int y, node* lastNode, bool visited, int distance)
@@ -284,6 +290,37 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
         if (playerSprite->defeatedBosses[i] == -1 && playerSprite->nextBossPos == -1)
             playerSprite->nextBossPos = i;
     }
+    char* disabledScriptData = readLine(filePath, 8, &buffer);
+    int maxScriptSize = 100;
+    playerSprite->disabledScripts = calloc(maxScriptSize, sizeof(int));
+    playerSprite->disabledScripts[0] = strtol(strtok(disabledScriptData, "{,}"), NULL, 10);
+    int i = 1;
+    if (playerSprite->disabledScripts[0] == 0 || playerSprite->disabledScripts[0] == 1)
+    {
+        bool quit = false;
+        while(!quit)
+        {
+            char* dataPt = strtok(NULL, "{,}");
+            if (dataPt != NULL)
+                playerSprite->disabledScripts[i++] = strtol(dataPt, NULL, 10);
+            else
+                quit = true;
+
+            if (i > maxScriptSize)  //hopefully this never goes off because I can't get it to work
+            {
+                int* temp = realloc(playerSprite->disabledScripts, maxScriptSize + 10);
+                if (temp != NULL)
+                {
+                    maxScriptSize += 10;
+                    playerSprite->disabledScripts = temp;
+                }
+                else
+                    quit = true;
+            }
+        }
+    }
+    maxScripts = i;
+    //done with scripts
     playerSprite->spr.tileIndex = tileIndex;
     playerSprite->spr.w = TILE_SIZE;
     playerSprite->spr.h = TILE_SIZE;
@@ -295,7 +332,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     playerSprite->lastDirection = 8;
     playerSprite->invincCounter = 0;
     playerSprite->animationCounter = 0;
-    //loads: map, x, y, current HP
+    //loads: map, x, y, current HP, beaten bosses, disabled scripts
 }
 
 void loadGlobalPlayer(player* playerSprite, char* filePath)
@@ -755,8 +792,21 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
         strcat(beatBosses, (i < maxBosses - 1) ?  "," : "}");
     }
     appendLine(filePath, beatBosses);
-    free(beatBosses);
-    //saves: map, x, y, current HP
+    char* disabledScripts = calloc(maxScripts * 3, sizeof(char));
+    disabledScripts[0] = '{';
+    for(int i = 0; i < maxScripts; i++)
+    {
+        strcat(disabledScripts, intToString(playerSprite.disabledScripts[i], buffer));
+        strcat(disabledScripts, (i < maxScripts - 1) ? "," : "}");
+    }
+    appendLine(filePath, disabledScripts);
+
+    //free(beatBosses);
+
+    beatBosses = NULL;
+    free(disabledScripts);
+    disabledScripts = NULL;
+    //saves: map, x, y, current HP, beaten bosses, disabled scripts
 }
 
 void saveGlobalPlayer(const player playerSprite, char* filePath)
@@ -812,7 +862,7 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
     return *output;
 }
 
-int readScript(script* scriptPtr, char* input)
+int readScript(script* scriptPtr, char* input, int lineNum)
 {
 	int intData[6];
 	char* strData;
@@ -824,7 +874,7 @@ int readScript(script* scriptPtr, char* input)
     }
 	strData = strtok(NULL, "}");
 	//printf("{%d,%d,%d,%d,%d,%d,%s}\n", mapNum, x, y, w, h, (int) action, data);
-	initScript(scriptPtr, (scriptBehavior) intData[0], intData[1], intData[2], intData[3], intData[4], intData[5], strData);
+	initScript(scriptPtr, (scriptBehavior) intData[0], intData[1], intData[2], intData[3], intData[4], intData[5], strData, lineNum);
 	//printf("done.\n");
 	return 0;
 }
@@ -964,286 +1014,209 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
 bool executeScriptAction(script* scriptData, player* player)
 {
     bool exitGameLoop = false;
-    if ((scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue) && scriptData->data[0] != '\0')
+    if (!scriptData->disabled)
     {
-        drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
-        waitForKey(true);
-        if (scriptData->action == script_trigger_dialogue_once)
-            scriptData->data[0] = '\0';
-    }
-    if (scriptData->action == script_trigger_boss && scriptData->data[0] != '\0')
-    {
-        Mix_FadeOutMusic(920);
-        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-        for(int i = 0; i < 120; i++)
+        if (scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue)
         {
-            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
-            SDL_RenderClear(mainRenderer);
-            drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
-            drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
-            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
-            SDL_RenderFillRect(mainRenderer, NULL);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(7);
-        }
-        Mix_HaltMusic();
-        Mix_PlayMusic(MUSIC((musicIndex = 5)), -1);
-        char* temp = "", * data = calloc(99, sizeof(char));
-        script theBoss;
-        readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp));
-        int bossIndex = strtol(strtok(strcpy(data, theBoss.data), "[/]"), NULL, 10);
-        SDL_Delay(400);
-        for(int i = 0; i < 120; i++)
-        {
-            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
-            SDL_RenderClear(mainRenderer);
-            drawATile(tilesTexture, bossIndex, theBoss.x, theBoss.y, theBoss.w, theBoss.h, 0, SDL_FLIP_NONE);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(5);
-        }
-        //fade to white while displaying boss
-        bossLoaded = true;
-		free(data);
-    }
-    if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')
-    {
-        char* firstChar = "\0";
-        int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
-        char* data = calloc(99, sizeof(char));
-        firstChar = strtok(strncpy(data, scriptData->data, 99), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
-        if (firstChar[0] == 'l')
-        {
-            if(player->lastMap != -1)
-                player->mapScreen = player->lastMap;
-        }
-        else
-            player->mapScreen = strtol(firstChar, NULL, 10);
-            //printf("%d/", mapNum);
-        firstChar = strtok(NULL, "[/]");
-        if (firstChar[0] == 'l')
-        {
-            if(player->lastX != -1)
-            player->spr.x = player->lastX;
-        }
-        else
-            player->spr.x = strtol(firstChar, NULL, 10);
-            //printf("%d/", player->spr.x);
-        firstChar = strtok(NULL, "[/]");
-        if (firstChar[0] == 'l')
-        {
-            if(player->lastY != -1)
-            player->spr.y = player->lastY;
-        }
-        else
-            player->spr.y = strtol(firstChar, NULL, 10);
-        free(data);
-        player->lastMap = tempMap;
-        player->lastX = tempX;
-        player->lastY = tempY;
-        exitGameLoop = true;
-    }
-    if (scriptData->action == script_use_gateway)
-    {
-        int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
-        GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
-        for(int i = 0; i < 120; i++)
-        {
-            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
-            SDL_RenderClear(mainRenderer);
-            drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
-            drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
-            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
-            SDL_RenderFillRect(mainRenderer, NULL);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(9);
-        }
-        SDL_Delay(90);
-        Mix_HaltChannel(GATEWAY_CHANNEL);
-        char* data = calloc(99, sizeof(char));
-        //printf("%s\n", data);
-        player->mapScreen = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
-        //printf("%d/", mapNum);
-        player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
-        //printf("%d/", player->spr.x);
-        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
-        //printf("%d\n", player->spr.y);
-        //switch maps
-        //loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
-        GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYEND_SOUND, 0);
-        for(int i = 0; i < 120; i++)
-        {
-            SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
-            SDL_RenderClear(mainRenderer);
-            SDL_RenderPresent(mainRenderer);
-            SDL_Delay(4);
-        }
-        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
-        player->lastMap = tempMap;
-        player->lastX = tempX;
-        player->lastY = tempY;
-        player->xVeloc = 0;
-        player->yVeloc = 0;
-        initSpark(&theseSparks[4], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, (frame * 1000 / (SDL_GetTicks() - startTime) / 2), (frame * 1000 / (SDL_GetTicks() - startTime) / 4));
-        sparkFlag = true;
-        theseSparkFlags[4] = true;
-        free(data);
-        exitGameLoop = true;
-        Mix_HaltChannel(GATEWAY_CHANNEL);
-    }
-    if (scriptData->action == script_use_teleporter)
-    {
-        char* data = calloc(99, sizeof(char));
-        //printf("%s\n", data);
-        player->spr.x = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
-        //printf("%d/", player->spr.x);
-        player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
-        //printf("%d\n", player->spr.y);
-        Mix_PlayChannel(-1, TELEPORT_SOUND, 0);
-        //play animation at old & new coords?
-        free(data);
-        initSpark(&theseSparks[5], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
-        sparkFlag = true;
-        theseSparkFlags[5] = true;
-    }
-    if (scriptData->action == script_toggle_door)
-    {  //-1 = unchanged, 0 = open, 1 = closed
-        char* data = calloc(99, sizeof(char));
-        bool oldDoorFlags[4] = {doorFlags[0], doorFlags[1], doorFlags[2], doorFlags[3]};
-        bool newDoorFlags[4] = {-1, -1, -1, -1};
-        newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
-        for(int i = 0; i < 4; i++)
-        {
-            if (i > 0)
-                newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
-            if (newDoorFlags[i] > -1)  //set
-                doorFlags[i] = newDoorFlags[i];
-            if (newDoorFlags[i] == -2)  //flip
-                doorFlags[i] = !doorFlags[i];
-
-        }
-        if (oldDoorFlags[0] != doorFlags[0] || oldDoorFlags[1] != doorFlags[1] || oldDoorFlags[2] != doorFlags[2] || oldDoorFlags[3] != doorFlags[3])
-            Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
-        free(data);
-    }
-
-	if (scriptData->action == script_animation)
-	{
-	    player->movementLocked = true;
-		char* data = calloc(strlen(scriptData->data), sizeof(char));
-		strcpy(data, scriptData->data);
-		static int moveFrame = 1;
-		static int startX = 0;
-		static int startY = 0;
-		static char* animationData = "";
-		animationData = calloc(256 ,sizeof(char));
-		strncpy(animationData, strtok(data, "[]"), 256);
-		//printf("animation - %s\n", animationData);
-		int animationDataArr[6];
-		animationDataArr[0] = strtol(strtok(animationData, "/"), NULL, 10);
-		for(int i = 1; i < 6; i++)
-        {
-            animationDataArr[i] = strtol(strtok(NULL, "/"), NULL, 10);
-        }
-        animationSpr.w = animationDataArr[2];
-        animationSpr.h = animationDataArr[3];
-        animationSpr.tileIndex = animationDataArr[4];
-        //printf("[%d,%d,%d,%d,%d,%d]\n", animationDataArr[0], animationDataArr[1], animationDataArr[2], animationDataArr[3], animationDataArr[4], animationDataArr[5]);
-		int totalFrames = 0, x = 0, y = 0, frames = 0;
-		char* dataCopy = calloc(strlen(scriptData->data), sizeof(char));
-		strcpy(dataCopy, scriptData->data);
-		bool found = false;
-		char* dataCopy2 = calloc(strlen(scriptData->data), sizeof(char));
-		strcpy(dataCopy2, scriptData->data);
-		strtok(dataCopy2, "(|)");
-		while(!found)
-		{
-			char* xStr = strtok(NULL, "(|)");
-			if (xStr[0] == '<')  //no more data
-			{
-			    printf("%s\n", xStr);
-				moveFrame = 0;  //repeat; has to be 1 to reset to the way it is init'ed
-				scriptData->action = script_none;  //disable further execution in this launch
-				strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
-			}
-			else
-			{
-				x = strtol(xStr, NULL, 10);
-				y = strtol(strtok(NULL, "(|)"), NULL, 10);
-				frames = strtol(strtok(NULL, "(|)"), NULL, 10);
-				totalFrames += frames;
-				//printf("tf - %d, f - %d, mf - %d\n", totalFrames, frames, moveFrame);
-				if (moveFrame <= totalFrames)
-					found = true;
-			}
-		}
-        if (moveFrame == 1)
-        {
-            animationSpr.x = animationDataArr[0];
-            animationSpr.y = animationDataArr[1];
-            startX = animationDataArr[0];
-            startY = animationDataArr[1];
-            moveFrame++;
-        }
-        else if (moveFrame > 1)
-        {
-            animationSpr.x += (x - startX) / frames;
-            animationSpr.y += (y - startY) / frames;
-            moveFrame++;
-            if (moveFrame == totalFrames)
+            drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
+            waitForKey(true);
+            if (scriptData->action == script_trigger_dialogue_once)
             {
-                animationSpr.x = x;
-                animationSpr.y = y;
-                startX = x;
-                startY = y;
+                scriptData->disabled = true;
+                player->disabledScripts[scriptData->lineNum] = true;  //disable permanently
             }
         }
-
-		if (moveFrame == 0)
+        if (scriptData->action == script_trigger_boss)
         {
-            if (!animationDataArr[5])  //if not stay onscreen
-                animationSpr.tileIndex = tileIDArray[5];
-            player->movementLocked = false;
-            script textBox;
-            char* textStuff = calloc(88, sizeof(char));
-            char* dataPtr = scriptData->data;
-            strtok(scriptData->data, "<>");  //gets rid of extra data
-            strncpy(textStuff, strtok(NULL, "<>"), 88);
-            strcpy(scriptData->data, dataPtr);
-            //printf("%s\n", textStuff);
-            if (strcmp(textStuff, "0")) //if the two have differences aka aren't equal
-                initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff);
-            executeScriptAction(&textBox, player);
-            moveFrame = 1;
+            Mix_FadeOutMusic(920);
+            SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+            for(int i = 0; i < 120; i++)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+                SDL_RenderClear(mainRenderer);
+                drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
+                drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
+                SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
+                SDL_RenderFillRect(mainRenderer, NULL);
+                SDL_RenderPresent(mainRenderer);
+                SDL_Delay(7);
+            }
+            Mix_HaltMusic();
+            Mix_PlayMusic(MUSIC((musicIndex = 5)), -1);
+            char* temp = "", * data = calloc(99, sizeof(char));
+            script theBoss;
+            readScript(&theBoss, readLine((char*) scriptFilePath, strtol(scriptData->data, NULL, 10), &temp), strtol(scriptData->data, NULL, 10));
+            int bossIndex = strtol(strtok(strcpy(data, theBoss.data), "[/]"), NULL, 10);
+            SDL_Delay(400);
+            for(int i = 0; i < 120; i++)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+                SDL_RenderClear(mainRenderer);
+                drawATile(tilesTexture, bossIndex, theBoss.x, theBoss.y, theBoss.w, theBoss.h, 0, SDL_FLIP_NONE);
+                SDL_RenderPresent(mainRenderer);
+                SDL_Delay(5);
+            }
+            //fade to white while displaying boss
+            bossLoaded = true;
+            free(data);
         }
-	}
-
-    if (scriptData->action == script_boss_actions)
-    {
-        static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
-		static int startX = 0;
-		static int startY = 0;
-		if (startX == 0)
-		{
-			startX = scriptData->x;
-			startY =  scriptData->y;
-        }
-		int x = 0, y = 0, frames = 0, totalFrames = 0;
-        char* data = calloc(99, sizeof(char));
-        char* dataCopy = calloc(99, sizeof(char));  //strtok messes with the data, so this is necessary to use a clean copy when end of string is reached (quick fix)
-        strncpy(data, scriptData->data, 99);
-        strncpy(dataCopy, data, 99);
-        if (data[0] == 'r')
-            moveFrame = 0;
-        else
+        if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')  //why is this here?
         {
+            char* firstChar = "\0";
+            int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
+            char* data = calloc(99, sizeof(char));
+            firstChar = strtok(strncpy(data, scriptData->data, 99), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
+            if (firstChar[0] == 'l')
+            {
+                if(player->lastMap != -1)
+                    player->mapScreen = player->lastMap;
+            }
+            else
+                player->mapScreen = strtol(firstChar, NULL, 10);
+                //printf("%d/", mapNum);
+            firstChar = strtok(NULL, "[/]");
+            if (firstChar[0] == 'l')
+            {
+                if(player->lastX != -1)
+                player->spr.x = player->lastX;
+            }
+            else
+                player->spr.x = strtol(firstChar, NULL, 10);
+                //printf("%d/", player->spr.x);
+            firstChar = strtok(NULL, "[/]");
+            if (firstChar[0] == 'l')
+            {
+                if(player->lastY != -1)
+                player->spr.y = player->lastY;
+            }
+            else
+                player->spr.y = strtol(firstChar, NULL, 10);
+            free(data);
+            player->lastMap = tempMap;
+            player->lastX = tempX;
+            player->lastY = tempY;
+            exitGameLoop = true;
+        }
+        if (scriptData->action == script_use_gateway)
+        {
+            int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
+            GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
+            for(int i = 0; i < 120; i++)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+                SDL_RenderClear(mainRenderer);
+                drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
+                drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
+                SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
+                SDL_RenderFillRect(mainRenderer, NULL);
+                SDL_RenderPresent(mainRenderer);
+                SDL_Delay(9);
+            }
+            SDL_Delay(90);
+            Mix_HaltChannel(GATEWAY_CHANNEL);
+            char* data = calloc(99, sizeof(char));
+            //printf("%s\n", data);
+            player->mapScreen = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+            //printf("%d/", mapNum);
+            player->spr.x = strtol(strtok(NULL, "[/]"), NULL, 10);
+            //printf("%d/", player->spr.x);
+            player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
+            //printf("%d\n", player->spr.y);
+            //switch maps
+            //loadMapFile(player->extraData, tilemap, eventmap, player->mapScreen, 15, 20);
+            GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYEND_SOUND, 0);
+            for(int i = 0; i < 120; i++)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), (Uint8) (255 * (i / 120.0)), 0xFF);
+                SDL_RenderClear(mainRenderer);
+                SDL_RenderPresent(mainRenderer);
+                SDL_Delay(4);
+            }
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
+            player->lastMap = tempMap;
+            player->lastX = tempX;
+            player->lastY = tempY;
+            player->xVeloc = 0;
+            player->yVeloc = 0;
+            initSpark(&theseSparks[4], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, (frame * 1000 / (SDL_GetTicks() - startTime) / 2), (frame * 1000 / (SDL_GetTicks() - startTime) / 4));
+            sparkFlag = true;
+            theseSparkFlags[4] = true;
+            free(data);
+            exitGameLoop = true;
+            Mix_HaltChannel(GATEWAY_CHANNEL);
+        }
+        if (scriptData->action == script_use_teleporter)
+        {
+            char* data = calloc(99, sizeof(char));
+            //printf("%s\n", data);
+            player->spr.x = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);  //MUST use a seperate strcpy'd string of the original because C is never that simple
+            //printf("%d/", player->spr.x);
+            player->spr.y = strtol(strtok(NULL, "[/]"), NULL, 10);
+            //printf("%d\n", player->spr.y);
+            Mix_PlayChannel(-1, TELEPORT_SOUND, 0);
+            //play animation at old & new coords?
+            free(data);
+            initSpark(&theseSparks[5], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
+            sparkFlag = true;
+            theseSparkFlags[5] = true;
+        }
+        if (scriptData->action == script_toggle_door)
+        {  //-2 = flip state, -1 = unchanged, 0 = open, 1 = closed
+            char* data = calloc(99, sizeof(char));
+            bool oldDoorFlags[4] = {doorFlags[0], doorFlags[1], doorFlags[2], doorFlags[3]};
+            bool newDoorFlags[4] = {-1, -1, -1, -1};
+            newDoorFlags[0] = strtol(strtok(strncpy(data, scriptData->data, 99), "[/]"), NULL, 10);
+            for(int i = 0; i < 4; i++)
+            {
+                if (i > 0)
+                    newDoorFlags[i] = strtol(strtok(NULL, "[/]"), NULL, 10);
+                if (newDoorFlags[i] > -1)  //set
+                    doorFlags[i] = newDoorFlags[i];
+                if (newDoorFlags[i] == -2)  //flip
+                    doorFlags[i] = !doorFlags[i];
+
+            }
+            if (oldDoorFlags[0] != doorFlags[0] || oldDoorFlags[1] != doorFlags[1] || oldDoorFlags[2] != doorFlags[2] || oldDoorFlags[3] != doorFlags[3])
+                Mix_PlayChannel(-1, DOOROPEN_SOUND, 0);
+            free(data);
+        }
+
+        if (scriptData->action == script_animation)
+        {
+            player->movementLocked = true;
+            char* data = calloc(strlen(scriptData->data), sizeof(char));
+            strcpy(data, scriptData->data);
+            static int moveFrame = 1;
+            static int startX = 0;
+            static int startY = 0;
+            static char* animationData = "";
+            animationData = calloc(256 ,sizeof(char));
+            strncpy(animationData, strtok(data, "[]"), 256);
+            //printf("animation - %s\n", animationData);
+            int animationDataArr[6];
+            animationDataArr[0] = strtol(strtok(animationData, "/"), NULL, 10);
+            for(int i = 1; i < 6; i++)
+            {
+                animationDataArr[i] = strtol(strtok(NULL, "/"), NULL, 10);
+            }
+            animationSpr.w = animationDataArr[2];
+            animationSpr.h = animationDataArr[3];
+            animationSpr.tileIndex = animationDataArr[4];
+            //printf("[%d,%d,%d,%d,%d,%d]\n", animationDataArr[0], animationDataArr[1], animationDataArr[2], animationDataArr[3], animationDataArr[4], animationDataArr[5]);
+            int totalFrames = 0, x = 0, y = 0, frames = 0;
+            char* dataCopy = calloc(strlen(scriptData->data), sizeof(char));
+            strcpy(dataCopy, scriptData->data);
             bool found = false;
-            strtok(data, "(|)");  //this fixes an issue (takes out the first chunk which is just all the [/] junk
+            char* dataCopy2 = calloc(strlen(scriptData->data), sizeof(char));
+            strcpy(dataCopy2, scriptData->data);
+            strtok(dataCopy2, "(|)");
             while(!found)
             {
                 char* xStr = strtok(NULL, "(|)");
-                if (!xStr)  //no more data
+                if (xStr[0] == '<')  //no more data
                 {
-                    moveFrame = 1;  //repeat; has to be 1 to reset to the way it is init'ed
+                    moveFrame = 0;  //repeat; has to be 1 to reset to the way it is init'ed
+                    scriptData->action = script_none;  //disable further execution in this launch
                     strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
                 }
                 else
@@ -1252,73 +1225,159 @@ bool executeScriptAction(script* scriptData, player* player)
                     y = strtol(strtok(NULL, "(|)"), NULL, 10);
                     frames = strtol(strtok(NULL, "(|)"), NULL, 10);
                     totalFrames += frames;
+                    //printf("tf - %d, f - %d, mf - %d\n", totalFrames, frames, moveFrame);
                     if (moveFrame <= totalFrames)
                         found = true;
                 }
             }
-            //printf("%d, %d for %d f. On frame %d. s(%d, %d) d(%d, %d)\n", (x - startX), (y - startY), frames, moveFrame, startX, startY, x, y);
-            scriptData->x += (x - startX) / frames;
-            scriptData->y += (y - startY) / frames;
+            if (moveFrame == 1)
+            {
+                animationSpr.x = animationDataArr[0];
+                animationSpr.y = animationDataArr[1];
+                startX = animationDataArr[0];
+                startY = animationDataArr[1];
+                moveFrame++;
+            }
+            else if (moveFrame > 1)
+            {
+                animationSpr.x += (x - startX) / frames;
+                animationSpr.y += (y - startY) / frames;
+                moveFrame++;
+                if (moveFrame == totalFrames)
+                {
+                    animationSpr.x = x;
+                    animationSpr.y = y;
+                    startX = x;
+                    startY = y;
+                }
+            }
 
-			if (moveFrame == totalFrames)
-			{
-				scriptData->x = x;
-				scriptData->y = y;
-				startX = x;
-				startY = y;
-			}
-
-            if (scriptData->x < 0)
-                scriptData->x = 0;
-            if (scriptData->x > SCREEN_WIDTH - scriptData->w)
-                scriptData->x = SCREEN_WIDTH - scriptData->w;
-
-            if (scriptData->y < 0)
-                scriptData->y = 0;
-            if (scriptData->y > SCREEN_HEIGHT - scriptData->h)
-                scriptData->y = SCREEN_HEIGHT - scriptData->h;
-            //format: (x|y|frames|x2|y2|frames2...)
-            //fill with code to interpret actions and change coords via the script coord system
-            moveFrame++;
+            if (moveFrame == 0)
+            {
+                if (!animationDataArr[5])  //if not stay onscreen
+                    animationSpr.tileIndex = tileIDArray[5];
+                player->movementLocked = false;
+                script textBox;
+                char* textStuff = calloc(88, sizeof(char));
+                char* dataPtr = scriptData->data;
+                strtok(scriptData->data, "<>");  //gets rid of extra data
+                strncpy(textStuff, strtok(NULL, "<>"), 88);
+                strcpy(scriptData->data, dataPtr);
+                //printf("%s\n", textStuff);
+                if (strcmp(textStuff, "0")) //if the two have differences aka aren't equal
+                    initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff, -1);
+                executeScriptAction(&textBox, player);
+                moveFrame = 1;
+                scriptData->disabled = true;
+                player->disabledScripts[scriptData->lineNum] = true;
+            }
         }
-        free(data);
-    }
-    if (scriptData->action == script_gain_money)
-    {
-        player->money += strtol(scriptData->data, NULL, 10);
-        if (player->money > 9999)
-            player->money = 9999;
-            Mix_PlayChannel(-1, CASH_SOUND, 0);
-        initSpark(&theseSparks[3], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime) / 4), (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
-        sparkFlag = true;
-        theseSparkFlags[3] = true;
-        //play animation and sound
-    }
-    if (scriptData->action == script_player_hurt && player->invincCounter <= 0)
-    {
-        int dmg = strtol(scriptData->data, NULL, 10);
-        player->HP -= dmg;
-        if (player->HP < 0)
-            player->HP = 0;
-        if (player->HP > player->maxHP)
-            player->HP = player->maxHP;
-            player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
-        if (dmg > 0)
+
+        if (scriptData->action == script_boss_actions)
         {
-            Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
-            //printf("%d / (%d - %d) == %d\n", frame, SDL_GetTicks(), startTime, frame * 1000 / (SDL_GetTicks() - startTime));
-            initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_RED, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
-            sparkFlag = true;
-            theseSparkFlags[1] = true;
+            static int moveFrame = 1;  //starts on frame 1 to iterate for the desired # of frames
+            static int startX = 0;
+            static int startY = 0;
+            if (startX == 0)
+            {
+                startX = scriptData->x;
+                startY =  scriptData->y;
+            }
+            int x = 0, y = 0, frames = 0, totalFrames = 0;
+            char* data = calloc(99, sizeof(char));
+            char* dataCopy = calloc(99, sizeof(char));  //strtok messes with the data, so this is necessary to use a clean copy when end of string is reached (quick fix)
+            strncpy(data, scriptData->data, 99);
+            strncpy(dataCopy, data, 99);
+            if (data[0] == 'r')
+                moveFrame = 0;
+            else
+            {
+                bool found = false;
+                strtok(data, "(|)");  //this fixes an issue (takes out the first chunk which is just all the [/] junk
+                while(!found)
+                {
+                    char* xStr = strtok(NULL, "(|)");
+                    if (!xStr)  //no more data
+                    {
+                        moveFrame = 1;  //repeat; has to be 1 to reset to the way it is init'ed
+                        strtok(dataCopy, "(|)");  //reset read location & does the fix mentioned above
+                    }
+                    else
+                    {
+                        x = strtol(xStr, NULL, 10);
+                        y = strtol(strtok(NULL, "(|)"), NULL, 10);
+                        frames = strtol(strtok(NULL, "(|)"), NULL, 10);
+                        totalFrames += frames;
+                        if (moveFrame <= totalFrames)
+                            found = true;
+                    }
+                }
+                //printf("%d, %d for %d f. On frame %d. s(%d, %d) d(%d, %d)\n", (x - startX), (y - startY), frames, moveFrame, startX, startY, x, y);
+                scriptData->x += (x - startX) / frames;
+                scriptData->y += (y - startY) / frames;
+
+                if (moveFrame == totalFrames)
+                {
+                    scriptData->x = x;
+                    scriptData->y = y;
+                    startX = x;
+                    startY = y;
+                }
+
+                if (scriptData->x < 0)
+                    scriptData->x = 0;
+                if (scriptData->x > SCREEN_WIDTH - scriptData->w)
+                    scriptData->x = SCREEN_WIDTH - scriptData->w;
+
+                if (scriptData->y < 0)
+                    scriptData->y = 0;
+                if (scriptData->y > SCREEN_HEIGHT - scriptData->h)
+                    scriptData->y = SCREEN_HEIGHT - scriptData->h;
+                //format: (x|y|frames|x2|y2|frames2...)
+                //fill with code to interpret actions and change coords via the script coord system
+                moveFrame++;
+            }
+            free(data);
         }
-        else
+        if (scriptData->action == script_gain_money)
         {
-            ; //play heal sound
-            initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
+            scriptData->disabled = true;
+            player->disabledScripts[scriptData->lineNum] = true;  //disabled as to not be abusable
+            player->money += strtol(scriptData->data, NULL, 10);
+            if (player->money > 9999)
+                player->money = 9999;
+                Mix_PlayChannel(-1, CASH_SOUND, 0);
+            initSpark(&theseSparks[3], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_ORANGE, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime) / 4), (frame * 1000 / (SDL_GetTicks() - startTime) / 8));
             sparkFlag = true;
-            theseSparkFlags[1] = true;
+            theseSparkFlags[3] = true;
+            //play animation and sound
         }
-        //play animation (?) and sound
+        if (scriptData->action == script_player_hurt && player->invincCounter <= 0)
+        {
+            int dmg = strtol(scriptData->data, NULL, 10);
+            player->HP -= dmg;
+            if (player->HP < 0)
+                player->HP = 0;
+            if (player->HP > player->maxHP)
+                player->HP = player->maxHP;
+                player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
+            if (dmg > 0)
+            {
+                Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
+                //printf("%d / (%d - %d) == %d\n", frame, SDL_GetTicks(), startTime, frame * 1000 / (SDL_GetTicks() - startTime));
+                initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_RED, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
+                sparkFlag = true;
+                theseSparkFlags[1] = true;
+            }
+            else
+            {
+                ; //play heal sound
+                initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
+                sparkFlag = true;
+                theseSparkFlags[1] = true;
+            }
+            //play animation (?) and sound
+        }
     }
     scriptData->active = false;
     return exitGameLoop;  //returns whether or not it wants to exit the game loop
