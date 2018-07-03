@@ -14,7 +14,6 @@
 #define MAX_MAPPACKS_PER_PAGE 11
 #define MAX_ENEMIES 6
 
-
 #define TITLESCREEN_GAMECODE -1
 #define START_GAMECODE 0
 #define OPTIONS_GAMECODE 1
@@ -73,7 +72,7 @@ bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
 
-int _globalInt1, _globalInt2, _globalInt3;
+int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
 
 bool debugFlag;
 Sint64 gameTicks;
