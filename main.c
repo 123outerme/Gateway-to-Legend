@@ -629,6 +629,16 @@ void changeVolumes()
         drawText("Music", 2.25 * TILE_SIZE, 5 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Sounds", 2.25 * TILE_SIZE, 6 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 5.25 * TILE_SIZE, .w = 3 * TILE_SIZE / 4, .h = TILE_SIZE / 4}));  // -
+
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 220 * 4, .y = 5.25 * TILE_SIZE, .w = 3 * TILE_SIZE / 4, .h = TILE_SIZE / 4}));  // -
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 223 * 4, .y = 5 * TILE_SIZE, .w = TILE_SIZE / 4, .h = 3 * TILE_SIZE / 4}));  // |
+
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 8.5 * TILE_SIZE, .y = 6.25 * TILE_SIZE, .w = 3 * TILE_SIZE / 4, .h = TILE_SIZE / 4}));  // -
+
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 220 * 4, .y = 6.25 * TILE_SIZE, .w = 3 * TILE_SIZE / 4, .h = TILE_SIZE / 4}));  // -
+        SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 223 * 4, .y = 6 * TILE_SIZE, .w = TILE_SIZE / 4, .h = 3 * TILE_SIZE / 4}));  // |
 
         drawText("Sound Test", 2.25 * TILE_SIZE, 7 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
         drawText("Back", 2.25 * TILE_SIZE, 8 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
@@ -661,9 +671,7 @@ void changeVolumes()
                         {
                             musicVolume -= 16;
                             Mix_VolumeMusic(musicVolume);
-                            Mix_Volume(-1, musicVolume);
                             Mix_PlayChannel(-1, PING_SOUND, 0);
-                            Mix_Volume(-1, soundVolume);
                         }
                         else if (cursor.y == TILE_SIZE * 6 && soundVolume > 0)
                         {
@@ -679,9 +687,7 @@ void changeVolumes()
                         {
                             musicVolume += 16;
                             Mix_VolumeMusic(musicVolume);
-                            Mix_Volume(-1, musicVolume);
                             Mix_PlayChannel(-1, PING_SOUND, 0);
-                            Mix_Volume(-1, soundVolume);
                         }
                         else if (cursor.y == TILE_SIZE * 6 && soundVolume < MIX_MAX_VOLUME)
                         {
@@ -707,11 +713,46 @@ void changeVolumes()
                     int choice = (e.button.y / TILE_SIZE) - 4;
                     if (choice > 0 && choice <= 4)
                     {
-                        Mix_PlayChannel(-1, OPTION_SOUND, 0);
                         if (choice < 3)
                         {
-                            //
+                            SDL_Rect minus1 = {8.25 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                            SDL_Rect plus1 = {18 * TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+                            SDL_Rect minus2 = {8.25 * TILE_SIZE, 6 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                            SDL_Rect plus2 = {223 * 4, 6 * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+                            if ((e.button.x - minus1.x <= minus1.w && e.button.x - minus1.x > 0) && (e.button.y - minus1.y <= minus1.h && e.button.y - minus1.y > 0) && musicVolume > 0)
+                            {
+                                musicVolume -= 16;
+                                Mix_VolumeMusic(musicVolume);
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                            }
+
+                            if ((e.button.x - plus1.x <= plus1.w && e.button.x - plus1.x > 0) && (e.button.y - plus1.y <= plus1.h && e.button.y - plus1.y > 0) && musicVolume < MIX_MAX_VOLUME)
+                            {
+                                musicVolume += 16;
+                                Mix_VolumeMusic(musicVolume);
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                            }
+                            //music
+
+                            if ((e.button.x - minus2.x <= minus2.w && e.button.x - minus2.x > 0) && (e.button.y - minus2.y <= minus2.h && e.button.y - minus2.y > 0) && soundVolume > 0)
+                            {
+                                soundVolume -= 16;
+                                Mix_Volume(-1, soundVolume);
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                            }
+
+                            if ((e.button.x - plus2.x <= plus2.w && e.button.x - plus2.x > 0) && (e.button.y - plus2.y <= plus2.h && e.button.y - plus2.y > 0) && soundVolume < MIX_MAX_VOLUME)
+                            {
+                                soundVolume += 16;
+                                Mix_Volume(-1, soundVolume);
+                                Mix_PlayChannel(-1, PING_SOUND, 0);
+                            }
+                            //sfx
                         }
+                        else
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
                         if (choice == 3)
                             soundTestMenu();
                         if (choice == 4)
@@ -1462,11 +1503,11 @@ int mainLoop(player* playerSprite)
                     for(int i = 0; i < maxTheseScripts; i++)
                     {
                         if (theseScripts[i]->action == script_use_teleporter && SDL_HasIntersection(&((SDL_Rect){.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}), &((SDL_Rect){.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h})))  //not using faster collision bc some scripts might be width != 48
-                            {
-                                thisScript = theseScripts[i];
-                                found = true;
-                                break;
-                            }
+                        {
+                            thisScript = theseScripts[i];
+                            found = true;
+                            break;
+                        }
                     }
                     thisScript->active = found;
                     initSpark(&theseSparks[4], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_BLUE, 4, 8, 8, framerate / 3, framerate / 6);
@@ -1666,10 +1707,19 @@ int mainLoop(player* playerSprite)
                                 else
                                     enemies[i].spr.flip = SDL_FLIP_NONE;
 
-                                if (enemies[i].spr.x != targetX)
+                                {
+                                    double a = atan2(enemies[i].spr.y - targetY, enemies[i].spr.x - targetX);
+                                    double rate = 2.5;
+                                    int dx = (rate * cos(a));
+                                    int dy = (rate * sin(a));
+                                    enemies[i].spr.x -= dx;
+                                    enemies[i].spr.y -= dy;
+                                }
+
+                                /*if (enemies[i].spr.x != targetX)
                                     enemies[i].spr.x += 2 - 4 * (targetX < enemies[i].spr.x);
                                 if (enemies[i].spr.y != targetY)
-                                    enemies[i].spr.y += 2 - 4 * (targetY < enemies[i].spr.y);
+                                    enemies[i].spr.y += 2 - 4 * (targetY < enemies[i].spr.y);*/
                             }
                         }
 
@@ -1785,7 +1835,7 @@ int mainLoop(player* playerSprite)
 
             if (initSword || spinCycle || laserTimer)
             {
-                if ((initSword && (!swordTimer || laserTimer)) || spinCycle == 1)
+                if ((initSword && !swordTimer) || spinCycle == 1)
                     SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
                 int xDir = 0;
                 int yDir = 0;
@@ -1828,6 +1878,7 @@ int mainLoop(player* playerSprite)
                         playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir > SCREEN_HEIGHT)
                     {
                         laserTimer = 0;
+                        swordTimer = SDL_GetTicks() + 1;  //ends swordTimer without allowing for another swing
                         firstXDir = -2;
                         firstYDir = -2;
                     }
