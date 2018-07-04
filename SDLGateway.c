@@ -177,6 +177,10 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
     playerSprite->maxHP = 12;
     playerSprite->level = 1;
     playerSprite->money = 0;
+    for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
+    {
+        playerSprite->techUnlocks[i] = 0;
+    }
 	saveGlobalPlayer(*playerSprite, filePath);
     //saves: name, max HP, level, money, techniques
 }
@@ -523,8 +527,8 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                     if (choice > 0 && choice <= options)
                     {
                         selection = choice;
-                        quit = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        quit = true;
                     }
                 }
             }

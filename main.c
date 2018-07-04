@@ -28,6 +28,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
+int allOptions(player* player, bool includeUpgrades);
 bool upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
@@ -147,7 +148,7 @@ int main(int argc, char* argv[])
         case START_GAMECODE:  //start menu
             if (!Mix_PlayingMusic())
                 playMainMusic();
-            person.mapScreen = 0;
+            person.mapScreen = 0;  //todo: maybe add one more option to main menu?
             choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Gateway to Legend", (char*[5]) {"Play", "Upgrade Shop", "Toolchain", "Settings", "Quit"}, 5, 1, AMENU_MAIN_THEME, true, true, &(aMenu_drawMain));
             if (choice == 1)
                 gameState = PLAY_GAMECODE;
@@ -164,37 +165,13 @@ int main(int argc, char* argv[])
                 quitGame = true;
             break;
         case OPTIONS_GAMECODE:
-            choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false, NULL);
-            if (choice == 1)
-                changeVolumes();
-            if (choice == 2)
-                choice = changeControls();
-            if (choice == 3)
-                changeName(&person);
-            if (choice == 4)
             {
-                int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);  //todo: show old FPS
-                if (newFPS > 0 && newFPS < 30)
-                    newFPS = 30;
-                changeFPS(newFPS);
+                int choice = allOptions(&person, false);
+                if (choice == 0)
+                    gameState = START_GAMECODE;
+                if (choice == -1)
+                    quitGame = true;
             }
-            if (choice == 5)
-                clearData(&person);
-            if (choice == 6)
-            {
-                int pauseKey = 0;
-                while(!pauseKey)
-                {
-                    SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
-                    SDL_RenderFillRect(mainRenderer, NULL);
-                    drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                    pauseKey = getKey(true);
-                }
-            }
-            if (choice == 7)
-                gameState = START_GAMECODE;
-            if (choice == -1)
-                quitGame = true;
             break;
         case PLAY_GAMECODE:  //main menu
             mapSelectLoop(listOfFilenames, (char*) mainFilePath, maxStrNum, &quitGame);
@@ -292,14 +269,21 @@ int main(int argc, char* argv[])
                 gameState = START_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            Mix_HaltChannel(-1);
+            if (choice)
+                Mix_HaltChannel(-1);
             //Mix_PauseMusic();
-            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[3]) {"Back", "Save", "Exit"}, 3, 1, AMENU_MAIN_THEME, true, false, NULL);
+            choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[4]) {"Back", "Save", "Options", "Exit"}, 4, 1, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
-            if (choice == 2 || choice == 3 || choice == -1)
+            if (choice == 3)
+                choice = allOptions(&person, true);
+            if (choice == 2 || choice == 4 || choice == -1)
+            {
                 gameState = SAVE_GAMECODE;
-            Mix_ResumeMusic();
+                if (choice == 4)
+                    choice = 3;
+            }
+            //Mix_ResumeMusic();
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;
@@ -356,6 +340,56 @@ int main(int argc, char* argv[])
 	free(listOfFilenames);
     closeSDL();
     return 0;
+}
+
+//returns -1 if force quit, returns -2 if back, else 0
+int allOptions(player* player, bool includeUpgrades)
+{
+    int choice = 0;
+    includeUpgrades = (includeUpgrades != 0);
+    while(choice != -1 && choice != 7 + includeUpgrades)
+    {
+        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (includeUpgrades ? (char*[8]) {"Sounds", "Upgrade Shop", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"} : (char*[8]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back", ""}), 7 + includeUpgrades, 0, AMENU_MAIN_THEME, true, false, NULL);
+        if (choice == 1)
+            changeVolumes();
+
+        if (choice == 2 && includeUpgrades)
+            choice = upgradeShop(player);
+
+        if (choice == 2 + includeUpgrades)
+            choice = changeControls();
+
+        if (choice == 3 + includeUpgrades)
+            changeName(player);
+
+        if (choice == 4 + includeUpgrades)
+        {
+            int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);  //todo: show old FPS
+            if (newFPS > 0 && newFPS < 30)
+                newFPS = 30;
+            changeFPS(newFPS);
+        }
+
+        if (choice == 5 + includeUpgrades)
+            clearData(player);
+
+        if (choice == 6 + includeUpgrades)
+        {
+            int pauseKey = 0;
+            while(!pauseKey)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                pauseKey = getKey(true);
+            }
+        }
+    }
+
+    if (choice == 7 + includeUpgrades)
+        choice = 0;
+
+    return choice;
 }
 
 bool upgradeShop(player* playerSprite)
@@ -1228,9 +1262,10 @@ int mainLoop(player* playerSprite)
     }
     else
     {
-        script openDoors;
+        /*script openDoors;
         initScript(&openDoors, script_toggle_door, 0, 0, 0, 0, 0, "[-1/-1/-1/0]", -1);
-        executeScriptAction(&openDoors, playerSprite);
+        executeScriptAction(&openDoors, playerSprite);*/
+        doorFlags[3] = 0;
     }
     checkCollision(playerSprite, collisionData, 1, 1, playerSprite->spr.x, playerSprite->spr.y);
     if (collisionData[4] || collisionData[5] || collisionData[6] || collisionData[7])
@@ -1872,10 +1907,10 @@ int mainLoop(player* playerSprite)
                     int distance = 21 - ((laserTimer - SDL_GetTicks()) / 32);
                     initSprite(&sword, playerSprite->spr.x + (TILE_SIZE * distance * firstXDir) + ((firstYDir != 0) * 1.5 * TILE_SIZE / 4), playerSprite->spr.y + ((TILE_SIZE + 2) * distance * firstYDir) + ((firstXDir != 0) * 1.5 * TILE_SIZE / 4), TILE_SIZE - ((firstYDir != 0) * 3 * TILE_SIZE / 4), TILE_SIZE - ((firstXDir != 0) * 3 * TILE_SIZE / 4), INVIS_ID, 0, SDL_FLIP_NONE, type_na);
                     if (SDL_GetTicks() > laserTimer ||
-                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir < 0 ||
-                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir > SCREEN_WIDTH ||
-                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir < 0 ||
-                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir > SCREEN_HEIGHT)
+                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir < -TILE_SIZE ||
+                        playerSprite->spr.x + (TILE_SIZE * distance) * firstXDir > SCREEN_WIDTH + TILE_SIZE ||
+                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir < - TILE_SIZE ||
+                        playerSprite->spr.y + (TILE_SIZE + 2) * distance * firstYDir > SCREEN_HEIGHT + TILE_SIZE)
                     {
                         laserTimer = 0;
                         swordTimer = SDL_GetTicks() + 1;  //ends swordTimer without allowing for another swing
