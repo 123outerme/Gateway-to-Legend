@@ -41,7 +41,7 @@ int mainLoop(player* playerSprite);
 void smoothScrolling(player* playerSprite, int newMapLine, int moveX, int moveY);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
-void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool rerender);
+void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender);
 void drawSparks(spark* s);
 
 void aMenu_drawMain();
@@ -1302,7 +1302,7 @@ int mainLoop(player* playerSprite)
     {
         SDL_RenderClear(mainRenderer);
         drawATilemap(tilesTexture, tilemap, 0, 0, 20, 15, 0, 0, -1, false);
-        drawOverTilemap(tilesTexture, eventmap, 0, 0, 20, 15, 0, 0, doorFlags, false);
+        drawOverTilemap(tilesTexture, eventmap, 0, 0, 20, 15, 0, 0, doorFlags, false, false);
         {  //drawing HUD
             SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 0x7F);
             SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = 0, .y = 0, .w = playerSprite->maxHP / 4.0 * TILE_SIZE, .h = TILE_SIZE}));
@@ -1474,7 +1474,7 @@ int mainLoop(player* playerSprite)
                 }
 
                 if (!playerSprite->spr.x || !playerSprite->spr.y || playerSprite->spr.x == SCREEN_WIDTH - TILE_SIZE || playerSprite->spr.y == SCREEN_HEIGHT - TILE_SIZE)
-                {
+                {  //if we're moving to a different map
                     bool quitThis = false;
                     if (!playerSprite->spr.x && playerSprite->mapScreen % 10 > 0)
                     {
@@ -1506,6 +1506,9 @@ int mainLoop(player* playerSprite)
                         exitCode = 2;
                         playerSprite->xVeloc = 0;
                         playerSprite->yVeloc = 0;
+                        playerSprite->lastX = playerSprite->spr.x;
+                        playerSprite->lastY = playerSprite->spr.y;
+                        playerSprite->lastMap = playerSprite->mapScreen;
                     }
                 }
 
@@ -2029,6 +2032,10 @@ int mainLoop(player* playerSprite)
     {
         exitCode = 5 - gameOver();
         playerSprite->HP = playerSprite->maxHP;
+        theseSparkFlags[1] = false;
+        playerSprite->spr.x = playerSprite->lastX;
+        playerSprite->spr.y = playerSprite->lastY;
+        playerSprite->mapScreen = playerSprite->lastMap;
     }
     if (theseScripts)
         free(theseScripts);
@@ -2055,9 +2062,9 @@ void smoothScrolling(player* playerSprite, int newMapLine, int moveX, int moveY)
     while (!quit)
     {
         drawATilemap(tilesTexture, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, -1, false);
-        drawOverTilemap(tilesTexture, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, doorFlags, false);
+        drawOverTilemap(tilesTexture, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, doorFlags, false, false);
         drawATilemap(tilesTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, -1, false);
-        drawOverTilemap(tilesTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, doorFlags, false);
+        drawOverTilemap(tilesTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, doorFlags, true, false);
         drawATile(tilesTexture, playerSprite->spr.tileIndex, playerSprite->spr.x - i, playerSprite->spr.y - j, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         SDL_RenderPresent(mainRenderer);
         //SDL_Delay(50);
@@ -2133,14 +2140,14 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
     }
 }
 
-void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool rerender)
+void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender)
 {
     int searchIndex = 0;
     for(int y = startY; y < endY; y++)
         for(int x = startX; x < endX; x++)
         {
             searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots -> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 13 ? searchIndex - 9 : 0] == false) || (searchIndex == 16 || searchIndex == 17 || searchIndex == 18))  //8,9,10,11 are the door indexes <- this may be old
+            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 13 ? searchIndex - 9 : 0] == false) || (!drawEnemies && (searchIndex == 16 || searchIndex == 17 || searchIndex == 18)))  //8,9,10,11 are the door indexes <- this may be old
                 searchIndex = 5;  //5 is index for invis tile
             drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE + xOffset, y * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
         }

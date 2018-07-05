@@ -1082,7 +1082,7 @@ bool executeScriptAction(script* scriptData, player* player)
             if (firstChar[0] == 'l')
             {
                 if(player->lastX != -1)
-                player->spr.x = player->lastX;
+                    player->spr.x = player->lastX;
             }
             else
                 player->spr.x = strtol(firstChar, NULL, 10);
@@ -1091,7 +1091,7 @@ bool executeScriptAction(script* scriptData, player* player)
             if (firstChar[0] == 'l')
             {
                 if(player->lastY != -1)
-                player->spr.y = player->lastY;
+                    player->spr.y = player->lastY;
             }
             else
                 player->spr.y = strtol(firstChar, NULL, 10);
