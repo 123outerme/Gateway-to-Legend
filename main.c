@@ -247,6 +247,10 @@ int main(int argc, char* argv[])
                 theseSparkFlags[i] = false;
                 initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
             }
+
+            for(int i = 0; i < MAX_ENEMIES; i++)
+                initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
+
             //done game init
             screenTransitions();
             playOverworldMusic();
@@ -1212,6 +1216,8 @@ int mainLoop(player* playerSprite)
     }
     else
         theseScripts = NULL;
+    for(int i = 0; i < MAX_ENEMIES; i++)
+        initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {
@@ -2065,6 +2071,9 @@ void smoothScrolling(player* playerSprite, int newMapLine, int moveX, int moveY)
         drawOverTilemap(tilesTexture, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, doorFlags, false, false);
         drawATilemap(tilesTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, -1, false);
         drawOverTilemap(tilesTexture, newEventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, doorFlags, true, false);
+        for(int x = 0; x < MAX_ENEMIES; x++)
+            drawATile(tilesTexture, enemies[x].spr.tileIndex, enemies[x].spr.x - i, enemies[x].spr.y - j, TILE_SIZE, TILE_SIZE, 0, enemies[x].spr.flip);
+
         drawATile(tilesTexture, playerSprite->spr.tileIndex, playerSprite->spr.x - i, playerSprite->spr.y - j, TILE_SIZE, TILE_SIZE, 0, playerSprite->spr.flip);
         SDL_RenderPresent(mainRenderer);
         //SDL_Delay(50);
