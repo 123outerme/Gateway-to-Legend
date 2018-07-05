@@ -7,10 +7,16 @@
 ) ELSE (
 	set commitMessage=%1
 )
+@set branch=""
+@IF [%2]==[] (
+	set branch=master
+) ELSE (
+	set branch=%2
+)
 @git init
 @git add .
 @git commit -m %commitMessage%
 @git remote add origin https://github.com/123outerme/%project%
-@git push origin master
+@git push origin branch
 @cd %~dp0
 @pause Done! Press anything to continue.

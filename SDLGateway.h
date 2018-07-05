@@ -97,6 +97,8 @@ typedef enum  _scriptBehavior {
     script_placeholder,            //13 ?
 } scriptBehavior;
 
+#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Triggers a textbox after Interact is pressed, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around a screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
+
 typedef struct _script {
     int mapNum;
     int x;

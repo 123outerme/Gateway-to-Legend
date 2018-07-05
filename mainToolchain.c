@@ -165,6 +165,7 @@ void createMapPack(mapPack* newPack)
 {
     char* getString = calloc(sizeof(char), MAX_FILE_PATH);
     char* message;
+    int intData = 0;
     char mapPackData[MAX_MAP_PACK_DATA][MAX_FILE_PATH];
     int wizardState = 0;
     bool quit = false;
@@ -200,7 +201,10 @@ void createMapPack(mapPack* newPack)
             message = "Initial map number? ";
             break;
         }
-        stringInput(&getString, message, MAX_FILE_PATH, "default.txt", false);
+        if (wizardState < 6)
+            stringInput(&getString, message, MAX_FILE_PATH, "default.txt", false);
+        else
+            intData = intInput(message, 3, 0, 0, SCREEN_WIDTH, false);
         switch(wizardState)
         {
         case 0:
@@ -231,15 +235,15 @@ void createMapPack(mapPack* newPack)
             wizardState++;
             break;
         case 6:
-            sscanf(getString, "%d", &(newPack->initX));
+            newPack->initX = intData;
             wizardState++;
             break;
         case 7:
-            sscanf(getString, "%d", &(newPack->initY));
+            newPack->initY = intData;
             wizardState++;
             break;
         case 8:
-            sscanf(getString, "%d", &(newPack->initMap));
+            newPack->initMap = intData;
             wizardState++;
             quit = true;
             break;
@@ -706,12 +710,13 @@ void writeTileData(mapPack workingPack, int line)
 
 void writeScriptData(mapPack workingPack, script* mapScripts, int count)
 {
+    char* actionDescriptions[14] = ALL_ACTION_DESCRIPTIONS;
     if (count < 1)
         return;
     char scriptText[600];
     for(int i = 0; i < count; i++)
     {
-        snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s}", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data);
+        snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s} ;%s on map %d", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data, actionDescriptions[(int) mapScripts[i].action], mapScripts[i].mapNum);
         appendLine(workingPack.scriptFilePath, scriptText);
     }
 }
