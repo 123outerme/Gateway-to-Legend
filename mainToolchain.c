@@ -478,7 +478,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                 eventmap[y][x] = 0;
         }
     }
-	printf("There are %d enemies at the start.\n", enemyCount);
+	//printf("There are %d enemies at the start.\n", enemyCount);
     SDL_Delay(500);  //gives time for keypresses to unregister
     SDL_Event e;
     while(!quit)
@@ -544,14 +544,14 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 
                     if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(prevTile > 11 && prevTile < 15) && enemyCount < MAX_ENEMIES)
                         enemyCount++;
-					printf("There are now %d enemies.\n", enemyCount);
+					//printf("There are now %d enemies.\n", enemyCount);
                 }
 
 				if (prevTile > 11 && prevTile < 15)
                     {
                         if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
                             enemyCount--;
-						printf("There are now %d enemies.\n", enemyCount);
+						//printf("There are now %d enemies.\n", enemyCount);
                     }
 
             if (playerSprite->spr.tileIndex == 11)  //warp gate
@@ -1378,7 +1378,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                         int totalFrames = 0;
                         for(int i = 0; i <= bossMoveSegment; i++)
                         {
-                            totalFrames += frameCoords[bossMoveSegment];
+                            totalFrames += frameCoords[i];
                         }
                         bossSpr.x += (xCoords[bossMoveSegment] - startX) / frameCoords[bossMoveSegment];
                         bossSpr.y += (yCoords[bossMoveSegment] - startY) / frameCoords[bossMoveSegment];

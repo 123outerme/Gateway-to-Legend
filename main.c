@@ -12,7 +12,6 @@
 #define PIXELS_MOVED 6
 
 #define MAX_MAPPACKS_PER_PAGE 11
-#define MAX_ENEMIES 6
 
 #define TITLESCREEN_GAMECODE -1
 #define START_GAMECODE 0
@@ -41,7 +40,6 @@ int mainLoop(player* playerSprite);
 void smoothScrolling(player* playerSprite, int newMapLine, int moveX, int moveY);
 void checkCollision(player* player, int* outputData, int moveX, int moveY, int lastX, int lastY);
 void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, bool* backFlag);
-void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender);
 void drawSparks(spark* s);
 
 void aMenu_drawMain();
@@ -66,8 +64,6 @@ int toolchain_main();
 
 #define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
 
-bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
-enemy enemies[MAX_ENEMIES];
 enemy bossSprite;
 bool loadBoss;
 script* allScripts;
@@ -1689,6 +1685,7 @@ int mainLoop(player* playerSprite)
                             script rewardScript;
                             initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5", -1);
                             executeScriptAction(&rewardScript, playerSprite);
+                            enemies[i].spr.tileIndex = INVIS_ID;
                             enemies[i].spr.type = type_na;
                         }
                     }
@@ -2147,21 +2144,6 @@ void checkCollision(player* player, int* outputData, int moveX, int moveY, int l
                 outputData[i] = true;
         }
     }
-}
-
-void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender)
-{
-    int searchIndex = 0;
-    for(int y = startY; y < endY; y++)
-        for(int x = startX; x < endX; x++)
-        {
-            searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots -> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
-            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 13 ? searchIndex - 9 : 0] == false) || (!drawEnemies && (searchIndex == 16 || searchIndex == 17 || searchIndex == 18)))  //8,9,10,11 are the door indexes <- this may be old
-                searchIndex = 5;  //5 is index for invis tile
-            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE + xOffset, y * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
-        }
-    if (rerender)
-        SDL_RenderPresent(mainRenderer);
 }
 
 void drawSparks(spark* s)

@@ -50,6 +50,8 @@ typedef struct _mapPack {
 #define DEFAULT_PLAYER_HEALTH 12
 #define MAX_PLAYER_TECHNIQUES 5
 
+#define MAX_ENEMIES 6
+
 typedef struct _player {
     sprite spr;  //?
     char name[MAX_PLAYER_NAME + 1];  //9 bytes
@@ -149,6 +151,7 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex);  //lo
 void loadGlobalPlayer(player* playerSprite, char* filePath);  //loads from global player save file
 void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmapData[][WIDTH_IN_TILES], const int lineNum, const int y, const int x);  //loads a tilemap into the specified tilemap matrix and event matrix
 void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen);
+void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender);
 int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, const int options, int curSelect, SDL_Color bgColor, SDL_Color titleColorUnder, SDL_Color titleColorOver, SDL_Color textColor, bool border, bool isMain, void (*extraDrawing)(void));  //draws a menu using the colors and options presented
 void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool startCaps);   //gets string input
 int intInput(char* prompt, int maxDigits, int defaultVal, int minVal, int maxVal, bool allowNeg);  //gets int input
@@ -171,6 +174,9 @@ void SDLCALL playOverworldMusic();  //play an overworld theme callback
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* tilesTexture;
 int tileIDArray[MAX_SPRITE_MAPPINGS];
+
+bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
+enemy enemies[MAX_ENEMIES];
 
 #define SIZE_OF_SCANCODE_ARRAY 7
 SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];

@@ -396,6 +396,7 @@ void loadMapFile(char* filePath, int tilemapData[][WIDTH_IN_TILES], int eventmap
     }*/
 }
 
+//this one is more general purpose drawing
 void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, bool hideCollision, bool isEvent, bool updateScreen)
 {
         int tile = 0;
@@ -414,6 +415,22 @@ void drawAMap(SDL_Texture* tileTexture, int thisTilemap[][WIDTH_IN_TILES], int s
             }
 
     if (updateScreen)
+        SDL_RenderPresent(mainRenderer);
+}
+
+//This one is used for ingame drawing (when enemies are loaded)
+void drawOverTilemap(SDL_Texture* texture, int anEventmap[][WIDTH_IN_TILES], int startX, int startY, int endX, int endY, int xOffset, int yOffset, bool drawDoors[], bool drawEnemies, bool rerender)
+{
+    int searchIndex = 0;
+    for(int y = startY; y < endY; y++)
+        for(int x = startX; x < endX; x++)
+        {
+            searchIndex = anEventmap[y][x] + 5 - (anEventmap[y][x] > 0);  //search index for these tiles is beyond HUD/player slots -> Minus 1 because there's only 1 index for invis tile but two cases right next to each other that need it
+            if (((searchIndex == 9 || searchIndex == 10 || searchIndex == 11 || searchIndex == 12) && drawDoors[searchIndex < 13 ? searchIndex - 9 : 0] == false) || (!drawEnemies && (searchIndex == 16 || searchIndex == 17 || searchIndex == 18)))  //8,9,10,11 are the door indexes <- this may be old
+                searchIndex = 5;  //5 is index for invis tile
+            drawATile(texture, tileIDArray[searchIndex], x * TILE_SIZE + xOffset, y * TILE_SIZE + yOffset, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
+        }
+    if (rerender)
         SDL_RenderPresent(mainRenderer);
 }
 
@@ -1110,7 +1127,10 @@ bool executeScriptAction(script* scriptData, player* player)
                 SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
                 SDL_RenderClear(mainRenderer);
                 drawAMap(tilesTexture, tilemap, 0, 0, 20, 15, true, false, false);
-                drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
+                drawOverTilemap(tilesTexture, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, 0, 0, doorFlags, false, false);
+                for(int i = 0; i < MAX_ENEMIES; i++)
+                    drawASprite(tilesTexture, enemies[i].spr);
+                //drawAMap(tilesTexture, eventmap, 0, 0, 20, 15, true, true, false);
                 SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, (Uint8) (255 * (i / 120.0)));
                 SDL_RenderFillRect(mainRenderer, NULL);
                 SDL_RenderPresent(mainRenderer);
