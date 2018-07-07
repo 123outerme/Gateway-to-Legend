@@ -498,6 +498,11 @@ bool upgradeShop(player* playerSprite)
                                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
                                 }
+                                if (e.type == SDL_MOUSEMOTION)
+                                {
+                                    if (e.motion.y / TILE_SIZE == 5 || e.motion.y / TILE_SIZE == 7)
+                                        cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                                }
                             }
                         }
                         drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -793,6 +798,11 @@ void changeVolumes()
                             quit = true;
                     }
                 }
+                if (e.type == SDL_MOUSEMOTION)
+                {
+                    if (e.motion.y / TILE_SIZE > 4 && e.motion.y / TILE_SIZE <= 8)
+                        cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                }
             }
         }
         drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
@@ -934,6 +944,11 @@ void soundTestMenu()
                         }
                     }
                 }
+                if (e.type == SDL_MOUSEMOTION)
+                {
+                    if (e.motion.y / TILE_SIZE > 4 && e.motion.y / TILE_SIZE <= 6)
+                        cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                }
             }
         }
         if (cursor.y / TILE_SIZE - 4 == 1)
@@ -1033,6 +1048,11 @@ int changeControls()
                             quit = true;
                             Mix_PlayChannel(-1, OPTION_SOUND, 0);
                         }
+                    }
+                    if (e.type == SDL_MOUSEMOTION)
+                    {
+                        if (e.motion.y / TILE_SIZE - 3 > 0 && e.motion.y / TILE_SIZE - 3 <= 8)
+                            cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
                     }
                 }
             }
@@ -1166,9 +1186,14 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
                 }
+                if (e.type == SDL_MOUSEMOTION)
+                {
+                    if (e.motion.y / TILE_SIZE - 3 >= -1 && e.motion.y / TILE_SIZE - 3 < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
+                        selectItem = (e.motion.y / TILE_SIZE) - 2;
+                }
             }
         }
-        if (selectItem == 0)
+        if (selectItem == 0 && *backFlag)
             quitMenu = true;
 
         if (maxStrNum / MAX_MAPPACKS_PER_PAGE > 0)
@@ -1683,7 +1708,7 @@ int mainLoop(player* playerSprite)
                         else if (enemies[i].spr.type == type_generic)
                         {
                             script rewardScript;
-                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5", -1);
+                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5", -1); //todo: re-evaluate coins given per enemy
                             executeScriptAction(&rewardScript, playerSprite);
                             enemies[i].spr.tileIndex = INVIS_ID;
                             enemies[i].spr.type = type_na;

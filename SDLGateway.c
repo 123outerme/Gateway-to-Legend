@@ -548,6 +548,11 @@ int aMenu(SDL_Texture* texture, int cursorID, char* title, char** optionsArray, 
                         quit = true;
                     }
                 }
+                if (e.type == SDL_MOUSEMOTION)
+                {
+                    if (e.motion.y / TILE_SIZE > 4 && e.motion.y / TILE_SIZE < options + 5)
+                        cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                }
             }
         }
         drawATile(texture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);

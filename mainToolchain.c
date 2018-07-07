@@ -465,7 +465,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
     *scriptCount = 0;
     int scriptMaxCount = 5;
     script* mapScripts = calloc(scriptMaxCount, sizeof(script));
-    bool quit = false, editingTiles = true;
+    bool quit = false, editingTiles = true, drawTile = false;
     int frame = 0, sleepFor = 0, lastFrame = SDL_GetTicks() - 1, lastKeypressTime = SDL_GetTicks(), lastTile = -1;
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
@@ -507,6 +507,13 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
             {
                 quit = true;
             }
+            if (e.type == SDL_MOUSEMOTION)
+            {
+                playerSprite->spr.x = TILE_SIZE * e.motion.x / TILE_SIZE;
+                playerSprite->spr.y = TILE_SIZE * e.motion.y / TILE_SIZE;
+            }
+            if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                drawTile = true;
             /*if (e.key.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g && debug)
                 doDebugDraw = !doDebugDraw;*/
         }
@@ -532,85 +539,8 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
             if (keyStates[SDL_SCANCODE_E] && playerSprite->spr.tileIndex < 127 - (127 - MAX_SPRITE_MAPPINGS + 3) * (!editingTiles))  //+3 to avoid the first few sprite mappings
                 playerSprite->spr.tileIndex++;
 
-            if (keyStates[SDL_SCANCODE_SPACE] && editingTiles)
-                tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-
-            if (keyStates[SDL_SCANCODE_SPACE] && !editingTiles)
-            {
-				int prevTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
-				eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
-                if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
-                {
-
-                    if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(prevTile > 11 && prevTile < 15) && enemyCount < MAX_ENEMIES)
-                        enemyCount++;
-					//printf("There are now %d enemies.\n", enemyCount);
-                }
-
-				if (prevTile > 11 && prevTile < 15)
-                    {
-                        if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
-                            enemyCount--;
-						//printf("There are now %d enemies.\n", enemyCount);
-                    }
-
-            if (playerSprite->spr.tileIndex == 11)  //warp gate
-                {
-                    script gateScript;
-                    int map = 0, x = 0, y = 0;
-                    locationSelectLoop(workingPack, &map, &x, &y);
-                    char* data = calloc(99, sizeof(char));
-                    snprintf(data, 99, "[%d/%d/%d]", map, x, y);
-                    initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
-                    mapScripts[(*scriptCount)++] = gateScript;
-                    free(data);
-                    SDL_Delay(500);  //gives time for keypresses to unregister
-                }
-                if (playerSprite->spr.tileIndex == 9)  //teleporter
-                {
-                    script teleportScript;
-                    int x = 0, y = 0;
-                    SDL_Keycode key = 0;
-                    bool inQuit = false;
-                    while(!inQuit)
-                    {
-                        SDL_RenderClear(mainRenderer);
-                        drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
-                        drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
-                        drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
-                        key = getKey(false);
-                        if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
-                            y -= TILE_SIZE;
-                        if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
-                            y += TILE_SIZE;
-                        if (SC_LEFT == SDL_GetScancodeFromKey(key) && x > 0)
-                            x -= TILE_SIZE;
-                        if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
-                            x += TILE_SIZE;
-                        if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
-                            inQuit = true;
-                        SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
-                        SDL_RenderPresent(mainRenderer);
-                    }
-                    char* data = calloc(99, sizeof(char));
-                    snprintf(data, 99, "[%d/%d]", x, y);
-                    initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
-                    mapScripts[(*scriptCount)++] = teleportScript;
-                    //printf("%s\n", data);
-                    //printf("%s\n", mapScripts[*scriptCount - 1].data);
-                    free(data);
-                    SDL_Delay(500);  //gives time for keypresses to unregister
-                }
-                if (*scriptCount >= scriptMaxCount - 1)
-                {
-                    scriptMaxCount += 5;
-                    script* temp = realloc(mapScripts, scriptMaxCount);
-                    if (temp)
-                        mapScripts = temp;
-                    else
-                        printf("can't realloc\n");
-                }
-            }
+            if (keyStates[SDL_SCANCODE_SPACE])
+                drawTile = true;
 
             if (keyStates[SDL_SCANCODE_LSHIFT])
             {
@@ -624,6 +554,86 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                     playerSprite->spr.tileIndex = temp;
             }
 	    lastKeypressTime = SDL_GetTicks();
+        }
+
+        if (drawTile && editingTiles)
+            tilemap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+
+        if (drawTile && !editingTiles)
+        {
+            int prevTile = eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE];
+            eventmap[playerSprite->spr.y / TILE_SIZE][playerSprite->spr.x / TILE_SIZE] = playerSprite->spr.tileIndex;
+            if (playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15)  //enemies
+            {
+
+                if ((playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15) && !(prevTile > 11 && prevTile < 15) && enemyCount < MAX_ENEMIES)
+                    enemyCount++;
+                //printf("There are now %d enemies.\n", enemyCount);
+            }
+
+            if (prevTile > 11 && prevTile < 15)
+                {
+                    if (!(playerSprite->spr.tileIndex > 11 && playerSprite->spr.tileIndex < 15))
+                        enemyCount--;
+                    //printf("There are now %d enemies.\n", enemyCount);
+                }
+
+        if (playerSprite->spr.tileIndex == 11)  //warp gate
+            {
+                script gateScript;
+                int map = 0, x = 0, y = 0;
+                locationSelectLoop(workingPack, &map, &x, &y);
+                char* data = calloc(99, sizeof(char));
+                snprintf(data, 99, "[%d/%d/%d]", map, x, y);
+                initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
+                mapScripts[(*scriptCount)++] = gateScript;
+                free(data);
+                SDL_Delay(500);  //gives time for keypresses to unregister
+            }
+            if (playerSprite->spr.tileIndex == 9)  //teleporter
+            {
+                script teleportScript;
+                int x = 0, y = 0;
+                SDL_Keycode key = 0;
+                bool inQuit = false;
+                while(!inQuit)
+                {
+                    SDL_RenderClear(mainRenderer);
+                    drawMaps(workingPack, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, false, false);
+                    drawMaps(workingPack, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, true, true, false);
+                    drawText("Choose x/y coord to place player in.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {0xFF, 0xFF, 0xFF, 0xFF}, false);
+                    key = getKey(false);
+                    if (SC_UP == SDL_GetScancodeFromKey(key) && y > 0)
+                        y -= TILE_SIZE;
+                    if (SC_DOWN == SDL_GetScancodeFromKey(key) && y < SCREEN_HEIGHT)
+                        y += TILE_SIZE;
+                    if (SC_LEFT == SDL_GetScancodeFromKey(key) && x > 0)
+                        x -= TILE_SIZE;
+                    if (SC_RIGHT == SDL_GetScancodeFromKey(key) && x < SCREEN_WIDTH)
+                        x += TILE_SIZE;
+                    if (SC_INTERACT == SDL_GetScancodeFromKey(key) || key == ANYWHERE_QUIT)
+                        inQuit = true;
+                    SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = x, .y = y, .w = TILE_SIZE, .h = TILE_SIZE}));
+                    SDL_RenderPresent(mainRenderer);
+                }
+                char* data = calloc(99, sizeof(char));
+                snprintf(data, 99, "[%d/%d]", x, y);
+                initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
+                mapScripts[(*scriptCount)++] = teleportScript;
+                //printf("%s\n", data);
+                //printf("%s\n", mapScripts[*scriptCount - 1].data);
+                free(data);
+                SDL_Delay(500);  //gives time for keypresses to unregister
+            }
+            if (*scriptCount >= scriptMaxCount - 1)
+            {
+                scriptMaxCount += 5;
+                script* temp = realloc(mapScripts, scriptMaxCount);
+                if (temp)
+                    mapScripts = temp;
+                else
+                    printf("can't realloc\n");
+            }
         }
 
         if (keyStates[SDL_SCANCODE_ESCAPE] || keyStates[SDL_SCANCODE_RETURN])
@@ -817,7 +827,7 @@ int scriptSelectLoop(mapPack workingPack)
                     {
                         if (scriptType > 0)
                         {
-                            if (scriptType == 7)
+                            if (scriptType == 8)
                                 scriptType -= 3;
                             else
                                 scriptType--;
@@ -829,7 +839,7 @@ int scriptSelectLoop(mapPack workingPack)
                     {
                         if (scriptType < optionsSize - 1)
                         {
-                            if (scriptType == 4)
+                            if (scriptType == 5)
                                 scriptType += 3;
                             else
                                 scriptType++;
@@ -887,16 +897,27 @@ int scriptSelectLoop(mapPack workingPack)
 
                         if ((e.button.x - minus.x <= minus.w && e.button.x - minus.x > 0) && (e.button.y - minus.y <= minus.h && e.button.y - minus.y > 0) && scriptType > 0)
                         {
-                            scriptType--;
+                            if (scriptType == 8)
+                                scriptType -= 3;
+                            else
+                                scriptType--;
                             Mix_PlayChannel(-1, PING_SOUND, 0);
                         }
 
-                        if ((e.button.x - plus.x <= plus.w && e.button.x - plus.x > 0) && (e.button.y - plus.y <= plus.h && e.button.y - plus.y > 0) && scriptType < optionsSize)
+                        if ((e.button.x - plus.x <= plus.w && e.button.x - plus.x > 0) && (e.button.y - plus.y <= plus.h && e.button.y - plus.y > 0) && scriptType < optionsSize - 1)
                         {
-                            scriptType++;
+                            if (scriptType == 5)
+                                scriptType += 3;
+                            else
+                                scriptType++;
                             Mix_PlayChannel(-1, PING_SOUND, 0);
                         }
                     }
+                }
+                if (e.type == SDL_MOUSEMOTION)
+                {
+                    if (e.motion.y / TILE_SIZE > 4 && e.motion.y / TILE_SIZE <= 8)
+                        cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
                 }
             }
         }
@@ -1093,8 +1114,8 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                         quit = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
-                    //User presses a key
-                    else if(e.type == SDL_KEYDOWN)
+
+                    if(e.type == SDL_KEYDOWN)
                     {
                         if (e.key.keysym.scancode == SC_UP && cursor.y > 5 * TILE_SIZE)
                         {
@@ -1123,6 +1144,31 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                             quit = true;
                             Mix_PlayChannel(-1, OPTION_SOUND, 0);
                         }
+                    }
+
+                    if (e.type == SDL_MOUSEBUTTONDOWN)
+                    {
+                        if (e.button.x / TILE_SIZE == 15 && e.button.y / TILE_SIZE < 8 && e.button.y / TILE_SIZE > 4)
+                        {
+                            if (newDoors[e.button.y / TILE_SIZE - 5] < 1)
+                                newDoors[e.button.y / TILE_SIZE - 5]++;
+                        }
+                        if (e.button.x / TILE_SIZE == 1 && e.button.y / TILE_SIZE < 8 && e.button.y / TILE_SIZE > 4)
+                        {
+                            if (newDoors[e.button.y / TILE_SIZE - 5] > -2)
+                                newDoors[e.button.y / TILE_SIZE - 5]--;
+                        }
+                        if (e.button.y / TILE_SIZE == 8)
+                        {
+                            quit = true;
+                            Mix_PlayChannel(-1, OPTION_SOUND, 0);
+                        }
+                    }
+
+                    if (e.type == SDL_MOUSEMOTION)
+                    {
+                        if (e.motion.y / TILE_SIZE > 4 && e.motion.y / TILE_SIZE < 9)
+                            cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
                     }
                 }
                 drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, (cursor.y < TILE_SIZE * 8 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
@@ -1235,7 +1281,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                         int totalFrames = 0;
                         for(int i = 0; i <= animationMoveSegment; i++)
                         {
-                            totalFrames += frameCoords[animationMoveSegment];
+                            totalFrames += frameCoords[i];
                         }
                         animationSpr.x += (xCoords[animationMoveSegment] - startX) / frameCoords[animationMoveSegment];
                         animationSpr.y += (yCoords[animationMoveSegment] - startY) / frameCoords[animationMoveSegment];
@@ -1260,7 +1306,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                         }
                     }
                     drawASprite(workingPack.mapPackTexture, animationSpr);
-                    drawText("Choose the top left coord.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
+                    drawText("Choose the coords.", 0, 0, SCREEN_WIDTH, TILE_SIZE, (SDL_Color){0xFF, 0xFF, 0xFF, 0xFF}, true);
 					const Uint8* keyStates = SDL_GetKeyboardState(NULL);
 					while(SDL_PollEvent(&e) != 0)  //while there are events in the queue
 					{
@@ -1289,12 +1335,20 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                                 quit = true;
                             }
 						}
+						if (e.type == SDL_MOUSEBUTTONDOWN)
+                            select = true;
+
+                        if (e.type == SDL_MOUSEMOTION)
+                        {
+                            cursor.x = TILE_SIZE * (e.motion.x / TILE_SIZE);
+                            cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                        }
 					}
 
 					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
 					if (sleepFor > 0)
 						SDL_Delay(sleepFor);
-                    printf("tT - %d, lF - %d, sF - %d, GT - %d\n", targetTime, lastFrame, sleepFor, SDL_GetTicks());
+                    //printf("tT - %d, lF - %d, sF - %d, GT - %d\n", targetTime, lastFrame, sleepFor, SDL_GetTicks());
 					lastFrame = SDL_GetTicks();
 					frame++;
 					//SDL_RenderPresent(mainRenderer);
@@ -1320,7 +1374,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 strcat(moveStr, intToString(frameCoords[i], temp));
                 if (i < coords - 1)
                     strcat(moveStr, "|");
-                    printf("%s\n", moveStr);
+                //printf("%s\n", moveStr);
             }
 			//end figure this out
 			targetTime = calcWaitTime(FPS);
@@ -1432,6 +1486,14 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                                 quit = true;
                             }
 						}
+						if (e.type == SDL_MOUSEBUTTONDOWN)
+                            select = true;
+
+                        if (e.type == SDL_MOUSEMOTION)
+                        {
+                            cursor.x = TILE_SIZE * (e.motion.x / TILE_SIZE);
+                            cursor.y = TILE_SIZE * (e.motion.y / TILE_SIZE);
+                        }
 					}
 
 					sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
@@ -1752,7 +1814,18 @@ int chooseTile(mapPack workingPack, char* prompt)
             {
                 cursor.x = (e.button.x / TILE_SIZE) * TILE_SIZE;
                 cursor.y = (e.button.y / TILE_SIZE) * TILE_SIZE;
-				if (cursor.x > SCREEN_WIDTH)
+                if (cursor.x > SCREEN_WIDTH)  //this needs to be bounded because the screen isn't sized appropriately
+					cursor.x = SCREEN_WIDTH;
+				if (cursor.y > SCREEN_HEIGHT)
+					cursor.y = SCREEN_HEIGHT;
+                tile = 8 * (cursor.x / TILE_SIZE) + cursor.y / TILE_SIZE - 1;  //-1 because we don't start at y=0
+                quit = true;
+            }
+            if (e.type == SDL_MOUSEMOTION)
+            {
+                cursor.x = (e.button.x / TILE_SIZE) * TILE_SIZE;
+                cursor.y = (e.button.y / TILE_SIZE) * TILE_SIZE;
+                if (cursor.x > SCREEN_WIDTH)  //this needs to be bounded because the screen isn't sized appropriately
 					cursor.x = SCREEN_WIDTH;
 				if (cursor.y > SCREEN_HEIGHT)
 					cursor.y = SCREEN_HEIGHT;
