@@ -225,7 +225,10 @@ SDL_Keycode waitForKey(bool useMouse)
         while(SDL_PollEvent(&e) != 0)
         {
             if(e.type == SDL_QUIT)
+            {
                 quit = true;
+                keycode = -1;
+            }
             else
             {
                 if(e.type == SDL_KEYDOWN)

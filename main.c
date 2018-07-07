@@ -62,8 +62,16 @@ int toolchain_main();
 
 #define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
-#define HELP_MENU_TEXT "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds-> Play and create different map-packs! You can create engaging content and play others' content as well!\nMade by:\nStephen Policelli"
-
+#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds."
+#define HELP_MENU_TEXT2 "Play and create different map-packs! You can create engaging content and play others' content as well!"
+#define HELP_MENU_TEXT3 "Made by:\nStephen Policelli"
+/* search this
+    SDL_Texture* img;
+    loadIMG("assets/help/.png", &img);
+    SDL_RenderClear(mainRenderer);
+    SDL_RenderCopy(mainRenderer, img, NULL, NULL);
+    SDL_RenderPresent(mainRenderer);
+*/
 enemy bossSprite;
 bool loadBoss;
 script* allScripts;
@@ -154,7 +162,7 @@ int main(int argc, char* argv[])
                     quitGame = true;
             }
             if (choice == 3)
-                toolchain_main();
+                choice = toolchain_main();
             if (choice == 4)
                 gameState = OPTIONS_GAMECODE;
             if (choice == 5 || choice == -1)
@@ -269,7 +277,7 @@ int main(int argc, char* argv[])
                 gameState = START_GAMECODE;
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
-            if (choice)
+            if (choice)  //if we're coming back from another selection, don't stop music
                 Mix_HaltChannel(-1);
             //Mix_PauseMusic();
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[4]) {"Back", "Save", "Options", "Exit"}, 4, 1, AMENU_MAIN_THEME, true, false, NULL);
@@ -289,8 +297,6 @@ int main(int argc, char* argv[])
             gameState = MAINLOOP_GAMECODE;
             for(int i = 0; i < 4; i++)
                 doorFlags[i] = true;
-            for(int i = 0; i < MAX_ENEMIES + 1; i++)
-                enemyFlags[i] = true;
             person.invincCounter = 0;
             loadBoss = true;
             bossLoaded = false;
@@ -299,6 +305,13 @@ int main(int argc, char* argv[])
                 smoothScrolling(&person, person.mapScreen, 2 * ((person.mapScreen - lastMap) % 10), 2 * ((person.mapScreen - lastMap) / 10));
             if (choice == 4)
                 screenTransitions();
+
+            for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
+            {
+                if (i < MAX_ENEMIES)
+                    initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
+                enemyFlags[i] = true;
+            }
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
@@ -309,7 +322,11 @@ int main(int argc, char* argv[])
                 for(int i = 0; i < 4; i++)  //reset door flags
                     doorFlags[i] = true;
                 for(int i = 0; i < MAX_ENEMIES + 1; i++)  //reset enemy flags
+                {
+                    if (i < MAX_ENEMIES)
+                        initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
                     enemyFlags[i] = true;
+                }
                 initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, 0, 0, 0, 1, type_boss);
                 loadBoss = true;
                 person.lastMap = -1;
@@ -376,12 +393,16 @@ int allOptions(player* player, bool includeUpgrades)
         if (choice == 6 + includeUpgrades)
         {
             int pauseKey = 0;
-            while(!pauseKey)
+            char* helpTexts[3] = {HELP_MENU_TEXT1, HELP_MENU_TEXT2, HELP_MENU_TEXT3};
+            int helpIndex = 0;
+            while(pauseKey != -1 && helpIndex <= 2)
             {
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderFillRect(mainRenderer, NULL);
-                drawText(HELP_MENU_TEXT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-                pauseKey = getKey(true);
+                drawText(helpTexts[helpIndex], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                pauseKey = waitForKey(true);
+                helpIndex++;
+                Mix_PlayChannel(-1, OPTION_SOUND, 0);
             }
         }
     }
@@ -1237,8 +1258,6 @@ int mainLoop(player* playerSprite)
     }
     else
         theseScripts = NULL;
-    for(int i = 0; i < MAX_ENEMIES; i++)
-        initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
     int enemyCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {

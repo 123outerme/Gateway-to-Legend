@@ -581,7 +581,8 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
             drawText(prompt, SCREEN_WIDTH / 64, SCREEN_WIDTH / 64, 63 * SCREEN_WIDTH / 64, 63 * SCREEN_HEIGHT / 64, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
             if(e.type == SDL_QUIT)
             {
-                quit = true;
+                strcpy(*data, "\"\0");
+                quit = 2;
                 hasTyped = false;
             }
 
@@ -678,10 +679,13 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
     }
     Mix_PlayChannel(-1, OPTION_SOUND, 0);
 
-    if (!hasTyped || !strlen(stringData))
-        strncpy(*data, defaultStr, strlen(defaultStr));
-    else
-        strncpy(*data, stringData, numChar);
+    if (quit != 2)
+    {
+        if (!hasTyped || !strlen(stringData))
+            strncpy(*data, defaultStr, strlen(defaultStr));
+        else
+            strncpy(*data, stringData, numChar);
+    }
     free(stringData);
     free(dispString);
 }
