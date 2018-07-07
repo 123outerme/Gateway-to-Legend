@@ -535,68 +535,41 @@ bool upgradeShop(player* playerSprite)
             break;
         case 2:  //techniques
             {
-                bool tQuit = false;
-                while(!tQuit)
+                char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
+                bool eQuit = false;
+                while(!eQuit)
                 {
-                    int a = aMenu(tilesetTexture, MAIN_ARROW_ID, "Techniques", (char*[3]) {"Equip", "Buy", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
-                    char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
-                    if (a == 1)
+                    char* techniqueArray[MAX_PLAYER_TECHNIQUES + 2];
+                    int posArray[MAX_PLAYER_TECHNIQUES];
+                    int nextPos = 0;
+                    for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
                     {
-                        bool eQuit = false;
-                        while(!eQuit)
+                        if (playerSprite->techUnlocks[i])
                         {
-                            char* techniqueArray[MAX_PLAYER_TECHNIQUES + 1];
-                            int posArray[MAX_PLAYER_TECHNIQUES];
-                            int nextPos = 0;
-                            for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
-                            {
-                                if (playerSprite->techUnlocks[i])
-                                {
-                                    techniqueArray[nextPos] = calloc(23, sizeof(char));
-                                    posArray[nextPos] = i;
-                                    strncpy(techniqueArray[nextPos++], literalsArray[i], 11);
-                                    if (playerSprite->techUnlocks[i] > 1)
-                                        strncat(techniqueArray[nextPos - 1], " -Un-Equip", 22); //11 + 11
-                                    else
-                                        strncat(techniqueArray[nextPos - 1], " -Equip", 19); //11 + 8
-                                }
-                            }
-                            strcpy(techniqueArray[nextPos++], "Back");
-
-                            int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
-
-                            if (selection == ANYWHERE_QUIT || selection == nextPos)
-                            {
-                                eQuit = true;
-                                if (selection == ANYWHERE_QUIT)
-                                {
-                                    tQuit = true;
-                                    quit = true;
-                                    totalQuit = true;
-                                }
-                            }
+                            techniqueArray[nextPos] = calloc(23, sizeof(char));
+                            posArray[nextPos] = i;
+                            strncpy(techniqueArray[nextPos++], literalsArray[i], 11);
+                            if (playerSprite->techUnlocks[i] > 1)
+                                strncat(techniqueArray[nextPos - 1], " -Un-Equip", 22); //11 + 11
                             else
-                            {
-                                playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
-                                if (playerSprite->techUnlocks[posArray[selection - 1]] == 2 && posArray[selection - 1] > 0)
-                                {
-                                    for(int i = 1; i < MAX_PLAYER_TECHNIQUES; i++)
-                                    {
-                                        if (i != posArray[selection - 1] && playerSprite->techUnlocks[i] == 2)
-                                        {
-                                            playerSprite->techUnlocks[i] = 1;
-                                        }
-                                    }
-                                }
-                            }
-                            for(int i = 0; i < nextPos; i++)
-                            {
-                                free(techniqueArray[i]);
-                            }
+                                strncat(techniqueArray[nextPos - 1], " -Equip", 19); //11 + 8
                         }
-                        saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
                     }
-                    if (a == 2)
+                    techniqueArray[nextPos++] = "Buy";
+                    techniqueArray[nextPos++] = "Back";
+
+                    int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
+
+                    if (selection == ANYWHERE_QUIT || selection == nextPos)
+                    {
+                        eQuit = true;
+                        if (selection == ANYWHERE_QUIT)
+                        {
+                            quit = true;
+                            totalQuit = true;
+                        }
+                    }
+                    if (selection == nextPos - 1)
                     {
                         bool bQuit = false;
                         while(!bQuit)
@@ -618,7 +591,6 @@ bool upgradeShop(player* playerSprite)
                                 bQuit = true;
                                 if (retCode == ANYWHERE_QUIT)
                                 {
-                                    tQuit = true;
                                     quit = true;
                                     totalQuit = true;
                                 }
@@ -641,9 +613,26 @@ bool upgradeShop(player* playerSprite)
                             }
                         }
                     }
-                    if (a == 3 || a == -1)
-                        tQuit = true;
+                    else
+                    {
+                        playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
+                        if (playerSprite->techUnlocks[posArray[selection - 1]] == 2 && posArray[selection - 1] > 0)
+                        {
+                            for(int i = 1; i < MAX_PLAYER_TECHNIQUES; i++)
+                            {
+                                if (i != posArray[selection - 1] && playerSprite->techUnlocks[i] == 2)
+                                {
+                                    playerSprite->techUnlocks[i] = 1;
+                                }
+                            }
+                        }
+                    }
+                    for(int i = 0; i < nextPos; i++)
+                    {
+                        free(techniqueArray[i]);
+                    }
                 }
+                saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
             }
             break;
         case 3:
