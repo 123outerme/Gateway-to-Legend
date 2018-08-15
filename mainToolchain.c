@@ -825,10 +825,10 @@ void writeScriptData(mapPack workingPack, script* mapScripts, int count)
     char* actionDescriptions[14] = ALL_ACTION_DESCRIPTIONS;
     if (count < 1)
         return;
-    char scriptText[600];
+    char scriptText[240];
     for(int i = 0; i < count; i++)
     {
-        snprintf(scriptText, 160, "{%d,%d,%d,%d,%d,%d,%s} ;%s on map %d", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data, actionDescriptions[(int) mapScripts[i].action], mapScripts[i].mapNum);
+        snprintf(scriptText, 240, "{%d,%d,%d,%d,%d,%d,%s} ;%s on map %d", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data, actionDescriptions[(int) mapScripts[i].action], mapScripts[i].mapNum);
         appendLine(workingPack.scriptFilePath, scriptText);
     }
 }
@@ -1322,7 +1322,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 drawATile(workingPack.mapPackTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, (cursor.y < TILE_SIZE * 8 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
                 SDL_RenderPresent(mainRenderer);
             }
-            snprintf(data, 9, "%d/%d/%d/-1", newDoors[0], newDoors[1], newDoors[2]);
+            snprintf(data, 14, "[%d/%d/%d/-1]", newDoors[0], newDoors[1], newDoors[2]);
         }
 
         if (editScript->action == script_animation)

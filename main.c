@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             if (choice)  //if we're coming back from another selection, don't stop music
             {
-                Mix_PauseMusic();
+                Mix_VolumeMusic(musicVolume / 3);
                 Mix_HaltChannel(-1);
                 Mix_PlayChannel(-1, PAUSE_SOUND, 0);
             }
@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
                     choice = 3;
             }
             if (gameState != OVERWORLDMENU_GAMECODE)
-                Mix_ResumeMusic();
+                Mix_VolumeMusic(musicVolume);
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;
@@ -1381,17 +1381,19 @@ int mainLoop(player* playerSprite)
 
                 Uint32 curTime = SDL_GetTicks();
 
-                if (lastXPress * (checkSKRight - checkSKLeft) < lastUpdateTime - 32 && lastXPress * (checkSKRight - checkSKLeft) + 120 > curTime && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
+                if (lastXPress * (checkSKRight - checkSKLeft) < lastUpdateTime - 32 && lastXPress * (checkSKRight - checkSKLeft) + 128 > curTime && (checkSKRight - checkSKLeft) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
                     //printf("boost: %d, now %d\n", lastXPress, curTime);
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
 					lastBoostTime = curTime;
+					Mix_PlayChannel(1, DASH_SOUND(1 + (rand() % 3)), 0);
                 }
-                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 && lastYPress * (checkSKDown - checkSKUp) + 120 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
+                if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 && lastYPress * (checkSKDown - checkSKUp) + 128 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
                     //printf("boost: %d, now %d\n", lastYPress, curTime);
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
 					lastBoostTime = curTime;
+					Mix_PlayChannel(1, DASH_SOUND(1 + (rand() % 3)), 0);
                 }
 
                 if (playerSprite->spr.y > 0 && checkSKUp && !playerSprite->yVeloc)

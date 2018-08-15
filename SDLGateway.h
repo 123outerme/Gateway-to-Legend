@@ -99,7 +99,7 @@ typedef enum  _scriptBehavior {
     script_placeholder,            //13 ?
 } scriptBehavior;
 
-#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Triggers a textbox after Interact is pressed, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around a screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
+#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Triggers a textbox after Interact is pressed, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around the screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
 
 typedef struct _script {
     int mapNum;
@@ -203,6 +203,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_SOUND audioArray[13]
 #define TELEPORT_SOUND audioArray[14]
 #define HEAL_SOUND audioArray[15]
+#define DASH_SOUND(x) audioArray[x < 1 || x > 4 ? 16 : x + 15]
 
 #define PAUSE_FILE "assets/audio/pause.ogg"
 #define UNSHEATH_FILE "assets/audio/unsheath.ogg"
@@ -218,6 +219,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_FILE "assets/audio/enemyHurt.ogg"
 #define TELEPORT_FILE "assets/audio/teleport.ogg"
 #define HEAL_FILE "assets/audio/heal.ogg"
+#define DASH_FILE "assets/audio/dash"  //same as above
 
 #define PAUSE_CHANNEL channelArray[0]
 #define UNSHEATH_CHANNEL channelArray[1]
@@ -232,6 +234,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define ENEMYHURT_CHANNEL channelArray[12]
 #define TELEPORT_CHANNEL channelArray[13]
 #define HEAL_CHANNEL channelArray[14]
+#define DASH_CHANNEL channelArray[15]
 
 #define MAIN_MUSIC_FILE "assets/audio/mainTheme.mp3"
 #define OVERWORLD1_MUSIC_FILE "assets/audio/GtL3.mp3"

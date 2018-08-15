@@ -49,7 +49,7 @@
 
 #define ANYWHERE_QUIT -1
 
-#define MAX_SOUNDS 16
+#define MAX_SOUNDS 19
 #define MAX_MUSIC 7
 #define MAX_FILE_PATH 260
 

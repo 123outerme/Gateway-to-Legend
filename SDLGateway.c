@@ -156,6 +156,18 @@ int initSounds()
         return -5;
     }
 
+    for(int i = 1; i < 4; i++)
+    {
+        char filepath[23] = STEP_FILE;
+        snprintf(filepath, 23, "%s%d.ogg", DASH_FILE, i);
+        DASH_SOUND(i) = Mix_LoadWAV(filepath);
+        if (!DASH_SOUND(i))
+        {
+            strncpy(customError, "Error: No such sound for a DASH_SOUND", 256);
+            return -5;
+        }
+    }
+
     return 0;
 }
 
