@@ -49,7 +49,7 @@
 
 #define ANYWHERE_QUIT -1
 
-#define MAX_SOUNDS 15
+#define MAX_SOUNDS 16
 #define MAX_MUSIC 7
 #define MAX_FILE_PATH 260
 
@@ -105,6 +105,7 @@ SDL_Surface* mainScreen;
 SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;
+char customError[256];
 char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
 saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];

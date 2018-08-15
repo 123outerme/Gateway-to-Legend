@@ -5,43 +5,81 @@ int initSounds()
     musicIndex = -1;
     MUSIC(1) = Mix_LoadMUS(MAIN_MUSIC_FILE);  //Gateway to Legend: Main Theme by Ian Groat
     if (!MUSIC(1))
+    {
+        strncpy(customError, "Error: Main theme missing.", 256);
         return -5;
+    }
 
     MUSIC(2) = Mix_LoadMUS(OVERWORLD1_MUSIC_FILE);  //Gateway to Legend: GtL3 by _iPhoenix_
     if (!MUSIC(2))
+    {
+        strncpy(customError, "Error: Overworld 1 Theme missing.", 256);
         return -5;
+    }
 
     MUSIC(3) = Mix_LoadMUS(OVERWORLD2_MUSIC_FILE);  //Gateway to Legend: GtL5 by _iPhoenix_
     if (!MUSIC(3))
+    {
+        strncpy(customError, "Error: Overworld 2 Theme missing.", 256);
         return -5;
+    }
 
     /*MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
     if (!MUSIC(4))
-        return -5;*/
+    {
+        strncpy(customError, "Error: Overworld 3 Theme missing.", 256);
+        return -5;
+    }*/
 
     MUSIC(5) = Mix_LoadMUS(BOSS_MUSIC_FILE);  //Gateway to Legend: Boss Theme 1 by Ian Groat
     if (!MUSIC(5))
+    {
+        strncpy(customError, "Error: Boss theme missing.", 256);
         return -5;
+    }
 
     MUSIC(6) = Mix_LoadMUS(FANFARE_MUSIC_FILE);  //Gateway to Legend: GtL4 by _iPhoenix_
     if (!MUSIC(6))
+    {
+        strncpy(customError, "Error: Fanfare missing.", 256);
         return -5;
+    }
 
     MUSIC(7) = Mix_LoadMUS(GAMEOVER_MUSIC_FILE);  //Gateway to Legend: Gateway to Retry by Ian Groat
     if (!MUSIC(7))
+    {
+        strncpy(customError, "Error: Game Over theme missing.", 256);
         return -5;
+    }
+
+    PAUSE_SOUND = Mix_LoadWAV(PAUSE_FILE);
+    if (!PAUSE_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for PAUSE_SOUND", 256);
+        return -5;
+    }
 
     UNSHEATH_SOUND = Mix_LoadWAV(UNSHEATH_FILE);
     if (!UNSHEATH_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for UNSHEATH_SOUND", 256);
         return -5;
+    }
 
     OPTION_SOUND = Mix_LoadWAV(OPTION_FILE);
     if (!OPTION_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for OPTION_SOUND", 256);
         return -5;
+    }
 
     PING_SOUND = Mix_LoadWAV(PING_FILE);
     if (!PING_SOUND)
+    if (!OPTION_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for PING_SOUND", 256);
         return -5;
+    }
 
     for(int i = 1; i < 4; i++)
     {
@@ -49,39 +87,74 @@ int initSounds()
         snprintf(filepath, 23, "%s%d.ogg", STEP_FILE, i);
         STEP_SOUND(i) = Mix_LoadWAV(filepath);
         if (!STEP_SOUND(i))
+        {
+            strncpy(customError, "Error: No such sound for a STEP_SOUND", 256);
             return -5;
+        }
     }
 
     SWING_SOUND = Mix_LoadWAV(SWING_FILE);
     if (!SWING_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for SWING_SOUND", 256);
         return -5;
+    }
 
     GATEWAYSTART_SOUND = Mix_LoadWAV(GATEWAYSTART_FILE);
     if (!GATEWAYSTART_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for GATEWAYSTART_SOUND", 256);
         return -5;
+    }
 
     GATEWAYEND_SOUND = Mix_LoadWAV(GATEWAYEND_FILE);
     if (!GATEWAYEND_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for GATEWAYEND_SOUND", 256);
         return -5;
+    }
 
     DOOROPEN_SOUND = Mix_LoadWAV(DOOROPEN_FILE);
     if (!DOOROPEN_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for DOOROPEN_SOUND", 256);
         return -5;
+    }
 
     CASH_SOUND = Mix_LoadWAV(CASH_FILE);
     if (!CASH_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for CASH_SOUND", 256);
         return -5;
+    }
 
     PLAYERHURT_SOUND = Mix_LoadWAV(PLAYERHURT_FILE);
     if (!PLAYERHURT_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for PLAYERHURT_SOUND", 256);
         return -5;
+    }
 
     ENEMYHURT_SOUND = Mix_LoadWAV(ENEMYHURT_FILE);
     if (!ENEMYHURT_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for ENEMYHURT_SOUND", 256);
         return -5;
+    }
+
     TELEPORT_SOUND = Mix_LoadWAV(TELEPORT_FILE);
     if (!TELEPORT_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for TELEPORT_SOUND", 256);
         return -5;
+    }
+
+    HEAL_SOUND = Mix_LoadWAV(HEAL_FILE);
+    if (!HEAL_SOUND)
+    {
+        strncpy(customError, "Error: No such sound for HEAL_SOUND", 256);
+        return -5;
+    }
 
     return 0;
 }
@@ -1407,7 +1480,7 @@ bool executeScriptAction(script* scriptData, player* player)
             }
             else
             {
-                ; //play heal sound
+                Mix_PlayChannel(-1, HEAL_SOUND, 0); //play heal sound
                 initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
                 sparkFlag = true;
                 theseSparkFlags[1] = true;

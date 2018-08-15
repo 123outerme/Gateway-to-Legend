@@ -84,14 +84,21 @@ Sint64 gameTicks;
 
 int main(int argc, char* argv[])
 {
+    strcpy(customError, "Generic error");
     //setting up default values
     {
         int initCode = initSDL(GAME_WINDOW_NAME, GLOBALTILES_FILEPATH, FONT_FILE_NAME, "assets/icon.png", SCREEN_WIDTH, SCREEN_HEIGHT, 48);
         if (initCode != 0)
+        {
+            printf("%s\n", customError);
             return initCode;
+        }
         initCode = initSounds();
         if (initCode != 0)
+        {
+            printf("%s\n", customError);
             return initCode;
+        }
         debugFlag = false;
         if (argc > 1 && (!strncmp(argv[1], "--debug", 7) || !strncmp(argv[1], "-d", 2)))
             debugFlag = true;
@@ -278,8 +285,11 @@ int main(int argc, char* argv[])
             break;
         case OVERWORLDMENU_GAMECODE:  //overworld menu
             if (choice)  //if we're coming back from another selection, don't stop music
+            {
+                Mix_PauseMusic();
                 Mix_HaltChannel(-1);
-            //Mix_PauseMusic();
+                Mix_PlayChannel(-1, PAUSE_SOUND, 0);
+            }
             choice = aMenu(tilesTexture, CURSOR_ID, "Overworld Menu", (char*[4]) {"Back", "Save", "Options", "Exit"}, 4, 1, AMENU_MAIN_THEME, true, false, NULL);
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
@@ -291,7 +301,8 @@ int main(int argc, char* argv[])
                 if (choice == 4)
                     choice = 3;
             }
-            //Mix_ResumeMusic();
+            if (gameState != OVERWORLDMENU_GAMECODE)
+                Mix_ResumeMusic();
             break;
         case RELOAD_GAMECODE:
             gameState = MAINLOOP_GAMECODE;

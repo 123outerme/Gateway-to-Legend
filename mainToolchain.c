@@ -481,7 +481,7 @@ int mainMapCreator(mapPack* workingPack)
             loadIMG("assets/help/MapCreatorScript.png", &imgs[1]);
             SDL_Keycode pauseKey = 0;
             int helpIndex = 0;
-            char* helpTexts[4] = {"Here's where you make maps!\nUse either your movement keys or the mouse to move your cursor.", "Use [Q] and [E] to toggle the type of tile.\n\nIf [Q] or [E] are in use, use [-] and [=] instead.", "Press Special (default [LShift]) to switch between editing the visual tiles and events.\nThe red backslash is collision.", "Some events require you make a script, outputted directly to the script file."};
+            char* helpTexts[4] = {"Here's where you make maps!\nUse either your movement keys or the mouse to move your cursor.", "Use [Q] and [E] to change the type of tile.\n\nIf [Q] or [E] are in use, use [-] and [=] instead.", "Press Special (default [LShift]) to switch between editing the visual tiles and events.\nThe red backslash is collision.", "Some events require you make a script, outputted directly to the script file."};
             while(pauseKey != -1 && helpIndex < 4)
             {
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);

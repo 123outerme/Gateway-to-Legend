@@ -189,7 +189,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_SPECIAL CUSTOM_SCANCODES[6]
 
 #define MUSIC(x) musicArray[x > MAX_MUSIC ? 0 : x - 1]
-#define RESERVED_SOUND audioArray[0]
+#define PAUSE_SOUND audioArray[0]
 #define UNSHEATH_SOUND audioArray[1]
 #define OPTION_SOUND audioArray[2]
 #define PING_SOUND audioArray[3]
@@ -202,8 +202,9 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define PLAYERHURT_SOUND audioArray[12]
 #define ENEMYHURT_SOUND audioArray[13]
 #define TELEPORT_SOUND audioArray[14]
+#define HEAL_SOUND audioArray[15]
 
-#define RESERVED_FILE "assets/audio/.ogg"
+#define PAUSE_FILE "assets/audio/pause.ogg"
 #define UNSHEATH_FILE "assets/audio/unsheath.ogg"
 #define OPTION_FILE "assets/audio/unsheath_bass.ogg"
 #define PING_FILE "assets/audio/menu.ogg"
@@ -216,8 +217,9 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define PLAYERHURT_FILE "assets/audio/playerHurt.ogg"
 #define ENEMYHURT_FILE "assets/audio/enemyHurt.ogg"
 #define TELEPORT_FILE "assets/audio/teleport.ogg"
+#define HEAL_FILE "assets/audio/heal.ogg"
 
-#define RESERVED_CHANNEL channelArray[0]
+#define PAUSE_CHANNEL channelArray[0]
 #define UNSHEATH_CHANNEL channelArray[1]
 #define OPTION_CHANNEL channelArray[2]
 #define PING_CHANNEL channelArray[3]
@@ -229,6 +231,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define PLAYERHURT_CHANNEL channelArray[11]
 #define ENEMYHURT_CHANNEL channelArray[12]
 #define TELEPORT_CHANNEL channelArray[13]
+#define HEAL_CHANNEL channelArray[14]
 
 #define MAIN_MUSIC_FILE "assets/audio/mainTheme.mp3"
 #define OVERWORLD1_MUSIC_FILE "assets/audio/GtL3.mp3"
