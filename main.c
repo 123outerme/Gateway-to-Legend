@@ -62,7 +62,7 @@ int toolchain_main();
 
 #define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
-#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) WASD+Space+L-Shift to maneuver various worlds."
+#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) [WASD]+[Space]+[L-Shift]+[Esc] to maneuver various worlds."
 #define HELP_MENU_TEXT2 "Play and create different map-packs! You can create engaging content and play others' content as well!"
 #define HELP_MENU_TEXT3 "Made by:\nStephen Policelli"
 /* search this
@@ -421,7 +421,7 @@ bool upgradeShop(player* playerSprite)
     {
         char title[17];
         snprintf(title, 17, "Shop: %d Coins", playerSprite->money);
-        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Techniques", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
+        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, title, (char*[3]) {"Extra Health", "Abilities", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
         switch(choice)
         {
         case 1:  //extra health
@@ -558,7 +558,7 @@ bool upgradeShop(player* playerSprite)
                     techniqueArray[nextPos++] = "Buy";
                     techniqueArray[nextPos++] = "Back";
 
-                    int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Equip Techniques", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
+                    int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Abilities", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
 
                     if (selection == ANYWHERE_QUIT || selection == nextPos)
                     {
@@ -584,7 +584,7 @@ bool upgradeShop(player* playerSprite)
                             techniqueArray[nextPos++] = "Back";
                             _globalInt1 = playerSprite->money;
                             _globalInt2 = 50;
-                            int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Techniques", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
+                            int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Abilities", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
 
                             if (retCode == ANYWHERE_QUIT || retCode == nextPos)
                             {
@@ -1009,11 +1009,11 @@ int changeControls()
             strcpy(keyText, "Menu: ");
             drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
-            strcpy(keyText, "Attack: ");  //note to self: change the key name later
+            strcpy(keyText, "Special: ");
             drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_SPECIAL))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
             drawText("Back", 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
-            drawText("Default is W/S/A/D, Space, LShift, Esc", .75 * TILE_SIZE, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, false);
+            drawText("Default is W/S/A/D, Space, Esc, LShift", .75 * TILE_SIZE, 13 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 13) * TILE_SIZE, textColor, false);
             drawATile(tilesetTexture, cursor.tileIndex, cursor.x, cursor.y, TILE_SIZE, TILE_SIZE, 0, SDL_FLIP_NONE);
             SDL_RenderPresent(mainRenderer);
             while(SDL_PollEvent(&e) != 0)

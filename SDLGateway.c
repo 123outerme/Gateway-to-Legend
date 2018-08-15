@@ -876,6 +876,9 @@ void getNewKey(char* titleText, SDL_Color bgColor, SDL_Color textColor, int sele
         if (CUSTOM_SCANCODES[i] == SDL_GetScancodeFromKey(kc))
             conflict = true;
     }
+
+    if (SDL_GetScancodeFromKey(kc) == SDL_SCANCODE_LCTRL || SDL_GetScancodeFromKey(kc) == SDL_SCANCODE_RCTRL || SDL_GetScancodeFromKey(kc) == SDL_SCANCODE_MINUS || SDL_GetScancodeFromKey(kc) == SDL_SCANCODE_EQUALS)
+        conflict = true;
     if (!conflict)
         CUSTOM_SCANCODES[selection] = SDL_GetScancodeFromKey(kc);
 }

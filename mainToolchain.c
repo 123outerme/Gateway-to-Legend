@@ -97,6 +97,7 @@ void strPrepend(char* input, const char* prepend);
 //this is to match the tilemap array in outermeSDL.h
 int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* mainTilesetTexture;
+int _TglobalInt1;  //
 
 int toolchain_main()
 {
@@ -104,12 +105,6 @@ int toolchain_main()
     mapPack workingPack;
     strcpy(workingPack.mainFilePath, "/0");
     loadIMG(MAIN_TILESET, &mainTilesetTexture);
-
-    if (checkFile(CONFIG_FILEPATH, 0))
-        loadConfig(CONFIG_FILEPATH);
-    else
-        initConfig(CONFIG_FILEPATH);
-
     bool quit = false, proceed = false;
     int code = 0;
     char* resumeStr = "\0";
@@ -415,67 +410,93 @@ int mainMapCreator(mapPack* workingPack)
     char* mainFilePath = calloc(MAX_FILE_PATH, sizeof(char));
     char mapFilePath[MAX_FILE_PATH];
     char tileFilePath[MAX_FILE_PATH];
-
-    int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[3]) {"New", "Load", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
-    if (choice == -1)
-        return choice;
-    if (choice != 3)
+    bool quit = false;
+    while(!quit)
     {
-        strncpy(mainFilePath, workingPack->mainFilePath, MAX_FILE_PATH);
-        if (choice == 1)
+        int choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "New or Load Map?", (char*[4]) {"New", "Load", "Info/Help", "Back"}, 4, 0, AMENU_MAIN_THEME, true, false, NULL);
+        if (choice == -1)
+            return choice;
+        if (choice < 3)
         {
-            for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
+            strncpy(mainFilePath, workingPack->mainFilePath, MAX_FILE_PATH);
+            if (choice == 1)
             {
-                for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+                for(int dy = 0; dy < HEIGHT_IN_TILES; dy++)
                 {
-                    tilemap[dy][dx] = 0;
-                    eventmap[dy][dx] = 0;
+                    for(int dx = 0; dx < WIDTH_IN_TILES; dx++)
+                    {
+                        tilemap[dy][dx] = 0;
+                        eventmap[dy][dx] = 0;
+                    }
                 }
             }
-        }
-        uniqueReadLine((char**) &mapFilePath, MAX_FILE_PATH, mainFilePath, 1);
-        uniqueReadLine((char**) &tileFilePath, MAX_FILE_PATH, mainFilePath, 2);
-        player creator;
-        initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
-        if (choice == 1)
-        {
-            creator.mapScreen = -1;
-        }
-        if (choice == 2)
-        {
-            creator.mapScreen = chooseMap(*workingPack);
+            uniqueReadLine((char**) &mapFilePath, MAX_FILE_PATH, mainFilePath, 1);
+            uniqueReadLine((char**) &tileFilePath, MAX_FILE_PATH, mainFilePath, 2);
+            player creator;
+            initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
+            if (choice == 1)
+            {
+                creator.mapScreen = -1;
+            }
+            if (choice == 2)
+            {
+                creator.mapScreen = chooseMap(*workingPack);
+                if (creator.mapScreen == -1)
+                {
+                    return -1;
+                }
+                loadMapFile(workingPack->mapFilePath, tilemap, eventmap, creator.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            }
+            SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            int scriptCount = 0;
+            _TglobalInt1 = 0;  //used for save/discard prompt
+            script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
             if (creator.mapScreen == -1)
             {
+                free(mapScripts);
                 return -1;
             }
-            loadMapFile(workingPack->mapFilePath, tilemap, eventmap, creator.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-        }
-        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(mainRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        int scriptCount = 0;
-        script* mapScripts = mainMapCreatorLoop(&creator, &scriptCount, *workingPack);
-        if (creator.mapScreen == -1)
-        {
-            free(mapScripts);
-            return -1;
-        }
-        int newChoice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[2]) {"Save", "Discard"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL);
 
-        if (newChoice == 1)
-        {
-            writeTileData(*workingPack, -1);
-            writeScriptData(*workingPack, mapScripts, scriptCount);
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
-            SDL_RenderClear(mainRenderer);
-            char* exitNote = calloc(138, sizeof(char));
-            strcpy(exitNote, "Outputted to output/map.txt");
-            if (scriptCount > 0)
-                strcat(exitNote, " and to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
-            drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-            waitForKey(false);
-            free(exitNote);
+            if (_TglobalInt1 == 1)
+            {
+                writeTileData(*workingPack, -1);
+                writeScriptData(*workingPack, mapScripts, scriptCount);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                SDL_RenderClear(mainRenderer);
+                char* exitNote = calloc(138, sizeof(char));
+                strcpy(exitNote, "Outputted to output/map.txt");
+                if (scriptCount > 0)
+                    strcat(exitNote, " and to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
+                drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                waitForKey(false);
+                free(exitNote);
+            }
+            free(mapScripts);
         }
-        free(mapScripts);
+        if (choice == 3)
+        {
+            SDL_Texture* imgs[2];
+            loadIMG("assets/help/MapCreatorEvent.png", &imgs[0]);
+            loadIMG("assets/help/MapCreatorScript.png", &imgs[1]);
+            SDL_Keycode pauseKey = 0;
+            int helpIndex = 0;
+            char* helpTexts[4] = {"Here's where you make maps!\nUse either your movement keys or the mouse to move your cursor.", "Use [Q] and [E] to toggle the type of tile.\n\nIf [Q] or [E] are in use, use [-] and [=] instead.", "Press Special (default [LShift]) to switch between editing the visual tiles and events.\nThe red backslash is collision.", "Some events require you make a script, outputted directly to the script file."};
+            while(pauseKey != -1 && helpIndex < 4)
+            {
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                if (helpIndex > 1)
+                    SDL_RenderCopy(mainRenderer, imgs[helpIndex - 2], NULL, &((SDL_Rect) {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2}));
+                drawText(helpTexts[helpIndex], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                pauseKey = waitForKey(true);
+                helpIndex++;
+                Mix_PlayChannel(-1, OPTION_SOUND, 0);
+            }
+            //display help menu
+        }
+        else
+            quit = true;
     }
     return 0;
 }
@@ -539,6 +560,17 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
 {
     /*for(int i = 0; i < 4; i++)
         viewMap("maps/MainMaps.txt", i);*/
+    bool conflict = false;
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        if (CUSTOM_SCANCODES[i] == SDL_SCANCODE_Q)
+            conflict = true;
+    }
+    for(int i = 0; i < SIZE_OF_SCANCODE_ARRAY; i++)
+    {
+        if (CUSTOM_SCANCODES[i] == SDL_SCANCODE_E)
+            conflict = true;
+    }
     *scriptCount = 0;
     int scriptMaxCount = 5;
     script* mapScripts = calloc(scriptMaxCount, sizeof(script));
@@ -616,10 +648,10 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
             if (playerSprite->spr.x < SCREEN_WIDTH - playerSprite->spr.w && keyStates[SDL_SCANCODE_D])
                 playerSprite->spr.x += PIXELS_MOVED;
 
-            if (keyStates[SDL_SCANCODE_Q] && playerSprite->spr.tileIndex > 0)
+            if ((!conflict ? (keyStates[SDL_SCANCODE_Q]) : (keyStates[SDL_SCANCODE_MINUS])) && playerSprite->spr.tileIndex > 0)
                 playerSprite->spr.tileIndex--;
 
-            if (keyStates[SDL_SCANCODE_E] && playerSprite->spr.tileIndex < 127 - (127 - MAX_SPRITE_MAPPINGS + 3) * (!editingTiles))  //+3 to avoid the first few sprite mappings
+            if ((!conflict ? (keyStates[SDL_SCANCODE_E]) : (keyStates[SDL_SCANCODE_EQUALS])) && playerSprite->spr.tileIndex < 127 - (127 - MAX_SPRITE_MAPPINGS + 3) * (!editingTiles))  //+3 to avoid the first few sprite mappings
                 playerSprite->spr.tileIndex++;
 
             if (keyStates[SDL_SCANCODE_SPACE])
@@ -703,7 +735,11 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
         }
 
         if (keyStates[SDL_SCANCODE_ESCAPE] || keyStates[SDL_SCANCODE_RETURN])
+        {
+            _TglobalInt1 = aMenu(tilesetTexture, MAIN_ARROW_ID, "Save Map?", (char*[3]) {"Save", "Discard", "Back"}, 3, 0, AMENU_MAIN_THEME, true, false, NULL);
+            if (_TglobalInt1 != 3)
                 quit = true;
+        }
 
         sleepFor = targetTime - (SDL_GetTicks() - lastFrame);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         if (sleepFor > 0)
@@ -804,7 +840,7 @@ int mainScriptEdtior(mapPack* workingPack)
     script editScript;
     int scriptNum = scriptSelectLoop(*workingPack);
     if (scriptNum == -1)
-        return scriptNum;
+        return 0;
     if (scriptNum == 0 && checkFile(workingPack->scriptFilePath, -1) > 0)
     {
         editScript = visualLoadScript(workingPack);
