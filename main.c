@@ -62,7 +62,7 @@ int toolchain_main();
 
 #define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
-#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) [WASD]+[Space]+[L-Shift]+[Esc] to maneuver various worlds."
+#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) [WASD]+[Space]+[L-Shift]+[Esc]\n to maneuver various worlds."
 #define HELP_MENU_TEXT2 "Play and create different map-packs! You can create engaging content and play others' content as well!"
 #define HELP_MENU_TEXT3 "Made by:\nStephen Policelli"
 /* search this
@@ -1279,7 +1279,7 @@ int mainLoop(player* playerSprite)
     enemyFlags[MAX_ENEMIES] = false;
 
     bool bossUndefeated = true;
-    for(int i = 0; i < playerSprite->nextBossPos; i++)
+    for(int i = 0; i < playerSprite->nextBossPos + 1; i++)  //this is because nextBossPos is for arrays, + 1 to be an appropriate bound for all beaten bosses
     {
         if (playerSprite->defeatedBosses[i] == playerSprite->mapScreen)
             bossUndefeated = false;
@@ -1691,8 +1691,6 @@ int mainLoop(player* playerSprite)
             }
 
             {
-                script rewardScript;
-                initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "2", -1); //todo: re-evaluate coins given per enemy
                 bool playHitSound = false;
                 for(int i = 0; i < enemyCount; i++)
                 {
@@ -1713,12 +1711,7 @@ int mainLoop(player* playerSprite)
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
                         }
-                        if (enemies[i].spr.type == type_generic)
-                        {
-                            executeScriptAction(&rewardScript, playerSprite);  //there's another of these below
-                            enemies[i].spr.tileIndex = INVIS_ID;
-                            enemies[i].spr.type = type_na;
-                        }
+
                         initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
                         sparkFlag = true;
                         theseSparkFlags[1] = true;
@@ -1741,6 +1734,8 @@ int mainLoop(player* playerSprite)
                         }
                         else if (enemies[i].spr.type == type_generic)
                         {
+                            script rewardScript;
+                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "2", -1); //todo: re-evaluate coins given per enemy
                             executeScriptAction(&rewardScript, playerSprite);
                             enemies[i].spr.tileIndex = INVIS_ID;
                             enemies[i].spr.type = type_na;

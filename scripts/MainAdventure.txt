@@ -37,3 +37,6 @@
 {1,12,96,432,144,144,Only one being has learned these spells before... I was almost fried by his power.} ;Triggers a textbox after Interact is pressed on map 12
 {7,13,288,336,48,48,[576/288]} ;Teleports a player to a location on the same map on map 13
 {7,13,576,336,48,48,[288/288]} ;Teleports a player to a location on the same map on map 13
+{8,5,240,192,48,288,[-1/1/-1/-1]} ;Opens some doors on map 5
+{10,5,480,336,96,96,[50/7](240|192|20|240|432|20|480|336|20|480|96|20|480|528|40|480|336|20)} ;Defines boss actions on map 5
+{4,5,258,192,48,288,40} ;Spawns the boss on map 5

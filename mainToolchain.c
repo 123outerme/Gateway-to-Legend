@@ -1151,61 +1151,26 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 
         if (editScript->action == script_trigger_boss)
         {
-            //ask user to select a boss
-            int maxScriptLines = checkFile(workingPack.scriptFilePath, -1), * bossLineArray = calloc(12, sizeof(int));
-            int bossIndex = 0, bossArraySize = 12;
+            int maxScriptLines = checkFile(workingPack.scriptFilePath, -1);
+            int foundIndex = -1;
             char* temp = "";
             for(int i = 0; i < maxScriptLines; i++)
             {
                 script aScript;
                 readScript(&aScript, readLine(workingPack.scriptFilePath, i, &temp), i);
-                if (aScript.action == script_boss_actions && bossIndex < bossArraySize - 1)
-                    bossLineArray[bossIndex++] = i;
+                if (aScript.mapNum == editScript->mapNum)
+                    foundIndex = i;
             }
-            bossArraySize = bossIndex;
-            bool quit = false;
-            int foundIndex = 0;
-            script loadedScript;
-            SDL_Keycode key;
-            while(!quit)
+            if (foundIndex > -1)
+                snprintf(data, 3, "%d", foundIndex);
+            else
             {
-                SDL_RenderClear(mainRenderer);
-                viewMap(workingPack, loadedScript.mapNum, true, false);
-                key = getKey(false);
-                if (key == SDL_GetKeyFromScancode(SC_UP))
-                {
-                    if (foundIndex > 9)
-                        foundIndex -= 10;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
-                }
-
-                if (key == SDL_GetKeyFromScancode(SC_DOWN))
-                {
-                    if (foundIndex < bossArraySize && bossArraySize >= 10 + foundIndex)
-                        foundIndex += 10;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
-                }
-
-                if (key == SDL_GetKeyFromScancode(SC_LEFT))
-                {
-                    if (foundIndex > 0)
-                        foundIndex--;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
-                }
-
-                if (key == SDL_GetKeyFromScancode(SC_RIGHT))
-                {
-                    if (foundIndex < bossArraySize)
-                        foundIndex++;
-                    readScript(&loadedScript, readLine(workingPack.scriptFilePath, bossLineArray[foundIndex], &temp), bossLineArray[foundIndex]);
-                }
-                if (key == SDL_GetKeyFromScancode(SC_INTERACT) || key == SDLK_RETURN || key == ANYWHERE_QUIT)
-                    quit = true;
-
-                SDL_RenderDrawRect(mainRenderer, &((SDL_Rect) {.x = loadedScript.x, .y = loadedScript.y, .w = loadedScript.w, .h = loadedScript.h}));
-                SDL_RenderPresent(mainRenderer);
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                SDL_RenderFillRect(mainRenderer, NULL);
+                drawText("Error: No boss on this map! First, make a BossActions script.", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                waitForKey(true);
+                SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
             }
-            snprintf(data, 3, "%d", bossLineArray[foundIndex]);
         }
 
         if (editScript->action == script_switch_maps)
