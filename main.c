@@ -27,7 +27,7 @@
 
 #define checkRectCol(x1, y1, w1, h1, x2, y2, w2, h2) (x1 < x2 + w2   &&   x1 + w1 > x2   &&   y1 < y2 + h2   &&   h1 + y1 > y2)
 
-int allOptions(player* player, bool includeUpgrades);
+int allOptions(player* player);
 bool upgradeShop(player* playerSprite);
 void changeVolumes();
 void soundTestMenu();
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
             break;
         case OPTIONS_GAMECODE:
             {
-                int choice = allOptions(&person, false);
+                int choice = allOptions(&person);
                 if (choice == 0)
                     gameState = START_GAMECODE;
                 if (choice == -1)
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
             if (choice == 1)
                 gameState = MAINLOOP_GAMECODE;
             if (choice == 3)
-                choice = allOptions(&person, true);
+                choice = allOptions(&person);
             if (choice == 2 || choice == 4 || choice == -1)
             {
                 gameState = SAVE_GAMECODE;
@@ -322,6 +322,9 @@ int main(int argc, char* argv[])
                     initEnemy(&enemies[i], 0, 0, 0, 0, INVIS_ID, 0, type_na);
                 enemyFlags[i] = true;
             }
+            person.lastMap = person.mapScreen;
+            person.lastX = person.spr.x;
+            person.lastY = person.spr.y;
             break;
         case SAVE_GAMECODE:
             saveLocalPlayer(person, saveFilePath);
@@ -370,26 +373,22 @@ int main(int argc, char* argv[])
 }
 
 //returns -1 if force quit, returns -2 if back, else 0
-int allOptions(player* player, bool includeUpgrades)
+int allOptions(player* player)
 {
     int choice = 0;
-    includeUpgrades = (includeUpgrades != 0);
-    while(choice != -1 && choice != 7 + includeUpgrades)
+    while(choice != -1 && choice != 7)
     {
-        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (includeUpgrades ? (char*[8]) {"Sounds", "Upgrade Shop", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"} : (char*[8]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back", ""}), 7 + includeUpgrades, 0, AMENU_MAIN_THEME, true, false, NULL);
+        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false, NULL);
         if (choice == 1)
             changeVolumes();
 
-        if (choice == 2 && includeUpgrades)
-            choice = upgradeShop(player);
-
-        if (choice == 2 + includeUpgrades)
+        if (choice == 2)
             choice = changeControls();
 
-        if (choice == 3 + includeUpgrades)
+        if (choice == 3)
             changeName(player);
 
-        if (choice == 4 + includeUpgrades)
+        if (choice == 4)
         {
             int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);  //todo: show old FPS
             if (newFPS > 0 && newFPS < 30)
@@ -397,10 +396,10 @@ int allOptions(player* player, bool includeUpgrades)
             changeFPS(newFPS);
         }
 
-        if (choice == 5 + includeUpgrades)
+        if (choice == 5)
             clearData(player);
 
-        if (choice == 6 + includeUpgrades)
+        if (choice == 6)
         {
             int pauseKey = 0;
             char* helpTexts[3] = {HELP_MENU_TEXT1, HELP_MENU_TEXT2, HELP_MENU_TEXT3};
@@ -417,7 +416,7 @@ int allOptions(player* player, bool includeUpgrades)
         }
     }
 
-    if (choice == 7 + includeUpgrades)
+    if (choice == 7)
         choice = 0;
 
     return choice;
@@ -2100,6 +2099,8 @@ int mainLoop(player* playerSprite)
         exitCode = 5 - gameOver();
         playerSprite->HP = playerSprite->maxHP;
         theseSparkFlags[1] = false;
+        playerSprite->xVeloc = 0;
+        playerSprite->yVeloc = 0;
         playerSprite->spr.x = playerSprite->lastX;
         playerSprite->spr.y = playerSprite->lastY;
         playerSprite->mapScreen = playerSprite->lastMap;

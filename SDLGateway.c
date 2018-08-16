@@ -1187,7 +1187,6 @@ bool executeScriptAction(script* scriptData, player* player)
         if (scriptData->action == script_switch_maps && scriptData->data[0] != '\0')  //why is this here?
         {
             char* firstChar = "\0";
-            int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
             char* data = calloc(99, sizeof(char));
             firstChar = strtok(strncpy(data, scriptData->data, 99), "[/]");  //MUST use a seperate strcpy'd string of the original because C is never that simple
             if (firstChar[0] == 'l')
@@ -1216,14 +1215,13 @@ bool executeScriptAction(script* scriptData, player* player)
             else
                 player->spr.y = strtol(firstChar, NULL, 10);
             free(data);
-            player->lastMap = tempMap;
-            player->lastX = tempX;
-            player->lastY = tempY;
+            player->lastMap = player->mapScreen;
+            player->lastX = player->spr.x;
+            player->lastY = player->spr.y;
             exitGameLoop = true;
         }
         if (scriptData->action == script_use_gateway)
         {
-            int tempMap = player->mapScreen, tempX = player->spr.x, tempY = player->spr.y;
             GATEWAY_CHANNEL = Mix_PlayChannel(-1, GATEWAYSTART_SOUND, 0);
             for(int i = 0; i < 120; i++)
             {
@@ -1260,9 +1258,9 @@ bool executeScriptAction(script* scriptData, player* player)
                 SDL_Delay(4);
             }
             SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);  //If you remove this, program loses ~12% of its FPS (-80 from 600 FPS)
-            player->lastMap = tempMap;
-            player->lastX = tempX;
-            player->lastY = tempY;
+            player->lastMap = player->mapScreen;
+            player->lastX = player->spr.x;
+            player->lastY = player->spr.y;
             player->xVeloc = 0;
             player->yVeloc = 0;
             initSpark(&theseSparks[4], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_GATEWAY, 5, 12, 12, (frame * 1000 / (SDL_GetTicks() - startTime) / 2), (frame * 1000 / (SDL_GetTicks() - startTime) / 4));
