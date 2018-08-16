@@ -837,47 +837,55 @@ void writeScriptData(mapPack workingPack, script* mapScripts, int count)
 //start script editor code
 int mainScriptEdtior(mapPack* workingPack)
 {
-    script editScript;
-    int scriptNum = scriptSelectLoop(*workingPack);
-    if (scriptNum == -1)
-        return 0;
-    if (scriptNum == 0 && checkFile(workingPack->scriptFilePath, -1) > 0)
+    bool quit = false;
+    while(!quit)
     {
-        editScript = visualLoadScript(workingPack);
-        if (!editScript.active)
-            return -1;
-    }
-
-    if (scriptNum > 0)
-    {
-        initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "", -1);
-        if (editScript.mapNum == -1)
-            return -1;
-    }
-
-    if (scriptNum >= 0)
-    {
-        mainScriptLoop(*workingPack, &editScript);
-        if (editScript.action != script_none)
+        script editScript;
+        int scriptNum = scriptSelectLoop(*workingPack);
+        if (scriptNum == -1)
+            return 0;
+        if (scriptNum == 0 && checkFile(workingPack->scriptFilePath, -1) > 0)
         {
-            if ((editScript.action == script_boss_actions && workingPack->numBosses < 10) || editScript.action != script_boss_actions)
-            writeScriptData(*workingPack, &editScript, 1);
-
-            if (editScript.action == script_boss_actions && workingPack->numBosses < 10)
-            {
-                workingPack->numBosses++;
-                saveMapPack(workingPack);
-            }
-
-            SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
-            SDL_RenderClear(mainRenderer);
-            drawText("Appended to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
-            waitForKey(true);
+            editScript = visualLoadScript(workingPack);
+            if (!editScript.active)
+                quit = 2;  //ret
         }
-        else
-            return -1;
+
+        if (scriptNum > 0)
+        {
+            initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "", -1);
+            if (editScript.mapNum == -1)
+                quit = 2;  //ret
+        }
+
+        if (scriptNum >= 0)
+        {
+            mainScriptLoop(*workingPack, &editScript);
+            if (editScript.action > 0 && editScript.action != (scriptBehavior) -1)
+            {
+                if ((editScript.action == script_boss_actions && workingPack->numBosses < 10) || editScript.action != script_boss_actions)
+                writeScriptData(*workingPack, &editScript, 1);
+
+                if (editScript.action == script_boss_actions && workingPack->numBosses < 10)
+                {
+                    workingPack->numBosses++;
+                    saveMapPack(workingPack);
+                }
+
+                SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
+                SDL_RenderClear(mainRenderer);
+                drawText("Appended to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
+                waitForKey(true);
+                quit = true;
+            }
+            else
+            {
+                if (editScript.action == (scriptBehavior) -1)
+                    quit = 2;  //ret
+            }
+        }
     }
-    return 0;
+    return 1 - quit;  //0 if quit == 1, -1 if quit == 2
 }
 
 int scriptSelectLoop(mapPack workingPack)
@@ -1170,14 +1178,21 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
                 drawText("Error: No boss on this map! First, make a BossActions script.", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                 waitForKey(true);
                 SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
+                key = SDL_GetKeyFromScancode(SC_MENU);
             }
         }
 
-        if (editScript->action == script_switch_maps)
+        if (editScript->action == script_switch_maps || editScript->action == script_use_gateway)
         {
             int map = -1, x = 0, y = 0;
             locationSelectLoop(workingPack, &map, &x, &y);
             snprintf(data, 12, "[%d/%d/%d]", map, x, y);
+        }
+        if (editScript->action == script_use_teleporter)
+        {
+            int map = editScript->mapNum, x = 0, y = 0;
+            locationSelectLoop(workingPack, &map, &x, &y);
+            snprintf(data, 12, "[%d/%d]", x, y);
         }
 
         if (editScript->action == script_toggle_door)
@@ -1659,7 +1674,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         }
 	}
 	if (key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU))
-		initScript(editScript, script_none, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ", -1);
+		initScript(editScript, 0 - (key == ANYWHERE_QUIT), map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), " ", -1);
 	else
 		initScript(editScript, editScript->action, map, toolchain_min(x1, x2), toolchain_min(y1, y2), abs(x2 - x1), abs(y2 - y1), data, -1);
 	free(data);
