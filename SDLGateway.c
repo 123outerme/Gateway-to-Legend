@@ -1490,7 +1490,7 @@ bool executeScriptAction(script* scriptData, player* player)
                 sparkFlag = true;
                 theseSparkFlags[1] = true;
             }
-            else if (player->HP >= player->maxHP)
+            else if (player->HP < player->maxHP)
             {
                 Mix_PlayChannel(-1, HEAL_SOUND, 0); //play heal sound
                 initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
