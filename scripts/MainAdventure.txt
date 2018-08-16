@@ -40,3 +40,5 @@
 {8,5,240,192,48,288,[-1/1/-1/-1]} ;Opens some doors on map 5
 {10,5,480,336,96,96,[50/7](240|192|20|240|432|20|480|336|20|480|96|20|480|528|40|480|336|20)} ;Defines boss actions on map 5
 {4,5,258,192,48,288,40} ;Spawns the boss on map 5
+{12,22,768,288,144,144,-1} ;Hurts the player an amount (negative for heal) on map 22
+{12,5,720,288,192,192,-1} ;Hurts the player an amount (negative for heal) on map 5

@@ -1668,7 +1668,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
         {
             char* message = calloc(17, sizeof(char)), * temp = "";
             snprintf(message, 17, "How much %s?", editScript->action == script_gain_money ? "money" : "damage");
-            int intData = intInput(message, 3 - (editScript->action == script_gain_money), 1, 1, 20 - 16 * (editScript->action == script_player_hurt), editScript->action == script_player_hurt);
+            int intData = intInput(message, 3 - (editScript->action == script_gain_money), 1, 1 - 21 * (editScript->action == script_player_hurt), 20 - 16 * (editScript->action == script_player_hurt), (editScript->action == script_player_hurt));
             strcpy(data, intToString(intData, temp));
             free(message);
         }
