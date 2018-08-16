@@ -1477,11 +1477,7 @@ bool executeScriptAction(script* scriptData, player* player)
         {
             int dmg = strtol(scriptData->data, NULL, 10);
             player->HP -= dmg;
-            if (player->HP < 0)
-                player->HP = 0;
-            if (player->HP > player->maxHP)
-                player->HP = player->maxHP;
-                player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
+            player->invincCounter = 15;  //30 frames of invincibility at 60fps, or approx. 1/2 second
             if (dmg > 0)
             {
                 Mix_PlayChannel(-1, PLAYERHURT_SOUND, 0);
@@ -1490,14 +1486,18 @@ bool executeScriptAction(script* scriptData, player* player)
                 sparkFlag = true;
                 theseSparkFlags[1] = true;
             }
-            else if (player->HP < player->maxHP)
+            else if (player->HP <= player->maxHP)
             {
                 Mix_PlayChannel(-1, HEAL_SOUND, 0); //play heal sound
                 initSpark(&theseSparks[1], (SDL_Rect) {player->spr.x, player->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GREEN, 4, 6, 6, (frame * 1000 / (SDL_GetTicks() - startTime)) / 4, (frame * 1000 / (SDL_GetTicks() - startTime)) / 8);
                 sparkFlag = true;
                 theseSparkFlags[1] = true;
             }
-            //play animation (?) and sound
+            //play animation and sound
+            if (player->HP < 0)
+                player->HP = 0;
+            if (player->HP > player->maxHP)
+                player->HP = player->maxHP;
         }
     }
     scriptData->active = false;
