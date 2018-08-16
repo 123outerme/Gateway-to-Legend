@@ -1686,7 +1686,8 @@ script visualLoadScript(mapPack* workingPack)
     script loadedScript;
     bool quit = false;
     char* temp = "";
-    int scriptLineNum = 0, maxLines = checkFile(workingPack->mapFilePath, -1);
+    int scriptLineNum = 0, maxLines = checkFile(workingPack->scriptFilePath, -1);
+    printf("%d\n", maxLines);  //this is wrong I think!
     readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), 0);
     SDL_Keycode key;
     while(!quit)
@@ -1703,7 +1704,7 @@ script visualLoadScript(mapPack* workingPack)
 
         if (key == SDL_GetKeyFromScancode(SC_DOWN))
         {
-            if (scriptLineNum < maxLines)
+            if (scriptLineNum < maxLines - 10)
                 scriptLineNum += 10;
             readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), scriptLineNum);
         }

@@ -1136,12 +1136,18 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         if (scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue)
         {
-            drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.x = 0, .y = 9 * TILE_SIZE * (player->spr.y < 9 * TILE_SIZE), .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
+            drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.x = 0, .y = 9 * TILE_SIZE * (player->spr.y < 8 * TILE_SIZE), .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
+            SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
             waitForKey(true);
+            SWING_CHANNEL = Mix_PlayChannel(SWING_CHANNEL, SWING_SOUND, 0);
             if (scriptData->action == script_trigger_dialogue_once)
             {
                 scriptData->disabled = true;
                 player->disabledScripts[scriptData->lineNum] = true;  //disable permanently
+            }
+            if (scriptData->action == script_trigger_dialogue)
+            {
+                _globalInt1 = 5;  //5 frames of cooldown before you can talk again... used to ensure pressing space works to close the textbox
             }
         }
         if (scriptData->action == script_trigger_boss)

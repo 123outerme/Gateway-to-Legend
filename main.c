@@ -62,7 +62,7 @@ int toolchain_main();
 
 #define ALL_TECHNIQUES {"Dash", "Spin", "Illusion", "Laser", "Charge"}
 
-#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default) [WASD]+[Space]+[L-Shift]+[Esc]\n to maneuver various worlds."
+#define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default)\n[WASD]+[Space]\n+[L-Shift]+[Esc]\n to maneuver various worlds."
 #define HELP_MENU_TEXT2 "Play and create different map-packs! You can create engaging content and play others' content as well!"
 #define HELP_MENU_TEXT3 "Made by:\nStephen Policelli"
 /* search this
@@ -76,8 +76,6 @@ enemy bossSprite;
 bool loadBoss;
 script* allScripts;
 int sizeOfAllScripts;
-
-int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
 
 bool debugFlag;
 Sint64 gameTicks;
@@ -140,6 +138,7 @@ int main(int argc, char* argv[])
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_TEXTCOLOR);
                 int key = 0;
                 while(!key)
+                //while(key != SDLK_SPACE)  //uncomment for videos
                 {
                     SDL_RenderClear(mainRenderer);
                     SDL_RenderCopy(mainRenderer, titlescreen, NULL, NULL);
@@ -599,7 +598,8 @@ bool upgradeShop(player* playerSprite)
                             _globalInt1 = playerSprite->money;
                             _globalInt2 = coinsPerTech;
                             int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Abilities", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
-
+                            _globalInt1 = 0;
+                            _globalInt2 = 0;
                             if (retCode == ANYWHERE_QUIT || retCode == nextPos)
                             {
                                 bQuit = true;
@@ -1918,11 +1918,13 @@ int mainLoop(player* playerSprite)
                     {
                         thisScript = theseScripts[i];
                         thisScript->active = true;
-                        if (thisScript->disabled || (((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && !checkSKInteract) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
+                        if (thisScript->disabled || (((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
                         else
                             break;
                     }
+                    if (_globalInt1 > 0)
+                        _globalInt1--;
                 }
             }
 
@@ -1980,10 +1982,15 @@ int mainLoop(player* playerSprite)
                     spinCycle = (spinCycle + 1) % 24;
                 //e
 
-                if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && thisScript->active) && initSword)
+                if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && (thisScript->active == 1 || _globalInt1 > 0)) && initSword)
                 {
                     if (swordTimer <= 0)
                         swordTimer = SDL_GetTicks() + 750 + 150 * (spinCycle > 0) - 150 * (laserTimer > 0);
+                }
+                else
+                {
+                    if (!(spinCycle || laserTimer || swordTimer))
+                        Mix_HaltChannel(SWING_CHANNEL);
                 }
                 initSword = false;
             }
@@ -2085,6 +2092,8 @@ int mainLoop(player* playerSprite)
             if (thisScript->active == 2)
                 thisScript->active = 0;
     }
+
+    _globalInt1 = 0;
 
     if (playerSprite->HP < 1)
     {

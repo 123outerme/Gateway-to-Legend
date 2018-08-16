@@ -347,7 +347,7 @@ int createFile(char* filePath)
 *
 * Checks if a file exists and/or if it has the desired number of lines. desiredLines < 0 -> get number of lines instead.
 */
-bool checkFile(char* filePath, int desiredLines)
+int checkFile(char* filePath, int desiredLines)
 {
     FILE* filePtr = fopen(filePath, "r");
 	if (!filePtr)
@@ -356,11 +356,11 @@ bool checkFile(char* filePath, int desiredLines)
     int lines = 0;
     while(!feof(filePtr))
     {
-      ch = fgetc(filePtr);
-      if(ch == '\n')
-      {
-        lines++;
-      }
+        ch = fgetc(filePtr);
+        if(ch == '\n' || ch == '\r')
+        {
+            lines++;
+        }
     }
     fclose(filePtr);
     return desiredLines >= 0 ? lines >= desiredLines : lines;
@@ -390,10 +390,10 @@ char* readLine(char* filePath, int lineNum, char** output)
 		return NULL;
 	else
 	{
-        char* thisLine = calloc(2048, sizeof(char));
+        char* thisLine = calloc(4096, sizeof(char));
         fseek(filePtr, 0, SEEK_SET);
         for(int p = 0; p <= lineNum; p++)
-            fgets(thisLine, 2048, filePtr);
+            fgets(thisLine, 4096, filePtr);
         //printf("%s @ %d\n", thisLine, thisLine);
         *output = thisLine;
         //printf("%s @ %d\n", output, output);

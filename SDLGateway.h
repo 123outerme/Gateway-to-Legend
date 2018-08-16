@@ -259,6 +259,8 @@ int FPS, targetTime, startTime, frame;
 bool doorFlags[4];
 bool noclip;
 
+int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
+
 char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
 saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 

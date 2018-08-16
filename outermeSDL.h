@@ -91,7 +91,7 @@ void closeSDL();  //closes SDL and related stuff
 int intSeqSearch(int value, int array[], size_t arraySize);  //finds an int in an int array
 char* removeChar(char input[], char removing, size_t length, bool foreToBack);  //removes the the first specified character from a string
 int createFile(char* filePath);  //creates a file if it doesn't exist; if it does, clears it out
-bool checkFile(char* filePath, int desiredLines);  //checks if a file exists with a certain number of lines. 0 for any.
+int checkFile(char* filePath, int desiredLines);  //checks if a file exists with a certain number of lines. 0 for any.
 int appendLine(char* filePath, char* stuff);  //appends a line to a file
 char* readLine(char* filePath, int lineNum, char** output);  //reads a certain line from a file
 
