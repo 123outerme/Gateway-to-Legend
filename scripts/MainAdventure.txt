@@ -1,9 +1,9 @@
 {6,11,432,336,48,48,[10/432/336]}
 {6,10,432,240,48,48,[11/432/432]}
 {1,10,96,240,144,96,You saw it too? Yeah, I don't know what brought us here. Some kind of spacetime anomaly?}
-{8,22,432,48,192,282,[1/0/-1/-1]} ;Opens some doors on map 22
-{8,22,432,390,192,282,[0/1/-1/-1]} ;Opens some doors on map 22
-{10,22,432,48,96,96,[48/5](432|576|45|528|576|10|528|48|45|432|48|10)} ;Defines boss actions on map 22
+{8,22,474,48,150,240,[1/0/-1/-1]} ;Opens some doors on map 22
+{8,22,456,432,168,240,[0/1/-1/-1]} ;Opens some doors on map 22
+{10,22,432,48,96,96,[48/8](432|288|30|528|288|10|528|384|10|432|384|10|432|576|20|528|576|10|528|48|50|432|48|10} ;Defines boss actions on map 22
 {4,22,192,48,192,624,5}
 {9,21,576,192,192,240,[576/528/96/96/48/0](960|528|60)<...>}
 {9,1,192,384,96,192,[672/528/96/96/48/0](672|720|30)<...>}
@@ -35,3 +35,5 @@
 {6,8,96,96,48,48,[3/288/624]} ;Transports the player to a different map with animations on map 8
 {1,8,468,324,72,72,The Gateways, they're like magic, don't you think? Whoever is behind this, they're good.} ;Triggers a textbox after Interact is pressed on map 8
 {1,12,96,432,144,144,Only one being has learned these spells before... I was almost fried by his power.} ;Triggers a textbox after Interact is pressed on map 12
+{7,13,288,336,48,48,[576/288]} ;Teleports a player to a location on the same map on map 13
+{7,13,576,336,48,48,[288/288]} ;Teleports a player to a location on the same map on map 13

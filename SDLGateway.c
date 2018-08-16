@@ -1136,7 +1136,7 @@ bool executeScriptAction(script* scriptData, player* player)
     {
         if (scriptData->action == script_trigger_dialogue || scriptData->action == script_trigger_dialogue_once || scriptData->action == script_force_dialogue)
         {
-            drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.y = 9 * TILE_SIZE, .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
+            drawTextBox(scriptData->data, (SDL_Color){0, 0, 0, 0xFF}, (SDL_Rect){.x = 0, .y = 9 * TILE_SIZE * (player->spr.y < 9 * TILE_SIZE), .w = SCREEN_WIDTH, .h = (HEIGHT_IN_TILES - 9) * TILE_SIZE}, true);
             waitForKey(true);
             if (scriptData->action == script_trigger_dialogue_once)
             {

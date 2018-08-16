@@ -438,6 +438,7 @@ bool upgradeShop(player* playerSprite)
         case 1:  //extra health
             {
                 {
+                    const int coinsPerHalfHeart = 16;
                     char textString[12];
                     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
                     sprite cursor;
@@ -471,7 +472,8 @@ bool upgradeShop(player* playerSprite)
                         snprintf(textString, 12, "%d Coins", playerSprite->money);
                         drawText(textString, 2.25 * TILE_SIZE, 9 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
-                        drawText("15 Coins per half-heart", 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
+                        snprintf(textString, 12, "%d Coins per half-heart", coinsPerHalfHeart);
+                        drawText(textString, 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
                         while(SDL_PollEvent(&e) != 0)
                         {
@@ -506,10 +508,10 @@ bool upgradeShop(player* playerSprite)
                                             iQuit = true;
                                             Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                         }
-                                        if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money > 14)
+                                        if (cursor.y == TILE_SIZE * 5 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money >= coinsPerHalfHeart)
                                         {
                                             playerSprite->maxHP += 2;
-                                            playerSprite->money -= 15;
+                                            playerSprite->money -= coinsPerHalfHeart;
                                             Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                         }
                                     }
@@ -523,10 +525,10 @@ bool upgradeShop(player* playerSprite)
                                         iQuit = true;
                                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
-                                    if (choice == 1)
+                                    if (choice == 1 && playerSprite->maxHP != MAX_PLAYER_HEALTH && playerSprite->money >= coinsPerHalfHeart)
                                     {
                                         playerSprite->maxHP += 2;
-                                        playerSprite->money -= 15;
+                                        playerSprite->money -= coinsPerHalfHeart;
                                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                                     }
                                 }
@@ -546,6 +548,7 @@ bool upgradeShop(player* playerSprite)
             break;
         case 2:  //techniques
             {
+                const int coinsPerTech = 40;
                 char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
                 bool eQuit = false;
                 while(!eQuit)
@@ -594,7 +597,7 @@ bool upgradeShop(player* playerSprite)
                             }
                             techniqueArray[nextPos++] = "Back";
                             _globalInt1 = playerSprite->money;
-                            _globalInt2 = 50;
+                            _globalInt2 = coinsPerTech;
                             int retCode = aMenu(tilesetTexture, MAIN_ARROW_ID, "Buy Abilities", (char**) techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, aMenu_drawMoney);
 
                             if (retCode == ANYWHERE_QUIT || retCode == nextPos)
@@ -607,9 +610,9 @@ bool upgradeShop(player* playerSprite)
                                 }
                             }
 
-                            if (retCode != ANYWHERE_QUIT && retCode < nextPos && playerSprite->money >= 50)
+                            if (retCode != ANYWHERE_QUIT && retCode < nextPos && playerSprite->money >= coinsPerTech)
                             {
-                                playerSprite->money -= 50;
+                                playerSprite->money -= coinsPerTech;
                                 int position = 0;
                                 for(int i = 0; i < MAX_PLAYER_TECHNIQUES; i++)
                                 {
@@ -624,7 +627,7 @@ bool upgradeShop(player* playerSprite)
                             }
                         }
                     }
-                    else
+                    else if (selection != nextPos)
                     {
                         playerSprite->techUnlocks[posArray[selection - 1]] = 1 + !(playerSprite->techUnlocks[posArray[selection - 1]] - 1);  //flips between 2 and 1
                         if (playerSprite->techUnlocks[posArray[selection - 1]] == 2 && posArray[selection - 1] > 0)
@@ -1243,7 +1246,7 @@ int mainLoop(player* playerSprite)
     int maxTheseScripts = 0, * collisionData = calloc(MAX_COLLISIONDATA_ARRAY, sizeof(int));
     script newScript, * thisScript = &newScript, ** theseScripts = calloc(sizeOfAllScripts, sizeof(script)), bossScript;
     initScript(&bossScript, script_boss_actions, -1, -48, -48, 0, 0, "[0/1]", -1);
-    static int bossHP = 1;
+    static int bossHP = 1, maxBossHP = 1;
     thisScript->active = false;
     for(int i = 0; i < sizeOfAllScripts; i++)
     {
@@ -1296,7 +1299,10 @@ int mainLoop(player* playerSprite)
                     bossScript.y = bossSprite.spr.y;
                 }
                 else
+                {
                     bossHP = strtol(strtok(NULL, "[/]"), NULL, 10);
+                    maxBossHP = bossHP;
+                }
 
                 initEnemy(&bossSprite, bossScript.x, bossScript.y, bossScript.w, bossScript.h, bossSprite.spr.tileIndex, bossScript.h, type_boss);
                 loadBoss = false;
@@ -1386,14 +1392,14 @@ int mainLoop(player* playerSprite)
                     //printf("boost: %d, now %d\n", lastXPress, curTime);
                     playerSprite->xVeloc += (checkSKRight - checkSKLeft) * 36;
 					lastBoostTime = curTime;
-					Mix_PlayChannel(1, DASH_SOUND(1 + (rand() % 3)), 0);
+					Mix_PlayChannel(-1, DASH_SOUND(1 + (rand() % 3)), 0);
                 }
                 if (lastYPress * (checkSKDown - checkSKUp) < (Uint32) lastUpdateTime - 32 && lastYPress * (checkSKDown - checkSKUp) + 128 > curTime && (checkSKDown - checkSKUp) && playerSprite->techUnlocks[0] == 2 && lastBoostTime + 500 < curTime)
                 {
                     //printf("boost: %d, now %d\n", lastYPress, curTime);
                     playerSprite->yVeloc += (checkSKDown - checkSKUp) * 36;
 					lastBoostTime = curTime;
-					Mix_PlayChannel(1, DASH_SOUND(1 + (rand() % 3)), 0);
+					Mix_PlayChannel(-1, DASH_SOUND(1 + (rand() % 3)), 0);
                 }
 
                 if (playerSprite->spr.y > 0 && checkSKUp && !playerSprite->yVeloc)
@@ -1441,7 +1447,7 @@ int mainLoop(player* playerSprite)
                             theseSparkFlags[0] = true;
                             sparkFlag = true;
                         }
-                        if (lastLaserTime + 1250 < curTime && playerSprite->techUnlocks[3] == 2)
+                        if (lastLaserTime + 1250 < curTime && playerSprite->techUnlocks[3] == 2 && !swordTimer)
                         {
                             lastLaserTime = curTime;
                             laserTimer = curTime + 650;
@@ -1685,16 +1691,17 @@ int mainLoop(player* playerSprite)
             }
 
             {
+                script rewardScript;
+                initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "2", -1); //todo: re-evaluate coins given per enemy
                 bool playHitSound = false;
                 for(int i = 0; i < enemyCount; i++)
                 {
                     bool collidedOnce = false;
 
                     if (checkSquareCol(sword.x, sword.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE)
-                        && swordTimer > SDL_GetTicks() + 250
-                        && enemies[i].spr.type == type_enemy)  //sword collision
+                        && swordTimer > SDL_GetTicks() + 250)  //sword collision
                     {
-                        if (enemies[i].invincTimer == 0 || enemies[i].invincTimer < (int) SDL_GetTicks() + 250)
+                        if (enemies[i].spr.type == type_enemy && (enemies[i].invincTimer == 0 || enemies[i].invincTimer < (int) SDL_GetTicks() + 250))
                         {
                             enemies[i].HP--;
                             playHitSound = true;
@@ -1705,6 +1712,12 @@ int mainLoop(player* playerSprite)
                                 enemies[i].spr.tileIndex = GOLD_ID;
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
+                        }
+                        if (enemies[i].spr.type == type_generic)
+                        {
+                            executeScriptAction(&rewardScript, playerSprite);  //there's another of these below
+                            enemies[i].spr.tileIndex = INVIS_ID;
+                            enemies[i].spr.type = type_na;
                         }
                         initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
                         sparkFlag = true;
@@ -1728,8 +1741,6 @@ int mainLoop(player* playerSprite)
                         }
                         else if (enemies[i].spr.type == type_generic)
                         {
-                            script rewardScript;
-                            initScript(&rewardScript, script_gain_money, 0, 0, 0, 0, 0, "5", -1); //todo: re-evaluate coins given per enemy
                             executeScriptAction(&rewardScript, playerSprite);
                             enemies[i].spr.tileIndex = INVIS_ID;
                             enemies[i].spr.type = type_na;
@@ -2027,6 +2038,9 @@ int mainLoop(player* playerSprite)
         }
         if (bossSprite.spr.x >= 0 && bossSprite.spr.type == type_boss && bossLoaded)
         {
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0xFF, 0x00, 0xFF);
+            SDL_RenderFillRect(mainRenderer, &((SDL_Rect) {.x = bossSprite.spr.x, .y = bossSprite.spr.y - TILE_SIZE / 4, .w = bossHP * bossSprite.spr.w / maxBossHP, TILE_SIZE / 4}));
+            SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
             drawATile(tilesTexture, bossSprite.spr.tileIndex, bossSprite.spr.x, bossSprite.spr.y, bossSprite.spr.w, bossSprite.spr.h, bossSprite.spr.angle, bossSprite.spr.flip);
             /*for(int i = 0; i < bossTiles; i++)
                 drawATile(tilesTexture, bossSprite.spr.tileIndex + (i / (bossSprite.spr.w / TILE_SIZE)) + 8 * (i % (bossSprite.spr.h / TILE_SIZE)), bossSprite.spr.x + TILE_SIZE * (i % (bossSprite.spr.w / TILE_SIZE)), bossSprite.spr.y + TILE_SIZE * (i / (bossSprite.spr.w / TILE_SIZE)), TILE_SIZE, TILE_SIZE, 0, bossSprite.spr.flip);*/
