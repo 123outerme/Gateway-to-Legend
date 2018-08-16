@@ -1709,11 +1709,13 @@ int mainLoop(player* playerSprite)
                                 enemies[i].spr.tileIndex = GOLD_ID;
                             }
                             enemies[i].invincTimer = swordTimer;  //angle == hit detection cooldown timer
+                            if (!theseSparkFlags[1])
+                            {
+                                initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
+                                sparkFlag = true;
+                                theseSparkFlags[1] = true;
+                            }
                         }
-
-                        initSpark(&theseSparks[1], (SDL_Rect) {sword.x, sword.y, sword.w, sword.h}, SPARK_COLOR_SILVER, 4, 6, 6, framerate / 4, framerate / 8);
-                        sparkFlag = true;
-                        theseSparkFlags[1] = true;
                     }
 
                     if (!collidedOnce && checkSquareCol(playerSprite->spr.x, playerSprite->spr.y, enemies[i].spr.x, enemies[i].spr.y, TILE_SIZE) && enemies[i].spr.type != type_na && !(playerSprite->invincCounter))  //player collision
