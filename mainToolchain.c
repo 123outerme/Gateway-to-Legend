@@ -334,7 +334,7 @@ void locationSelectLoop(mapPack workingPack, int* map, int* x, int* y)
 
     *x = 0, *y = 0;
     SDL_Keycode key = 0;
-    printf("%d\n", *map);
+    //printf("%d\n", *map);
     if (*map == -1)
         *map = chooseMap(workingPack);
     SDL_Event e;
@@ -436,7 +436,7 @@ int mainMapCreator(mapPack* workingPack)
             initPlayer(&creator, 0, 0, TILE_SIZE, TILE_SIZE, 0, 0, SDL_FLIP_NONE, 0);
             if (choice == 1)
             {
-                creator.mapScreen = -1;
+                creator.mapScreen = -2;
             }
             if (choice == 2)
             {
@@ -703,7 +703,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                 locationSelectLoop(workingPack, &map, &x, &y);
                 char* data = calloc(99, sizeof(char));
                 snprintf(data, 99, "[%d/%d/%d]", map, x, y);
-                initScript(&gateScript, script_use_gateway, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
+                initScript(&gateScript, script_use_gateway, playerSprite->mapScreen + (playerSprite->mapScreen == -2), playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
                 mapScripts[(*scriptCount)++] = gateScript;
                 free(data);
                 toggleMouse = false; //this catches in infinite loop otherwise
@@ -716,7 +716,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
                 locationSelectLoop(workingPack, &map, &x, &y);
                 char* data = calloc(99, sizeof(char));
                 snprintf(data, 99, "[%d/%d]", x, y);
-                initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen, playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
+                initScript(&teleportScript, script_use_teleporter, playerSprite->mapScreen + (playerSprite->mapScreen == -2), playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE, data, -1);
                 mapScripts[(*scriptCount)++] = teleportScript;
                 free(data);
                 toggleMouse = false; //this catches in infinite loop otherwise
@@ -1687,7 +1687,7 @@ script visualLoadScript(mapPack* workingPack)
     bool quit = false;
     char* temp = "";
     int scriptLineNum = 0, maxLines = checkFile(workingPack->scriptFilePath, -1);
-    printf("%d\n", maxLines);  //this is wrong I think!
+    //printf("%d\n", maxLines);  //this is wrong I think!
     readScript(&loadedScript, readLine(workingPack->scriptFilePath, scriptLineNum, &temp), 0);
     SDL_Keycode key;
     while(!quit)

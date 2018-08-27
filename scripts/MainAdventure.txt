@@ -42,3 +42,19 @@
 {4,5,258,192,48,288,40} ;Spawns the boss on map 5
 {12,22,768,288,144,144,-1} ;Hurts the player an amount (negative for heal) on map 22
 {12,5,720,288,192,192,-1} ;Hurts the player an amount (negative for heal) on map 5
+{6,5,816,336,48,48,[30/144/336]} ;Transports the player to a different map with animations on map 5
+{1,40,708,372,72,72,I'm certain now, the wizard Mirai is behind this. He uses magic-like tech. Stop him.} ;Triggers a textbox after Interact is pressed on map 40
+{6,32,864,288,48,48,[40/480/144]} ;Transports the player to a different map with animations on map 32
+{8,32,384,144,48,480,[-1/-1/1/-1]} ;Opens some doors on map 32
+{10,32,624,288,96,96,[52/10](624|144|10|336|528|35|336|144|30|624|528|38|624|288|20|336|288|20|480|384|10|624|288|10)} ;Defines boss actions on map 32
+{4,32,408,144,48,480,48} ;Spawns the boss on map 32
+{12,32,816,240,96,192,-1} ;Hurts the player an amount (negative for heal) on map 32
+{6,41,528,576,48,48,[35/480/384]} ;Transports the player to a different map with animations on map 41
+{1,41,312,480,96,72,Approach this portal. If you lose, you will be cast into the depths of space.} ;Triggers a textbox after Interact is pressed on map 41
+{10,42,672,480,96,96,[54/14](96|288|22|288|144|9|720|336|19|624|576|15|336|288|19|672|480|18)} ;Defines boss actions on map 42
+{3,42,432,336,48,48,You won't survive. Beware Mirai!} ;Forces a textbox open on map 42
+{4,42,432,336,48,48,53} ;Spawns the boss on map 42
+{6,42,144,576,48,48,[43/672/528]} ;Transports the player to a different map with animations on map 42
+{10,43,336,192,96,96,[54/1](336|192|1)} ;Defines boss actions on map 43
+{4,43,672,528,48,48,57} ;Spawns the boss on map 43
+{3,43,672,528,48,48,I am weak... but my time comes. End this, and I'll restore your planet before I go.} ;Forces a textbox open on map 43

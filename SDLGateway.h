@@ -4,7 +4,7 @@
 #include "outermeSDL.h"  //uses outermeSDL v1.4 as of right now. Future versions of the header may not be compatible
 #include <dirent.h>
 
-#define VERSION_NUMBER "0.12.0b"
+#define VERSION_NUMBER "0.12.1b"
 
 #define SAVE_FILE_LINES 0
 #define GAME_WINDOW_NAME "Gateway to Legend"

@@ -1022,7 +1022,7 @@ int changeControls()
             strcpy(keyText, "Menu: ");
             drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_MENU))), 2 * TILE_SIZE + TILE_SIZE / 4, 9 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
-            strcpy(keyText, "Special: ");
+            strcpy(keyText, "Spc.: ");
             drawText(strcat(keyText, SDL_GetKeyName(SDL_GetKeyFromScancode(SC_SPECIAL))), 2 * TILE_SIZE + TILE_SIZE / 4, 10 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 10) * TILE_SIZE, textColor, false);
 
             drawText("Back", 2.25 * TILE_SIZE, 11 * TILE_SIZE, SCREEN_WIDTH, (HEIGHT_IN_TILES - 11) * TILE_SIZE, textColor, false);
@@ -1082,7 +1082,7 @@ int changeControls()
         }
         if (selection > 0 && selection < 8)
         {
-            char* keyName[7] = {"Up", "Down", "Left", "Right", "Confirm", "Menu", "Attack"};
+            char* keyName[7] = {"Up", "Down", "Left", "Right", "Confirm", "Menu", "Special"};
             char titleText[] = "Press a key for\n";
             strcat(titleText, keyName[selection - 1]);
             getNewKey(titleText, bgColor, textColor, selection - 1);
