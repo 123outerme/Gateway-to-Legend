@@ -85,8 +85,8 @@ typedef struct _enemy {
 typedef enum  _scriptBehavior {
     script_none,                   //0 default, do nothing
     script_trigger_dialogue,       //1 if player steps in coords & presses interact, trigger a dialogue/text box
-    script_trigger_dialogue_once,  //2 same as above, but just once.
-    script_force_dialogue,         //3 force a dialog popup
+    script_force_dialogue,         //2 force a dialog popup
+    script_force_dialogue_once,    //3 same as above, but just once.
     script_trigger_boss,           //4 if player steps in coords, spawn boss
     script_switch_maps,            //5 triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_teleporter
     script_use_gateway,            //6 triggers a playing of an animation followed by a switching of rooms. Only to be used internally for warp gates.
@@ -99,7 +99,7 @@ typedef enum  _scriptBehavior {
     script_placeholder,            //13 ?
 } scriptBehavior;
 
-#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Triggers a textbox after Interact is pressed, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around the screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
+#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Forces a textbox open, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around the screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
 
 typedef struct _script {
     int mapNum;

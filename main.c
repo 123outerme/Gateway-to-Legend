@@ -1338,8 +1338,9 @@ int mainLoop(player* playerSprite)
     frame = 0;
     int lastFrame = startTime, framerate = 0, sleepFor = 0, spinCycle = 0;
     bool initSword = false;
-    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, laserTimer = 0, lastUpdateTime = startTime,
-           lastBoostTime = startTime, lastSpinTime = 0, lastIllusionTime = 0, lastLaserTime = 0;
+    Uint32 lastXPress = 0, lastYPress = 0, lastSpcPress = 0, illusionTimer = 0, swordTimer = startTime + 250, laserTimer = 0,
+        lastUpdateTime = startTime, lastBoostTime = startTime, lastSpinTime = 0, lastIllusionTime = 0, lastLaserTime = 0,
+        lastChargeTime = 0;
     sprite sword, illusionSpr;
     initSprite(&sword, 0, 0, TILE_SIZE, TILE_SIZE, SWORD_ID, 0, SDL_FLIP_NONE, type_na);
     initSprite(&illusionSpr, 0, 0, TILE_SIZE, TILE_SIZE, PLAYER_ID, 0, SDL_FLIP_NONE, type_generic);
@@ -1446,12 +1447,26 @@ int mainLoop(player* playerSprite)
                             laserTimer = curTime + 650;
                             initSword = true;
                         }
+                        if (lastChargeTime + 2500 < curTime && playerSprite->techUnlocks[4] == 2 && !swordTimer)
+                        {
+                            lastChargeTime = curTime;
+                            if (playerSprite->lastDirection < 4)
+                            {
+                                playerSprite->yVeloc = 48 - 96 * (playerSprite->lastDirection % 2 == 1);
+                            }
+                            if (playerSprite->lastDirection > 3)
+                            {
+                                playerSprite->xVeloc = 48 - 96 * (playerSprite->lastDirection / 4 == 1);
+                            }
+                            playerSprite->invincCounter = 20;
+                            initSword = true;
+                        }
                     }
                     lastSpcPress = curTime;
                 }
 
                 if (((checkSKUp && !checkSKDown) || (!checkSKUp && checkSKDown) || (checkSKLeft && !checkSKRight) || (!checkSKLeft && checkSKRight)) && !checkSKSpecial)
-                    playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft+ 8 * checkSKRight;
+                    playerSprite->lastDirection = checkSKUp + 2 * checkSKDown + 4 * checkSKLeft + 8 * checkSKRight;
 
                 if (playerSprite->lastDirection / 4 == 1)
                     playerSprite->spr.flip = SDL_FLIP_HORIZONTAL;
@@ -1913,7 +1928,7 @@ int mainLoop(player* playerSprite)
                     {
                         thisScript = theseScripts[i];
                         thisScript->active = true;
-                        if (thisScript->disabled || (((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
+                        if (thisScript->disabled || ((thisScript->action == script_trigger_dialogue && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
                         else
                             break;
@@ -1977,7 +1992,7 @@ int mainLoop(player* playerSprite)
                     spinCycle = (spinCycle + 1) % 24;
                 //e
 
-                if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_trigger_dialogue_once) && (thisScript->active == 1 || _globalInt1 > 0)) && initSword)
+                if (!((thisScript->action == script_trigger_dialogue || thisScript->action == script_force_dialogue_once) && (thisScript->active == 1 || _globalInt1 > 0)) && initSword)
                 {
                     if (swordTimer <= 0)
                         swordTimer = SDL_GetTicks() + 750 + 150 * (spinCycle > 0) - 150 * (laserTimer > 0);

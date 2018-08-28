@@ -892,8 +892,8 @@ int scriptSelectLoop(mapPack workingPack)
 {
     sprite cursor;
     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, workingPack.tilesetMaps[2], 0, SDL_FLIP_NONE, (entityType) type_na);
-    const int optionsSize = 14;
-    char* optionsArray[] = {"Load", "TriggerDialogue", "TriggerDialOnce", "ForceDialogue", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainMoney", "HurtPlayer", "placeholder"};
+    const int optionsSize = 13;
+    char* optionsArray[] = {"Load", "TriggerDialogue", "ForceDialogue", "ForceDialOnce", "TriggerBoss", "SwitchMaps", "Gateway", "Teleporter", "ToggleDoor", "Animation", "BossActions", "GainMoney", "HurtPlayer", "placeholder"};
     int scriptType = 0, selection = -1;
     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR};
     SDL_Color bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR};
@@ -1152,7 +1152,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
     }
     if (!(key == ANYWHERE_QUIT || key == SDL_GetKeyFromScancode(SC_MENU)))
     {
-        if (editScript->action == script_trigger_dialogue || editScript->action == script_trigger_dialogue_once || editScript->action == script_force_dialogue)
+        if (editScript->action == script_trigger_dialogue || editScript->action == script_force_dialogue_once || editScript->action == script_force_dialogue)
         {
             stringInput(&data, "What should be said?", 88, "Hello!", true);
         }
