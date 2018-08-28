@@ -65,13 +65,7 @@ int toolchain_main();
 #define HELP_MENU_TEXT1 "Gateway to Legend\nis an Action-Puzzle game. Use (default)\n[WASD]+[Space]\n+[L-Shift]+[Esc]\n to maneuver various worlds."
 #define HELP_MENU_TEXT2 "Play and create different map-packs! You can create engaging content and play others' content as well!"
 #define HELP_MENU_TEXT3 "Made by:\nStephen Policelli"
-/* search this
-    SDL_Texture* img;
-    loadIMG("assets/help/.png", &img);
-    SDL_RenderClear(mainRenderer);
-    SDL_RenderCopy(mainRenderer, img, NULL, NULL);
-    SDL_RenderPresent(mainRenderer);
-*/
+
 enemy bossSprite;
 bool loadBoss;
 script* allScripts;
