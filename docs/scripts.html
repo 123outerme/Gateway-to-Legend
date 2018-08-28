@@ -41,13 +41,14 @@
 	<h2>How Do I Make Scripts?</h2>
     <p>To create a script, pick the Script Editor option in the Tools menu. Select which type of action you would like to program and hit start. Maneuver the cursor using <strong><kbd>Up/Down/Left/Right</kbd></strong> <em>(default WASD)</em>, and place the X,Y coordinate of your script using <strong><kbd>Interact</kbd></strong> <em>(default Space)</em>. <wbr />
 		Then, you must set the width and height of your script. To change the amount your w/h increment and decrement by from a 1/8 of a tile to a full tile, press <strong><kbd>Attack</kbd></strong> <em>(default Left Shift)</em>. To switch back, press it again. This option is especially useful for defining the size of a boss. <wbr />
-		Press <strong><kbd>Interact</kbd></strong> again to place your width and height. Depending on what script you chose, you'll have to input extra data. After that, it'll append your script to your script file. If you loaded a script instead of creating a new one, remember to remove the old script from your file. <strong>If the second number, the <code>mapID</code>, is -1, change that number to the map ID of the map it's occuring on. The map ID is equal to the line number of the map - 1.</strong></p>
+		Press <strong><kbd>Interact</kbd></strong> again to place your width and height. Depending on what script you chose, you'll have to input extra data. After that, it'll append your script to your script file. If you loaded a script instead of creating a new one, remember to remove the old script from your file. <strong>If the second number, the <code>mapID</code>, is -1, change that number to the map ID of the map it's occuring on. The map ID is equal to the line number of the map - 1.</strong>
+	  	<br />If you require any more help, go to the Script Editor menu, select the option you need to check, then select Help.</p>
 	<h2>What Are All The Script Types And What Do They Do?</h2>
 	<ol start="0">
 		<li>script_none - Default, do nothing. No real use.</li>
 		<li>script_trigger_dialogue - If player steps in coords & presses Interact, triggers a dialogue/text box.</li>
-		<li>script_trigger_dialogue_once - Same as above, but just once.</li>
 		<li>script_force_dialogue - Forces a dialogue (no pressing Interact required)</li>
+		<li>script_force_dialogue_once - Same as above, but just once.</li>
 		<li>script_trigger_boss - If player steps in coords, spawn the map's boss. This should only be placed in the same map as the boss.</li>
 		<li>script_switch_maps - Triggers a switching of rooms. Map borders do this by default so only use this when you are using some sort of other warp tile. Like a silent use_gateway.</li>
 		<li>script_use_gateway - Triggers a playing of an animation followed by a switching of rooms, to a certain location in the next map. Only activated when on top of a gateway.</li>
