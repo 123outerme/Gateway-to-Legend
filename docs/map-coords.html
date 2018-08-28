@@ -25,9 +25,9 @@
 	    	function calcMapCoords() {
 	    		var line = document.getElementById("mapline").value;
 				var x = line % 10;
-				var y = line / 10 + 1;
+				var y = (int) (line / 10) + 1;
 				if (x > 0 && y > 0 && x < 11)
-					document.getElementById("return").innerHTML = "(" + x +", " + y + ")<br />Map ID" + (line - 1);
+					document.getElementById("return").innerHTML = "(" + x +", " + y + ")<br />Map ID " + (line - 1);
 				else
 					document.getElementById("return").innerHTML = "<span class=\"error\">Please fill in the forms properly:</span><ul class=\"error\"><li class=\"error-left-align\">All values must be filled in and must be numbers</li><li class=\"error-left-align\">Line must be greater than or equal to 1</li></ul>";
 	    	}
