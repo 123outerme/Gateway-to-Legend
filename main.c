@@ -2070,6 +2070,7 @@ int mainLoop(player* playerSprite)
 
         if (sparkFlag)
         {
+            int notActive = 0;
             for(int i = 0; i < MAX_SPARKS; i++)
             {
                 //printf("theseSparks[%d].timer == %d, theseSparkFlags[i] == %d\n", i, theseSparks[i].timer, theseSparkFlags[i]);
@@ -2079,11 +2080,15 @@ int mainLoop(player* playerSprite)
                     if (!theseSparks[i].timer)
                     {
                         initSpark(&theseSparks[i], (SDL_Rect) {0, 0, 0, 0}, (SDL_Color) {0, 0, 0, 0}, 1, 6, 6, 10, 1);
-                        sparkFlag = false;
                         theseSparkFlags[i] = false;
+                        notActive++;
                     }
                 }
+                else
+                    notActive++;
             }
+            if (notActive == MAX_SPARKS)
+                sparkFlag = false;
         }
 
         SDL_RenderPresent(mainRenderer);

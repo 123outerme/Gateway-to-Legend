@@ -1878,6 +1878,7 @@ int editTileEquates(mapPack* workingPack)
         SDL_RenderClear(mainRenderer);
         drawText("Outputted to your file.", TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
         saveMapPack(workingPack);
+        waitForKey(true);
     }
     else
         return -1;
@@ -1947,7 +1948,7 @@ int chooseTile(mapPack workingPack, char* prompt)
                     cursor.x -= PIXELS_MOVED;
                 if (cursor.x < SCREEN_WIDTH - cursor.w && checkSKRight)
                     cursor.x += PIXELS_MOVED;
-                if (checkSKInteract || keyStates[SDL_SCANCODE_RETURN])
+                if (checkSKInteract)
                 {
                     tile = 8 * (cursor.x / TILE_SIZE) + cursor.y / TILE_SIZE - 1;  //-1 because we don't start at y=0
                     quit = true;
