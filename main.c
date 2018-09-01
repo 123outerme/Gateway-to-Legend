@@ -110,6 +110,9 @@ int main(int argc, char* argv[])
         loadConfig(CONFIG_FILEPATH);
     else
         initConfig(CONFIG_FILEPATH);
+
+    createFile(LOG_PATH);
+
     /*if (debug)
         loadIMG("tileset/eventTile48.png", &eventTexture);*/
     char* buffer = "";  //actually needed
@@ -1916,7 +1919,7 @@ int mainLoop(player* playerSprite)
                 }
                 executeScriptAction(&bossScript, playerSprite);
                 bossSprite.spr.x = bossScript.x;
-                bossSprite.spr.y = bossScript.y;  //ignore collision on purpose
+                bossSprite.spr.y = bossScript.y;
             }
             if (!thisScript->active)
             {  //script search loop
@@ -1924,15 +1927,15 @@ int mainLoop(player* playerSprite)
                 {
                     if (SDL_HasIntersection(&((SDL_Rect) {.x = theseScripts[i]->x, .y = theseScripts[i]->y, .w = theseScripts[i]->w, .h = theseScripts[i]->h}), &((SDL_Rect) {.x = playerSprite->spr.x, .y = playerSprite->spr.y, .w = playerSprite->spr.w, .h = playerSprite->spr.h}))
                         && theseScripts[i]->action != script_use_gateway && theseScripts[i]->action != script_use_teleporter
-                        && theseScripts[i]->action != script_boss_actions && thisScript->action != script_none)
+                        && theseScripts[i]->action != script_boss_actions)
                     {
                         thisScript = theseScripts[i];
                         thisScript->active = true;
-                        if (thisScript->disabled || ((thisScript->action == script_trigger_dialogue && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
+
+                        if ((thisScript->action == script_none || thisScript->disabled) || ((thisScript->action == script_trigger_dialogue && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
-                        else
-                            break;
                     }
+
                     if (_globalInt1 > 0)
                         _globalInt1--;
                 }
@@ -2095,17 +2098,13 @@ int mainLoop(player* playerSprite)
         if ((sleepFor = targetTime - (SDL_GetTicks() - lastFrame)) > 0)
             SDL_Delay(sleepFor);  //FPS limiter; rests for (16 - time spent) ms per frame, effectively making each frame run for ~16 ms, or 60 FPS
         lastFrame = SDL_GetTicks();
-        if (thisScript->active == 1)
+        if (thisScript->active)
         {
             bool quitScript = executeScriptAction(thisScript, playerSprite);
             quit = quit | quitScript;
             if (quitScript)
                 exitCode = 3;
-            thisScript->active = 2;
         }
-        else
-            if (thisScript->active == 2)
-                thisScript->active = 0;
     }
 
     _globalInt1 = 0;

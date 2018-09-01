@@ -826,9 +826,10 @@ void writeScriptData(mapPack workingPack, script* mapScripts, int count)
     if (count < 1)
         return;
     char scriptText[240];
+
     for(int i = 0; i < count; i++)
     {
-        snprintf(scriptText, 240, "{%d,%d,%d,%d,%d,%d,%s} ;%s on map %d", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data, actionDescriptions[(int) mapScripts[i].action], mapScripts[i].mapNum);
+        snprintf(scriptText, 280, "{%d,%d,%d,%d,%d,%d,%s} ;%s on map %d", mapScripts[i].action, mapScripts[i].mapNum, mapScripts[i].x, mapScripts[i].y, mapScripts[i].w, mapScripts[i].h, mapScripts[i].data, actionDescriptions[(int) mapScripts[i].action], mapScripts[i].mapNum);
         appendLine(workingPack.scriptFilePath, scriptText);
     }
 }
@@ -850,7 +851,6 @@ int mainScriptEdtior(mapPack* workingPack)
             if (!editScript.active)
                 quit = 2;  //ret
         }
-
         if (scriptNum > 0)
         {
             initScript(&editScript, (scriptBehavior) scriptNum, chooseMap(*workingPack), 0, 0, TILE_SIZE, TILE_SIZE, "", -1);
@@ -1096,7 +1096,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
 {
     int map = editScript->mapNum, x1 = editScript->x, y1 = editScript->y, x2 = editScript->x + editScript->w, y2 = editScript->y + editScript->h;
     int intervalSize = TILE_SIZE;
-    char* data = calloc(99, sizeof(char));
+    char* data = calloc(240, sizeof(char));
     sprite cursor;
     initSprite(&cursor, x1, y1, x2 - x1, y2 - y1, 0, 0, SDL_FLIP_NONE, type_na);
     bool quit = false, editXY = true, bigIntervalSize = true;
@@ -1166,7 +1166,7 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             {
                 script aScript;
                 readScript(&aScript, readLine(workingPack.scriptFilePath, i, &temp), i);
-                if (aScript.mapNum == editScript->mapNum)
+                if (aScript.mapNum == editScript->mapNum && aScript.action == script_boss_actions)
                     foundIndex = i;
             }
             if (foundIndex > -1)
@@ -1506,10 +1506,10 @@ script mainScriptLoop(mapPack workingPack, script* editScript)
             }
 			//end figure this out
 			targetTime = calcWaitTime(FPS);
-			char* dialogueText = calloc(88, sizeof(char));
+			char* dialogueText = calloc(90, sizeof(char));
 			bool keepOnscreen = (aMenu(tilesetTexture, MAIN_ARROW_ID, "Keep tile onscreen after done?", (char*[2]) {"Yes", "No"}, 2, 0, AMENU_MAIN_THEME, true, false, NULL)) == 1;
 			stringInput(&dialogueText, "Dialogue after completion? (Optional)", 88, "0", true);
-			snprintf(data, 116 + strlen(moveStr), "[%d/%d/%d/%d/%d/%d](%s)<%s>", bounding.x, bounding.y, bounding.w, bounding.h, startingTile, keepOnscreen, moveStr, dialogueText);
+			snprintf(data, 40 + strlen(moveStr) + strlen(dialogueText), "[%d/%d/%d/%d/%d/%d](%s)<%s>", bounding.x, bounding.y, bounding.w, bounding.h, startingTile, keepOnscreen, moveStr, dialogueText);
 			free(dialogueText);
         }
 

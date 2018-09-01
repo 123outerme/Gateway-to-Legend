@@ -1,8 +1,8 @@
 Map Design
 maps/designMaps.txt
 tileset/mainTileset8x6.png
-saves/designSave.txt.png
-scripts/designScripts.txtg
+saves/designSave.txt
+scripts/designScripts.txt
 48
 48
 0

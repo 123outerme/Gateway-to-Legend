@@ -1,0 +1,4 @@
+{1,10,180,228,72,72,These are "ghost" enemies. They move straight at you and walk through obstacles.} ;Triggers a textbox after Interact is pressed on map 10
+{1,1,756,468,72,72,These are weak enemies. They are killed in one hit by your sword. Spikes hurt you!} ;Triggers a textbox after Interact is pressed on map 1
+{9,0,144,288,672,48,[144/336/48/48/36/1](480|480|30)<Follow me using your Movement keys! These default to WASD.>} ;Moves a sprite, opens a textbox on map 0
+{9,0,144,432,768,48,[480/480/48/48/36/0](912|672|35)<Talk to NPCs or use your sword by pressing Interact. This is Space by default.>} ;Moves a sprite, opens a textbox on map 0

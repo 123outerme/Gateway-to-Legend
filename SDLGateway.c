@@ -301,7 +301,8 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	scriptPtr->y = y;
 	scriptPtr->w = w;
 	scriptPtr->h = h;
-	strcpy(scriptPtr->data, data);
+	strcpy(scriptPtr->data, "");
+	strncat(scriptPtr->data, data, 200);
 	scriptPtr->active = true;
 	scriptPtr->disabled = false;
 	scriptPtr->lineNum = lineNum;
@@ -983,14 +984,14 @@ char* uniqueReadLine(char* output[], int outputLength, char* filePath, int lineN
 int readScript(script* scriptPtr, char* input, int lineNum)
 {
 	int intData[6];
-	char* strData;
+	char* strData = calloc(201, sizeof(char));
 	//printf("Splitting string \"%s\" into tokens:\n", input);
 	intData[0] = strtol(strtok(input, "{,}"), NULL, 10);
 	for(int i = 1; i < 6; i++)
     {
         intData[i] = strtol(strtok(NULL, "{,}"), NULL, 10);
     }
-	strData = strtok(NULL, "}");
+	strncpy(strData, strtok(NULL, "}"), 200);
 	//printf("{%d,%d,%d,%d,%d,%d,%s}\n", mapNum, x, y, w, h, (int) action, data);
 	initScript(scriptPtr, (scriptBehavior) intData[0], intData[1], intData[2], intData[3], intData[4], intData[5], strData, lineNum);
 	//printf("done.\n");
@@ -1143,7 +1144,7 @@ bool executeScriptAction(script* scriptData, player* player)
             if (scriptData->action == script_force_dialogue_once)
             {
                 scriptData->disabled = true;
-                player->disabledScripts[scriptData->lineNum] = true;  //disable permanently
+                player->disabledScripts[scriptData->lineNum] = true;  //saves disabled status
             }
 
             _globalInt1 = 5;  //5 frames of cooldown before you can talk again... used to ensure pressing space works to close the textbox
@@ -1385,9 +1386,8 @@ bool executeScriptAction(script* scriptData, player* player)
                 char* textStuff = calloc(88, sizeof(char));
                 char* dataPtr = scriptData->data;
                 strtok(scriptData->data, "<>");  //gets rid of extra data
-                strncpy(textStuff, strtok(NULL, "<>"), 88);
+                strncpy(textStuff, strtok(NULL, "<>"), 90);
                 strcpy(scriptData->data, dataPtr);
-                //printf("%s\n", textStuff);
                 if (strcmp(textStuff, "0")) //if the two have differences aka aren't equal
                     initScript(&textBox, script_force_dialogue, scriptData->mapNum, scriptData->x, scriptData->y, scriptData->w, scriptData->h, textStuff, -1);
                 executeScriptAction(&textBox, player);
@@ -1507,9 +1507,19 @@ bool executeScriptAction(script* scriptData, player* player)
     return exitGameLoop;  //returns whether or not it wants to exit the game loop
 }
 
+void logWrite(char* data)
+{
+    char* dataOverwrite = calloc(512, sizeof(char));
+    time_t rawtime;
+    time(&rawtime);
+    snprintf(dataOverwrite, 511, "%s- %s\n", asctime(localtime(&rawtime)), data);
+    appendLine(LOG_PATH, dataOverwrite);
+}
+
 void SDLCALL playMainMusic()
 {
 	Mix_PlayMusic(MUSIC((musicIndex = 1)), -1);
+
 }
 
 void SDLCALL playOverworldMusic()

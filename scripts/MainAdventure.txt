@@ -7,7 +7,7 @@
 {4,22,192,48,192,624,5}
 {9,21,576,192,192,240,[576/528/96/96/48/0](960|528|60)<...>}
 {9,1,192,384,96,192,[672/528/96/96/48/0](672|720|30)<...>}
-{9,10,528,480,240,144,[0/480/96/96/48/0](384|720|30)<...>}
+{9,20,192,144,576,144,[0/432/96/96/48/0](480|288|20|576|288|8|864|336|18)<You're done... I have been summoned for this purpose... traveler.>} ;Moves a character around the screen then opens a textbox on map 20
 {6,22,816,336,48,48,[2/144/144]}
 {6,2,144,336,48,48,[22/144/336} ;Transports the player to a different map with animations on map 2
 {7,31,576,336,48,48,[336/576]}
@@ -60,6 +60,5 @@
 {3,43,672,528,48,48,I am weak... but my time comes. End this, and I'll restore your planet before I go.} ;Forces a textbox open on map 43
 {6,41,528,576,48,48,[42/432/336]} ;Transports the player to a different map with animations on map 41
 {9,4,576,384,192,144,[624/48/96/96/50/0](672|240|15|864|240|15)<Ice to meet you... traveler...>} ;Moves a character around the screen then opens a textbox on map 4
-{9,20,192,144,576,144,[0/432/96/96/48/0](480|288|20|576|288|8|864|336|18)<You're done... I have been summoned for this pu} ;Moves a character around the screen then opens a textbox on map 20
-{9,31,336,324,96,144,[816/576/96/96/52/0](816|384|15|864|288|15)<You'll be gone... soon enough... traveler.>} ;Moves a character around the screen then opens a textbox on map 31
-{9,41,144,528,144,96,[336/192/96/96/54/0](144|384|20|144|384|20|912|288|100)<Traveler... I have sought to destroy your k} ;Moves a character around the screen then opens a textbox on map 41
+{9,31,336,324,96,144,[816/576/96/96/52/0](816|384|15|864|288|15)<You'll be gone... soon enough, traveler...>} ;Moves a character around the screen then opens a textbox on map 31
+{9,41,144,528,144,96,[336/192/96/96/54/0](144|384|20|144|384|20|912|288|100)<Traveler... I have sought to destroy your kind. Your demise will be the beginning.>} ;Moves a character around the screen then opens a textbox on map 41

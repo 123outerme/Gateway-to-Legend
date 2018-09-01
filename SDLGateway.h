@@ -28,6 +28,8 @@
 #define TILE_ID_TILDA 125
 #define TILE_ID_CUBED 124
 
+#define LOG_PATH "output/log.txt"
+
 #define calcWaitTime(x) x == 0 ? 0 : 1000 / x
 
 typedef struct _mapPack {
@@ -99,7 +101,7 @@ typedef enum  _scriptBehavior {
     script_placeholder,            //13 ?
 } scriptBehavior;
 
-#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Forces a textbox open, but only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Transports the player to a different map with animations", "Teleports a player to a location on the same map", "Opens some doors", "Moves a character around the screen then opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
+#define ALL_ACTION_DESCRIPTIONS {"Nothing", "Triggers a textbox after Interact is pressed", "Forces a textbox open only once", "Forces a textbox open", "Spawns the boss", "Switches maps with no flair", "Switches maps with animations", "Teleports to a location on the same map", "Opens some doors", "Moves a sprite, opens a textbox", "Defines boss actions", "Gives player some money", "Hurts the player an amount (negative for heal)", "TBD"}
 
 typedef struct _script {
     int mapNum;
@@ -108,7 +110,7 @@ typedef struct _script {
     int w;
     int h;
     scriptBehavior action;
-    char data[99];
+    char data[200];
     bool active;
     bool disabled;
     int lineNum;
@@ -167,6 +169,8 @@ char** getListOfFiles(int maxStrings, int maxLength, const char* directory, int*
 
 void drawTextBox(char* input, SDL_Color outlineColor, SDL_Rect textBoxRect, bool redraw);  //draws a textbox
 bool executeScriptAction(script* scriptData, player* player);  //executes a script
+
+void logWrite(char* data);
 
 void SDLCALL playMainMusic();  //play main theme callback
 void SDLCALL playOverworldMusic();  //play an overworld theme callback
