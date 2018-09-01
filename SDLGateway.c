@@ -1141,10 +1141,11 @@ bool executeScriptAction(script* scriptData, player* player)
             SWING_CHANNEL = Mix_PlayChannel(-1, SWING_SOUND, 0);
             waitForKey(true);
             SWING_CHANNEL = Mix_PlayChannel(SWING_CHANNEL, SWING_SOUND, 0);
-            if (scriptData->action == script_force_dialogue_once)
+            if (scriptData->action == script_force_dialogue_once || scriptData->action == script_force_dialogue)
             {
-                scriptData->disabled = true;
-                player->disabledScripts[scriptData->lineNum] = true;  //saves disabled status
+                scriptData->disabled = true;  //only disabled for this run
+                if (scriptData->action == script_force_dialogue_once)
+                    player->disabledScripts[scriptData->lineNum] = true;  //saves disabled status
             }
 
             _globalInt1 = 5;  //5 frames of cooldown before you can talk again... used to ensure pressing space works to close the textbox

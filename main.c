@@ -1462,6 +1462,7 @@ int mainLoop(player* playerSprite)
                                 playerSprite->xVeloc = 48 - 96 * (playerSprite->lastDirection / 4 == 1);
                             }
                             playerSprite->invincCounter = 20;
+                            lastBoostTime = curTime + 400;
                             initSword = true;
                         }
                     }
