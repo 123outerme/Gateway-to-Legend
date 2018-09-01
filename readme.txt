@@ -1,4 +1,26 @@
- Gateway-to-Legend
+﻿ > Gateway-to-Legend <
+Thank you for downloading Gateway to Legend! You can find my webpage, where I host documentation and
+other helpful stuff, here:
+https://123outerme.github.io/Gateway-to-Legend/
+
+If you want to play user-created map-packs, or upload one of your own, visit this page:
+https://gtlmappacks.firebaseapp.com/
+
+ ?> Controls <?
+The default controls are WASD to move (double-tap to Dash, if you have that equipped), Space to Interact
+(talk to NPCs or use your sword), L-Shift for Special (hold to stay facing a direction, double-tap to
+activate an Ability), and Escape for Menu (functions as a Back button, and opens the Overworld Menu while
+playing).
+To change your controls, visit Options->Controls.
+
+
+You can buy Abilities or increase your HP in the Upgrade Shop menu.
+
+ !> Github <!
+My code is free to share under the MIT License (see below). I've uploaded it to Github, so if you want
+to see it, suggest changes, or whatever, go here:
+https://github.com/123outerme/Gateway-to-Legend
+
  >> Legal Stuff <<
 
 The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.

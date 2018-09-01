@@ -1,18 +1,30 @@
-# Gateway-to-Legend
-A Puzzle-RPG hybrid game. More details soon, but in a nutshell it started as a remake of an earlier game I made
-that became it's own thing with its own ideas. The core gameplay involves solving puzzles, collecting money, and defeating bosses.
+# > Gateway-to-Legend <
+Thank you for checking out Gateway to Legend! You can find my webpage, where I host
+documentation and other helpful stuff, here:
+https://123outerme.github.io/Gateway-to-Legend/
+
+If you want to play user-created map-packs, or upload one of your own, visit this page:
+https://gtlmappacks.firebaseapp.com/
+
 
 ## >> Gameplay <<
 Gameplay includes solving puzzles and defeating enemies. Small enemies can be defeated fairly easily, and provide a small amount of loot. Bosses are complex, difficult to fight, and provide large rewards!
 
-## >> Coins, Techniques, and the Upgrade Shop <<
-You can collect coins by defeating enemies and bosses. You can use these coins to buy health upgrades and special techniques in the Upgrade Shop. Equip these powers to use new abilities like the Dash Dodge, 
 
-## >>  <<
+## >> Coins, Techniques, and the Upgrade Shop <<
+You can collect coins by defeating enemies and bosses. You can use these coins to buy health upgrades and special techniques in the Upgrade Shop. Equip these powers to use new abilities like the Dash, Laser, and more!
+
+
+## >> Controls <<
+The default controls are WASD to move (double-tap to Dash, if you have that equipped), Space to Interact
+(talk to NPCs or use your sword), L-Shift for Special (hold to stay facing a direction, double-tap to
+activate an Ability), and Escape for Menu (functions as a Back button, and opens the Overworld Menu while
+playing).
+To change your controls, visit Options->Controls.
+You can buy Abilities or increase your HP in the Upgrade Shop menu.
 
 
 ## >> Legal Stuff <<
-
 The word "I" refers to the creator of Gateway to Legend, Stephen Policelli.
 I did not write or modify the graphics library, SDL2, any of its extensions or previous versions, or any
 of its code.
