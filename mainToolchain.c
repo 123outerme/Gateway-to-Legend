@@ -651,7 +651,7 @@ script* mainMapCreatorLoop(player* playerSprite, int* scriptCount, mapPack worki
             if ((!conflict ? (keyStates[SDL_SCANCODE_Q]) : (keyStates[SDL_SCANCODE_MINUS])) && playerSprite->spr.tileIndex > 0)
                 playerSprite->spr.tileIndex--;
 
-            if ((!conflict ? (keyStates[SDL_SCANCODE_E]) : (keyStates[SDL_SCANCODE_EQUALS])) && playerSprite->spr.tileIndex < 127 - (127 - MAX_SPRITE_MAPPINGS + 3) * (!editingTiles))  //+3 to avoid the first few sprite mappings
+            if ((!conflict ? (keyStates[SDL_SCANCODE_E]) : (keyStates[SDL_SCANCODE_EQUALS])) && playerSprite->spr.tileIndex < 127 - (127 - MAX_SPRITE_MAPPINGS + 5) * (!editingTiles))  //+3 to avoid the first few sprite mappings
                 playerSprite->spr.tileIndex++;
 
             if (keyStates[SDL_SCANCODE_SPACE])
