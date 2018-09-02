@@ -1165,7 +1165,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                     if (e.key.keysym.scancode == SC_INTERACT)
                     {
                         if (selectItem != 0)
-                            selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem - 1;
+                            selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem;
                         else
                             *backFlag = true;
                             quitMenu = true;
@@ -1194,8 +1194,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                     }
                     if (choice >= 0 && choice <= (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
                     {
-                        selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + choice;
-                        if (selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE))
+                        selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + choice + 1;
+                        if (selectItem < (maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE > MAX_MAPPACKS_PER_PAGE ? MAX_MAPPACKS_PER_PAGE : maxStrNum - menuPage * MAX_MAPPACKS_PER_PAGE) + 1)
                             quitMenu = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
@@ -1229,7 +1229,8 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
 
     }
     //loading map pack stuff
-    strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem], MAX_FILE_PATH - 9);
+    if (selectItem > 0)
+        strncat(strcpy(mapPackName, MAP_PACKS_SUBFOLDER), listOfFilenames[selectItem - 1], MAX_FILE_PATH - 9);
 }
 
 int mainLoop(player* playerSprite)
