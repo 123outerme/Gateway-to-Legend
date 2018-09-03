@@ -101,7 +101,6 @@ int toPowerOf10(int power);  //gets 10 ^ input
 void* freeThisMem(void* x);  //frees memory of any type/object/whatever and nulls its pointer.
 
 SDL_Window* mainWindow;
-SDL_Surface* mainScreen;
 SDL_Texture* tilesetTexture;
 SDL_Renderer* mainRenderer;
 TTF_Font* mainFont;

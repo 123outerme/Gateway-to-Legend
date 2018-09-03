@@ -381,35 +381,22 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
             playerSprite->nextBossPos = i;
     }
     char* disabledScriptData = readLine(filePath, 8, &buffer);
-    int maxScriptSize = 100;
-    playerSprite->disabledScripts = calloc(maxScriptSize, sizeof(int));
+    maxScripts = checkFile(scriptFilePath, -1);
+    printf("%d\n", maxScripts);
+    playerSprite->disabledScripts = calloc(maxScripts, sizeof(int));
     playerSprite->disabledScripts[0] = strtol(strtok(disabledScriptData, "{,}"), NULL, 10);
-    int i = 1;
     if (playerSprite->disabledScripts[0] == 0 || playerSprite->disabledScripts[0] == 1)
     {
-        bool quit = false;
-        while(!quit)
+        for(int i = 1; i < maxScripts; i++)
         {
             char* dataPt = strtok(NULL, "{,}");
             if (dataPt != NULL)
-                playerSprite->disabledScripts[i++] = strtol(dataPt, NULL, 10);
+                playerSprite->disabledScripts[i] = strtol(dataPt, NULL, 10);
             else
-                quit = true;
-
-            if (i > maxScriptSize)  //hopefully this never goes off because I can't get it to work
-            {
-                int* temp = realloc(playerSprite->disabledScripts, maxScriptSize + 10);
-                if (temp != NULL)
-                {
-                    maxScriptSize += 10;
-                    playerSprite->disabledScripts = temp;
-                }
-                else
-                    quit = true;
-            }
+                printf("error\n");
         }
     }
-    maxScripts = i;
+
     //done with scripts
     playerSprite->spr.tileIndex = tileIndex;
     playerSprite->spr.w = TILE_SIZE;
@@ -893,7 +880,7 @@ void saveMapPack(mapPack* writePack)
 
 void saveLocalPlayer(const player playerSprite, char* filePath)
 {
-    char* buffer = "";
+    char* buffer = calloc(4, sizeof(char));
     createFile(filePath);
     appendLine(filePath, intToString(playerSprite.mapScreen, buffer));
     appendLine(filePath, intToString(playerSprite.spr.x, buffer));
@@ -902,12 +889,12 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.lastMap, buffer));
     appendLine(filePath, intToString(playerSprite.lastX, buffer));
     appendLine(filePath, intToString(playerSprite.lastY, buffer));
-    char* beatBosses = calloc(maxBosses * 3, sizeof(char));
+    char* beatBosses = calloc(maxBosses * 3 + 1, sizeof(char));
     beatBosses[0] = '{';
     for(int i = 0; i < maxBosses; i++)
     {
-        strcat(beatBosses, intToString(playerSprite.defeatedBosses[i], buffer));
-        strcat(beatBosses, (i < maxBosses - 1) ?  "," : "}");
+        strncat(beatBosses, intToString(playerSprite.defeatedBosses[i], buffer), maxBosses * 3);
+        strncat(beatBosses, (i < maxBosses - 1) ?  "," : "}", maxBosses * 3);
     }
     appendLine(filePath, beatBosses);
     char* disabledScripts = calloc(maxScripts * 3 + 1, sizeof(char));
@@ -919,6 +906,7 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     }
     appendLine(filePath, disabledScripts);
 
+    free(buffer);
     free(beatBosses);
     beatBosses = NULL;
     if (maxScripts && disabledScripts)

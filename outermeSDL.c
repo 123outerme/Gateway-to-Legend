@@ -37,7 +37,6 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, char* i
         Mix_Volume(-1, soundVolume);  //sets all channels to the sound level soundVolume
         musicVolume = MIX_MAX_VOLUME;
         Mix_VolumeMusic(musicVolume);
-        mainScreen = NULL;
         tilesetTexture = NULL;
         mainRenderer = NULL;
         mainFont = NULL;
@@ -51,7 +50,6 @@ int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, char* i
         }
         else
         {
-            mainScreen = SDL_GetWindowSurface(mainWindow);
             mainRenderer = SDL_CreateRenderer(mainWindow, -1, SDL_RENDERER_ACCELERATED);
             if(!mainRenderer)
             {
@@ -253,12 +251,10 @@ void closeSDL()
     //TTF_CloseFont(smallFont);
 	if (tilesetTexture)
         SDL_DestroyTexture(tilesetTexture);
-	if (mainScreen)
-        SDL_FreeSurface(mainScreen);  //this is broken on Linux, not sure why
     if (mainWindow)
         SDL_DestroyWindow(mainWindow);
     if (mainRenderer)
-        SDL_DestroyRenderer(mainRenderer);  //this is also what's broken - switch out two skills, then quit and this errors
+        SDL_DestroyRenderer(mainRenderer);  //this is also broken...?
     for(int i = 0; i < MAX_SOUNDS; i++)
     {
         if (audioArray[i])
