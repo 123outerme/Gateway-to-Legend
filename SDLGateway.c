@@ -260,6 +260,8 @@ void createGlobalPlayer(player* playerSprite, char* filePath)
 {
     char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
     stringInput(&newName, "Your name?", MAX_PLAYER_NAME, "Player", true);
+    for(int i = 0; i < MAX_PLAYER_NAME; i++)
+        playerSprite->name[i] = 0;
     strncpy(playerSprite->name, newName, strlen(newName));
     free(newName);
     playerSprite->maxHP = 12;
