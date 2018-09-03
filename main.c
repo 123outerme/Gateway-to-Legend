@@ -102,6 +102,11 @@ int main(int argc, char* argv[])
     //done loading map pack header files
     player person;
     initPlayer(&person, 0, 0, 0, 0, 0, 0, SDL_FLIP_NONE, 0);
+    #if defined(_WIN32)
+        mkdir("saves/");
+    #else
+        mkdir("./saves", 0755);
+    #endif //makes ./saves/ if it doesn't exist
     if (checkFile(GLOBALSAVE_FILEPATH, 0))
         loadGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
     else
