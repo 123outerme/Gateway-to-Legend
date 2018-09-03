@@ -243,7 +243,7 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define MAIN_MUSIC_FILE "assets/audio/mainTheme.mp3"
 #define OVERWORLD1_MUSIC_FILE "assets/audio/GtL3.mp3"
 #define OVERWORLD2_MUSIC_FILE "assets/audio/GtL5.mp3"
-#define OVERWORLD3_MUSIC_FILE "assets/audio/.mp3"
+#define OVERWORLD3_MUSIC_FILE "assets/audio/GtL1.mp3"
 #define BOSS_MUSIC_FILE "assets/audio/gatewayIntoAction.mp3"
 #define FANFARE_MUSIC_FILE "assets/audio/GtL4.mp3"
 #define GAMEOVER_MUSIC_FILE "assets/audio/gatewayToRetry.mp3"

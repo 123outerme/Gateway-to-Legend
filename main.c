@@ -260,6 +260,7 @@ int main(int argc, char* argv[])
 
             //done game init
             screenTransitions();
+            musicIndex = 0;
             playOverworldMusic();
             choice = 3;
             gameState = RELOAD_GAMECODE;
@@ -637,7 +638,7 @@ bool upgradeShop(player* playerSprite)
                             }
                         }
                     }
-                    for(int i = 0; i < nextPos; i++)
+                    for(int i = 0; i < nextPos - 2; i++)
                     {
                         free(techniqueArray[i]);
                     }
@@ -1097,6 +1098,8 @@ void changeName(player* playerSprite)
 {
     char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
     stringInput(&newName, "Change name to:", MAX_PLAYER_NAME, "Player", true);
+    for(int i = 0; i < MAX_PLAYER_NAME; i++)
+        playerSprite->name[i] = 0;
     strncpy(playerSprite->name, newName, strlen(newName));
     saveGlobalPlayer(*playerSprite, GLOBALSAVE_FILEPATH);
     free(newName);

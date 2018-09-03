@@ -24,12 +24,12 @@ int initSounds()
         return -5;
     }
 
-    /*MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
+    MUSIC(4) = Mix_LoadMUS(OVERWORLD3_MUSIC_FILE);
     if (!MUSIC(4))
     {
         strncpy(customError, "Error: Overworld 3 Theme missing.", 256);
         return -5;
-    }*/
+    }
 
     MUSIC(5) = Mix_LoadMUS(BOSS_MUSIC_FILE);  //Gateway to Legend: Boss Theme 1 by Ian Groat
     if (!MUSIC(5))
@@ -770,7 +770,9 @@ void stringInput(char** data, char* prompt, int maxChar, char* defaultStr, bool 
         if (!hasTyped || !strlen(stringData))
             strncpy(*data, defaultStr, strlen(defaultStr));
         else
+        {
             strncpy(*data, stringData, numChar);
+        }
     }
     free(stringData);
     free(dispString);
@@ -908,19 +910,19 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
         strcat(beatBosses, (i < maxBosses - 1) ?  "," : "}");
     }
     appendLine(filePath, beatBosses);
-    char* disabledScripts = calloc(maxScripts * 3, sizeof(char));
+    char* disabledScripts = calloc(maxScripts * 3 + 1, sizeof(char));
     disabledScripts[0] = '{';
     for(int i = 0; i < maxScripts; i++)
     {
-        strcat(disabledScripts, intToString(playerSprite.disabledScripts[i], buffer));
-        strcat(disabledScripts, (i < maxScripts - 1) ? "," : "}");
+        strncat(disabledScripts, intToString(playerSprite.disabledScripts[i], buffer), maxScripts * 3);
+        strncat(disabledScripts, (i < maxScripts - 1) ? "," : "}", maxScripts * 3);
     }
     appendLine(filePath, disabledScripts);
 
-    //free(beatBosses);
-
+    free(beatBosses);
     beatBosses = NULL;
-    free(disabledScripts);
+    if (maxScripts && disabledScripts)
+        free(disabledScripts);
     disabledScripts = NULL;
     //saves: map, x, y, current HP, beaten bosses, disabled scripts
 }
@@ -1384,7 +1386,7 @@ bool executeScriptAction(script* scriptData, player* player)
                     animationSpr.tileIndex = tileIDArray[5];
                 player->movementLocked = false;
                 script textBox;
-                char* textStuff = calloc(88, sizeof(char));
+                char* textStuff = calloc(91, sizeof(char));
                 char* dataPtr = scriptData->data;
                 strtok(scriptData->data, "<>");  //gets rid of extra data
                 strncpy(textStuff, strtok(NULL, "<>"), 90);
