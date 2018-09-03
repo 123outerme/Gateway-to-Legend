@@ -385,7 +385,6 @@ void loadLocalPlayer(player* playerSprite, char* filePath, int tileIndex)
     }
     char* disabledScriptData = readLine(filePath, 8, &buffer);
     maxScripts = checkFile(scriptFilePath, -1);
-    printf("%d\n", maxScripts);
     playerSprite->disabledScripts = calloc(maxScripts, sizeof(int));
     playerSprite->disabledScripts[0] = strtol(strtok(disabledScriptData, "{,}"), NULL, 10);
     if (playerSprite->disabledScripts[0] == 0 || playerSprite->disabledScripts[0] == 1)
@@ -893,10 +892,11 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.lastX, buffer));
     appendLine(filePath, intToString(playerSprite.lastY, buffer));
     char* beatBosses = calloc(maxBosses * 3 + 1, sizeof(char));
-    strcpy(beatBosses, "}");
+    strcpy(beatBosses, "{");
     for(int i = 0; i < maxBosses; i++)
     {
-        strncat(beatBosses, intToString(playerSprite.defeatedBosses[i], buffer), maxBosses * 3);
+        snprintf(buffer, 3, "%d", playerSprite.defeatedBosses[i]);
+        strncat(beatBosses, buffer, maxBosses * 3);
         strncat(beatBosses, (i < maxBosses - 1) ?  "," : "}", maxBosses * 3);
     }
     appendLine(filePath, beatBosses);
@@ -904,7 +904,8 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     disabledScripts[0] = '{';
     for(int i = 0; i < maxScripts; i++)
     {
-        strncat(disabledScripts, intToString(playerSprite.disabledScripts[i], buffer), maxScripts * 3);
+        snprintf(buffer, 3, "%d", playerSprite.disabledScripts[i]);
+        strncat(disabledScripts, buffer, maxScripts * 3);
         strncat(disabledScripts, (i < maxScripts - 1) ? "," : "}", maxScripts * 3);
     }
     appendLine(filePath, disabledScripts);
