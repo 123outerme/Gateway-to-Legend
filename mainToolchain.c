@@ -477,8 +477,8 @@ int mainMapCreator(mapPack* workingPack)
         if (choice == 3)
         {
             SDL_Texture* imgs[2];
-            loadIMG("assets/help/MapCreatorEvent.png", &imgs[0]);
-            loadIMG("assets/help/MapCreatorScript.png", &imgs[1]);
+            loadIMG("assets/help/mapCreatorEvent.png", &imgs[0]);
+            loadIMG("assets/help/mapCreatorScript.png", &imgs[1]);
             SDL_Keycode pauseKey = 0;
             int helpIndex = 0;
             char* helpTexts[4] = {"Here's where you make maps!\nUse either your movement keys or the mouse to move your cursor.", "Use [Q] and [E] to change the type of tile.\n\nIf [Q] or [E] are in use, use [-] and [=] instead.", "Press Special (default [LShift]) to switch between editing the visual tiles and events.\nThe red backslash is collision.", "Some events require you make a script, outputted directly to the script file."};
