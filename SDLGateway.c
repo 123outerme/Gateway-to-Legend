@@ -240,7 +240,10 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 {
     initPlayer(playerSprite, x, y, w, h, mapScreen, angle, flip, tileIndex);
     playerSprite->HP = playerSprite->maxHP;
-    for(int i = 0; i < maxBosses; i++)
+    playerSprite->lastMap = mapScreen;
+    playerSprite->lastX = x;
+    playerSprite->lastY = y;
+    for(int i = 0; i < 10; i++)
     {
         playerSprite->defeatedBosses[i] = -1;
     }
@@ -890,7 +893,7 @@ void saveLocalPlayer(const player playerSprite, char* filePath)
     appendLine(filePath, intToString(playerSprite.lastX, buffer));
     appendLine(filePath, intToString(playerSprite.lastY, buffer));
     char* beatBosses = calloc(maxBosses * 3 + 1, sizeof(char));
-    beatBosses[0] = '{';
+    strcpy(beatBosses, "}");
     for(int i = 0; i < maxBosses; i++)
     {
         strncat(beatBosses, intToString(playerSprite.defeatedBosses[i], buffer), maxBosses * 3);
