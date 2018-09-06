@@ -258,12 +258,13 @@ void createLocalPlayer(player* playerSprite, char* filePath, int x, int y, int w
 
 void createGlobalPlayer(player* playerSprite, char* filePath)
 {
-    char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
+    /*char* newName = calloc(MAX_PLAYER_NAME + 1, sizeof(char));
     stringInput(&newName, "Your name?", MAX_PLAYER_NAME, "Player", true);
     for(int i = 0; i < MAX_PLAYER_NAME; i++)
         playerSprite->name[i] = 0;
     strncpy(playerSprite->name, newName, strlen(newName));
-    free(newName);
+    free(newName);*/
+    strcpy(playerSprite->name, "Player");  //The name is not used so why even ask for it?
     playerSprite->maxHP = 12;
     playerSprite->level = 1;
     playerSprite->money = 0;

@@ -379,19 +379,19 @@ int main(int argc, char* argv[])
 int allOptions(player* player)
 {
     int choice = 0;
-    while(choice != -1 && choice != 7)
+    while(choice != -1 && choice != 6)
     {
-        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[7]) {"Sounds", "Controls", "Change Name", "Change FPS", "Reset Data", "Info/Help", "Back"}, 7, 0, AMENU_MAIN_THEME, true, false, NULL);
+        choice = aMenu(tilesetTexture, MAIN_ARROW_ID, "Options", (char*[6]) {"Sounds", "Controls", "Change FPS", "Reset Data", "Info/Help", "Back"}, 6, 0, AMENU_MAIN_THEME, true, false, NULL);
         if (choice == 1)
             changeVolumes();
 
         if (choice == 2)
             choice = changeControls();
 
-        if (choice == 3)
-            changeName(player);
+        /*if (choice == 3)
+            changeName(player);*/  //name isn't used so why have it?
 
-        if (choice == 4)
+        if (choice == 3)
         {
             int newFPS = intInput("New FPS? 0 -> No Cap", 3, 60, 0, 500, false);  //todo: show old FPS
             if (newFPS > 0 && newFPS < 30)
@@ -399,10 +399,10 @@ int allOptions(player* player)
             changeFPS(newFPS);
         }
 
-        if (choice == 5)
+        if (choice == 4)
             clearData(player);
 
-        if (choice == 6)
+        if (choice == 5)
         {
             int pauseKey = 0;
             char* helpTexts[3] = {HELP_MENU_TEXT1, HELP_MENU_TEXT2, HELP_MENU_TEXT3};
@@ -419,7 +419,7 @@ int allOptions(player* player)
         }
     }
 
-    if (choice == 7)
+    if (choice == 6)
         choice = 0;
 
     return choice;
@@ -552,6 +552,7 @@ bool upgradeShop(player* playerSprite)
                 const int coinsPerTech = 40;
                 char* literalsArray[MAX_PLAYER_TECHNIQUES] = ALL_TECHNIQUES;
                 bool eQuit = false;
+                int selection = 0;
                 while(!eQuit)
                 {
                     char* techniqueArray[MAX_PLAYER_TECHNIQUES + 2];
@@ -573,7 +574,7 @@ bool upgradeShop(player* playerSprite)
                     techniqueArray[nextPos++] = "Buy";
                     techniqueArray[nextPos++] = "Back";
 
-                    int selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Abilities", techniqueArray, nextPos, 0, AMENU_MAIN_THEME, true, false, NULL);
+                    selection = aMenu(tilesetTexture, MAIN_ARROW_ID, "Abilities", techniqueArray, nextPos, selection, AMENU_MAIN_THEME, true, false, NULL);
 
                     if (selection == ANYWHERE_QUIT || selection == nextPos)
                     {
