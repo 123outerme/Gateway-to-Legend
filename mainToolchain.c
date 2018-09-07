@@ -464,10 +464,13 @@ int mainMapCreator(mapPack* workingPack)
                 writeScriptData(*workingPack, mapScripts, scriptCount);
                 SDL_SetRenderDrawColor(mainRenderer, AMENU_MAIN_BGCOLOR);
                 SDL_RenderClear(mainRenderer);
-                char* exitNote = calloc(138, sizeof(char));
+                char* exitNote = calloc(200, sizeof(char));
                 strcpy(exitNote, "Outputted to output/map.txt");
                 if (scriptCount > 0)
-                    strcat(exitNote, " and to your script file.\n\nNOTE: If the second argument of a script is -1, change to (line number of new map) - 1");
+                    strcat(exitNote, " and to your script file.");
+                if (choice == 1)  //new map
+                    strcat(exitNote, "\n\nNOTE: Change the second number of any scripts with\nit as -1 to\n(line number of\nnew map) - 1");
+
                 drawText(exitNote, TILE_SIZE, TILE_SIZE, SCREEN_WIDTH - TILE_SIZE, SCREEN_HEIGHT - TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, true);
                 waitForKey(false);
                 free(exitNote);

@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 
     /*if (debug)
         loadIMG("tileset/eventTile48.png", &eventTexture);*/
-    char* buffer = "";  //actually needed
+    char* buffer = calloc(201, sizeof(char));  //actually needed
     allScripts = NULL;
     int choice = 0;
     SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
@@ -215,6 +215,7 @@ int main(int argc, char* argv[])
                 quitGame = (quitGame == -1);
                 break;
             }
+            logWrite(mainFilePath);
             allScripts = calloc(checkFile(scriptFilePath, -1) + 2, sizeof(script));
             if (checkFile(scriptFilePath, -1))
             {
@@ -246,10 +247,9 @@ int main(int argc, char* argv[])
                 createGlobalPlayer(&person, GLOBALSAVE_FILEPATH);
 
             //initializing game
-            char* temp = "";
-            person.lastMap = strtol(readLine(saveFilePath, 4, &temp), NULL, 10);
-            person.lastX = strtol(readLine(saveFilePath, 5, &temp), NULL, 10);
-            person.lastY = strtol(readLine(saveFilePath, 6, &temp), NULL, 10);
+            person.lastMap = strtol(readLine(saveFilePath, 4, &buffer), NULL, 10);
+            person.lastX = strtol(readLine(saveFilePath, 5, &buffer), NULL, 10);
+            person.lastY = strtol(readLine(saveFilePath, 6, &buffer), NULL, 10);
             initEnemy(&bossSprite, -TILE_SIZE, -TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 1, type_boss);
             loadBoss = true;
             noclip = false;
@@ -272,6 +272,8 @@ int main(int argc, char* argv[])
             break;
         case MAINLOOP_GAMECODE:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
+            snprintf(buffer, 200, "Loaded map ID %d from %s", person.mapScreen, mapFilePath);
+            logWrite(buffer);
             person.extraData = mapFilePath;
             gameTicks = SDL_GetTicks();
             lastMap = person.mapScreen;
@@ -1453,6 +1455,7 @@ int mainLoop(player* playerSprite)
                             initSpark(&theseSparks[0], (SDL_Rect) {playerSprite->spr.x, playerSprite->spr.y, TILE_SIZE, TILE_SIZE}, SPARK_COLOR_GRAY, 4, 8, 8, framerate / 2, framerate / 4);
                             theseSparkFlags[0] = true;
                             sparkFlag = true;
+
                         }
                         if (lastLaserTime + 1250 < curTime && playerSprite->techUnlocks[3] == 2 && !swordTimer)
                         {
@@ -1940,11 +1943,16 @@ int mainLoop(player* playerSprite)
                         && theseScripts[i]->action != script_use_gateway && theseScripts[i]->action != script_use_teleporter
                         && theseScripts[i]->action != script_boss_actions)
                     {
+
                         thisScript = theseScripts[i];
                         thisScript->active = true;
 
                         if ((thisScript->action == script_none || thisScript->disabled) || ((thisScript->action == script_trigger_dialogue && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
+
+                        if (thisScript->action == script_force_dialogue_once || thisScript->action == script_force_dialogue ||
+                            thisScript->action == script_trigger_boss || thisScript->action == script_switch_maps)
+                            break;
                     }
 
                     if (_globalInt1 > 0)

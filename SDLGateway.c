@@ -307,7 +307,8 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	scriptPtr->y = y;
 	scriptPtr->w = w;
 	scriptPtr->h = h;
-	strcpy(scriptPtr->data, "");
+	for(int i = 0; i < 200; i++)
+        scriptPtr->data[i] = 0;
 	strncat(scriptPtr->data, data, 200);
 	scriptPtr->active = true;
 	scriptPtr->disabled = false;
@@ -1130,6 +1131,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
 bool executeScriptAction(script* scriptData, player* player)
 {
     bool exitGameLoop = false;
+
     if (!scriptData->disabled)
     {
         if (scriptData->action == script_trigger_dialogue || scriptData->action == script_force_dialogue_once || scriptData->action == script_force_dialogue)
