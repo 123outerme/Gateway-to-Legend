@@ -1,6 +1,0 @@
-Thu Sep 06 21:59:53 2018
-- map-packs/mapDesign.txt
-
-Thu Sep 06 21:59:55 2018
-- Loaded map ID 12 from maps/designMaps.txt
-
