@@ -5,7 +5,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define VERSION_NUMBER "v1.0.0"
+#define VERSION_NUMBER "v1.0.2"
 
 #define SAVE_FILE_LINES 0
 #define GAME_WINDOW_NAME "Gateway to Legend"
