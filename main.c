@@ -442,7 +442,7 @@ bool upgradeShop(player* playerSprite)
             {
                 {
                     const int coinsPerHalfHeart = 16;
-                    char textString[12];
+                    char textString[25];
                     SDL_Color textColor = (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, bgColor = (SDL_Color) {AMENU_MAIN_BGCOLOR}, titleOverColor = (SDL_Color) {AMENU_MAIN_TITLECOLOR1};
                     sprite cursor;
                     initSprite(&cursor, TILE_SIZE, 5 * TILE_SIZE, TILE_SIZE, TILE_SIZE, MAIN_ARROW_ID, 0, SDL_FLIP_NONE, (entityType) type_na);
@@ -475,7 +475,7 @@ bool upgradeShop(player* playerSprite)
                         snprintf(textString, 12, "%d Coins", playerSprite->money);
                         drawText(textString, 2.25 * TILE_SIZE, 9 * TILE_SIZE, SCREEN_WIDTH, TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
-                        snprintf(textString, 12, "%d Coins per half-heart", coinsPerHalfHeart);
+                        snprintf(textString, 24, "%d Coins per half-heart", coinsPerHalfHeart);
                         drawText(textString, 2.25 * TILE_SIZE, 10.5 * TILE_SIZE, SCREEN_WIDTH, 2 * TILE_SIZE, (SDL_Color) {AMENU_MAIN_TEXTCOLOR}, false);
 
                         while(SDL_PollEvent(&e) != 0)
@@ -1950,9 +1950,9 @@ int mainLoop(player* playerSprite)
                         if ((thisScript->action == script_none || thisScript->disabled) || ((thisScript->action == script_trigger_dialogue && (!checkSKInteract || _globalInt1 != 0)) || (thisScript->action == script_trigger_boss && (bossLoaded || !bossUndefeated))))
                             thisScript->active = false;
 
-                        if (thisScript->action == script_force_dialogue_once || thisScript->action == script_force_dialogue ||
-                            thisScript->action == script_trigger_boss || thisScript->action == script_switch_maps)
-                            break;
+                        if (thisScript->active && (thisScript->action == script_force_dialogue_once || thisScript->action == script_force_dialogue ||
+                            thisScript->action == script_trigger_boss || thisScript->action == script_switch_maps))
+                            break;  //these are priority
                     }
 
                     if (_globalInt1 > 0)
@@ -2163,6 +2163,7 @@ void smoothScrolling(player* playerSprite, int newMapLine, int moveX, int moveY)
     bool quit = moveX == moveY;
     while (!quit)
     {
+        SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
         drawATilemap(tilesTexture, tilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, -1, false);
         drawOverTilemap(tilesTexture, eventmap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, -i, -j, doorFlags, false, false);
         drawATilemap(tilesTexture, newTilemap, 0, 0, WIDTH_IN_TILES, HEIGHT_IN_TILES, (SCREEN_WIDTH * ((moveX > 0) - (moveX < 0))) - i, (SCREEN_HEIGHT * ((moveY > 0) - (moveY < 0))) - j, -1, false);

@@ -309,7 +309,7 @@ void initScript(script* scriptPtr, scriptBehavior action, int mapNum, int x, int
 	scriptPtr->h = h;
 	for(int i = 0; i < 200; i++)
         scriptPtr->data[i] = 0;
-	strncat(scriptPtr->data, data, 200);
+	strncat(scriptPtr->data, data, 199);
 	scriptPtr->active = true;
 	scriptPtr->disabled = false;
 	scriptPtr->lineNum = lineNum;
