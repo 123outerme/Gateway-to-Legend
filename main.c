@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
             break;
         case MAINLOOP_GAMECODE:  //main game loop
             loadMapFile(mapFilePath, tilemap, eventmap, person.mapScreen, HEIGHT_IN_TILES, WIDTH_IN_TILES);
-            snprintf(buffer, 200, "Loaded map ID %d from %s", person.mapScreen, mapFilePath);
+            snprintf(buffer, 300, "Loaded map ID %d from %s", person.mapScreen, mapFilePath);
             logWrite(buffer);
             person.extraData = mapFilePath;
             gameTicks = SDL_GetTicks();
@@ -1179,7 +1179,7 @@ void mapSelectLoop(char** listOfFilenames, char* mapPackName, int maxStrNum, boo
                             selectItem = menuPage * MAX_MAPPACKS_PER_PAGE + selectItem;
                         else
                             *backFlag = true;
-                            quitMenu = true;
+                        quitMenu = true;
                         Mix_PlayChannel(-1, OPTION_SOUND, 0);
                     }
                 }

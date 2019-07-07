@@ -18,10 +18,10 @@
 */
 
 #define SDL_MAIN_HANDLED 1
-#include "SDL/SDL.h"       //This is included because it's an SDL2 program... duh
-#include "SDL/SDL_image.h" //This is included so we can use PNGs.
-#include "SDL/SDL_ttf.h"   //This is included for text stuff
-#include "SDL/SDL_mixer.h" //This is included for audio
+#include "SDL2/SDL.h"       //This is included because it's an SDL2 program... duh
+#include "SDL2/SDL_image.h" //This is included so we can use PNGs.
+#include "SDL2/SDL_ttf.h"   //This is included for text stuff
+#include "SDL2/SDL_mixer.h" //This is included for audio
 #include <stdio.h>         //This is included because it's fundamental always. Even if it ain't needed
 #include <string.h>        //This is included for strncat and other string functions
 #include <stdlib.h>        //This is included for calloc, rand(), and a lot of other stuff

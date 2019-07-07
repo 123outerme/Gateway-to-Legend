@@ -1,0 +1,10 @@
+#ignore the media folder
+/media/
+/obj/
+/bin/
+/saves/
+/output/
+*.cbp
+*.depend
+*.layout
+*.cfg

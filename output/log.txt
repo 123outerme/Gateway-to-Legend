@@ -1,9 +1,0 @@
-Sun Sep 30 14:54:19 2018
-- map-packs/a.txt
-
-Sun Sep 30 14:54:21 2018
-- Loaded map ID 41 from maps/MainMaps.txt
-
-Sun Sep 30 14:54:24 2018
-- Loaded map ID 42 from maps/MainMaps.txt
-
