@@ -1,5 +1,32 @@
 #include "SDLGateway.h"
 
+int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+SDL_Texture* tilesTexture;
+int tileIDArray[MAX_SPRITE_MAPPINGS];
+
+bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
+enemy enemies[MAX_ENEMIES];
+
+SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+
+int FPS, targetTime, startTime, frame;
+bool doorFlags[4];
+bool noclip;
+
+int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
+
+char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
+saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
+
+int maxBosses;
+int maxScripts;
+bool bossLoaded;
+int musicIndex;
+sprite animationSpr;
+
+bool sparkFlag, theseSparkFlags[MAX_SPARKS];
+spark theseSparks[MAX_SPARKS];
+
 int initSounds()
 {
     musicIndex = -1;
@@ -1051,7 +1078,7 @@ node* BreadthFirst(const int startX, const int startY, const int endX, const int
         return NULL;
     }
     node* curNode;
-    node searchList[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+    node searchList[HEIGHT_IN_TILES][WIDTH_IN_TILES];   
     int queueCount = 0;
     for(int y = 0; y < HEIGHT_IN_TILES; y++)
     {

@@ -176,15 +176,15 @@ void logWrite(char* data);
 void SDLCALL playMainMusic();  //play main theme callback
 void SDLCALL playOverworldMusic();  //play an overworld theme callback
 
-int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
-SDL_Texture* tilesTexture;
-int tileIDArray[MAX_SPRITE_MAPPINGS];
+extern int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+extern SDL_Texture* tilesTexture;
+extern int tileIDArray[MAX_SPRITE_MAPPINGS];
 
-bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
-enemy enemies[MAX_ENEMIES];
+extern bool enemyFlags[MAX_ENEMIES + 1];  //last bool is reloadEnemies
+extern enemy enemies[MAX_ENEMIES];
 
 #define SIZE_OF_SCANCODE_ARRAY 7
-SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
+extern SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 #define SC_UP CUSTOM_SCANCODES[0]
 #define SC_DOWN CUSTOM_SCANCODES[1]
 #define SC_LEFT CUSTOM_SCANCODES[2]
@@ -260,24 +260,24 @@ SDL_Scancode CUSTOM_SCANCODES[SIZE_OF_SCANCODE_ARRAY];
 
 #define SPARK_BOSS ((SDL_Color) {0, 0, 0, 0})
 
-int FPS, targetTime, startTime, frame;
-bool doorFlags[4];
-bool noclip;
+extern int FPS, targetTime, startTime, frame;
+extern bool doorFlags[4];
+extern bool noclip;
 
-int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
+extern int _globalInt1, _globalInt2, _globalInt3;  //for general use purposes
 
-char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
+extern char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
 saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
 
-int maxBosses;
-int maxScripts;
-bool bossLoaded;
-int musicIndex;
-sprite animationSpr;
+extern int maxBosses;
+extern int maxScripts;
+extern bool bossLoaded;
+extern int musicIndex;
+extern sprite animationSpr;
 
 #define MAX_SPARKS 8
-bool sparkFlag, theseSparkFlags[MAX_SPARKS];
-spark theseSparks[MAX_SPARKS];
+extern bool sparkFlag, theseSparkFlags[MAX_SPARKS];
+extern spark theseSparks[MAX_SPARKS];
 
 /*
 Spark IDs:

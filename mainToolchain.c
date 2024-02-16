@@ -95,7 +95,7 @@ int chooseTile(mapPack workingPack, char* prompt);
 void strPrepend(char* input, const char* prepend);
 
 //this is to match the tilemap array in outermeSDL.h
-int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+//int eventmap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
 SDL_Texture* mainTilesetTexture;
 int _TglobalInt1;  //
 

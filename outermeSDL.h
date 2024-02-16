@@ -100,19 +100,19 @@ int digits(int num);  //gets the number of digits an int has
 int toPowerOf10(int power);  //gets 10 ^ input
 void* freeThisMem(void* x);  //frees memory of any type/object/whatever and nulls its pointer.
 
-SDL_Window* mainWindow;
-SDL_Texture* tilesetTexture;
-SDL_Renderer* mainRenderer;
-TTF_Font* mainFont;
-char customError[256];
-char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
-saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
-int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
-Mix_Chunk* audioArray[MAX_SOUNDS];
-Mix_Music* musicArray[MAX_MUSIC];
-int channelArray[MAX_SOUNDS - 1];
-int soundVolume, musicVolume;
-bool canDrawTiles;
-bool canDrawText;
+extern SDL_Window* mainWindow;
+extern SDL_Texture* tilesetTexture;
+extern SDL_Renderer* mainRenderer;
+extern TTF_Font* mainFont;
+extern char customError[256];
+//extern char mainFilePath[MAX_FILE_PATH], mapFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9],
+//saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
+extern int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+extern Mix_Chunk* audioArray[MAX_SOUNDS];
+extern Mix_Music* musicArray[MAX_MUSIC];
+extern int channelArray[MAX_SOUNDS - 1];
+extern int soundVolume, musicVolume;
+extern bool canDrawTiles;
+extern bool canDrawText;
 
 #endif // OUTERMESDL_H_INCLUDED

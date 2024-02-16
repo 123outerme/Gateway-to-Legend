@@ -2,6 +2,19 @@
 #define IMG_INIT_FLAGS IMG_INIT_PNG
 // ++ outermeSDL version 1.2 - last update 1/1/2018 ++
 
+SDL_Window* mainWindow;
+SDL_Texture* tilesetTexture;
+SDL_Renderer* mainRenderer;
+TTF_Font* mainFont;
+char customError[256];
+//char mainFilePath[MAX_FILE_PATH], maxFilePath[MAX_FILE_PATH - 9], tileFilePath[MAX_FILE_PATH - 9], saveFilePath[MAX_FILE_PATH - 9], scriptFilePath[MAX_FILE_PATH - 9];
+int tilemap[HEIGHT_IN_TILES][WIDTH_IN_TILES];
+Mix_Chunk* audioArray[MAX_SOUNDS];
+Mix_Music* musicArray[MAX_MUSIC];
+int channelArray[MAX_SOUNDS - 1];
+int soundVolume, musicVolume;
+bool canDrawTiles;
+bool canDrawText;
 
 int initSDL(char* windowName, char* tilesetFilePath, char* fontFilePath, char* iconPath, int windowWidth, int windowHeight, int fontSize)
 {

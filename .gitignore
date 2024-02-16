@@ -2,6 +2,7 @@
 /media/
 /obj/
 /bin/
+/execute/
 /saves/
 /output/
 *.cbp
